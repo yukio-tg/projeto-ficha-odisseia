@@ -1144,17 +1144,49 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    let userUID = null;
+  </script>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+const sheetId = urlParams.get('sheetId');
 
-    // Login Anônimo
-    auth.signInAnonymously().catch(error => console.error("Erro Auth:", error));
+if (!sheetId) {
+  alert('Nenhuma ficha especificada. Redirecionando para o dashboard.');
+  window.location.href = 'dashboard.html'; // ajuste o caminho
+}
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        userUID = user.uid;
-        loadSheet();
-      }
-    });
+let currentSheetRef = null;
+let sheetOwnerUID = null;
+let sharedWith = [];        // para futura verificação
+
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentSheetRef = db.collection('sheets').doc(sheetId);
+    const doc = await currentSheetRef.get();
+    if (!doc.exists) {
+      alert('Ficha não encontrada.');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    const sheetData = doc.data();
+    sheetOwnerUID = sheetData.owner;
+    sharedWith = sheetData.sharedWith || [];
+
+    // Verificar permissão: dono ou está na lista sharedWith?
+    if (sheetOwnerUID !== user.uid && !sharedWith.includes(user.uid)) {
+      alert('Você não tem acesso a esta ficha.');
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    // Preencher a ficha com os dados
+    fillSheetData(sheetData.data);
+  } else {
+    // Usuário não logado – redirecionar para login/dashboard
+    alert('Faça login primeiro.');
+    window.location.href = 'dashboard.html';
+  }
+});
 
     // 2. COLETA E PREENCHIMENTO DE DADOS
     function gatherSheetData() {
@@ -1214,16 +1246,23 @@
     });
 
     async function saveSheet() {
-      if (!userUID) return;
-      const data = gatherSheetData();
-      await db.collection("fichas").doc(userUID).set(data);
-      console.log("Ficha salva!");
-    }
+  if (!currentSheetRef) return;
+  const dados = gatherSheetData();
+  await currentSheetRef.update({
+    data: dados,
+    // opcional: atualizar o nome da ficha se houver campo de nome
+    name: dados.identidade?.nome || dados.nome || 'Sem nome'
+  });
+  console.log('Ficha salva!');
+}
 
     async function loadSheet() {
-      const doc = await db.collection("fichas").doc(userUID).get();
-      if (doc.exists) fillSheetData(doc.data());
-    }
+  if (!currentSheetRef) return;
+  const doc = await currentSheetRef.get();
+  if (doc.exists) {
+    fillSheetData(doc.data().data);
+  }
+}
   </script>
 </body>
 
