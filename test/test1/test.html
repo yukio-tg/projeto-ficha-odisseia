@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Gerenciador de Poderes - Com Persistência de Ordem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            background: #2c1a0c;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+            padding: 24px 0;
+        }
+
+        .fundo {
+            width: 900px;
+            max-width: 90vw;
+            background-color: rgb(207, 144, 71);
+            padding: 20px;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-row {
+            background-color: rgb(138, 94, 27);
+            border-radius: 24px;
+            padding: 16px 20px 24px;
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .list-powers {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .card-power {
+            margin-bottom: 16px;
+            border-radius: 18px;
+            background-color: rgb(255, 249, 240);
+            width: 100%;
+            padding: 14px 16px;
+            position: relative;
+            cursor: default;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-out;
+            will-change: transform;
+        }
+
+        /* Card sendo arrastado (desaparece completamente) */
+        .card-power.dragging-original {
+            display: none !important;
+        }
+
+        /* Placeholder na posição de destino */
+        .card-placeholder {
+            min-height: 120px;
+            margin-bottom: 16px;
+            border-radius: 18px;
+            background: rgba(245, 200, 100, 0.5);
+            border: 2px solid #e2891a;
+            transition: all 0.12s ease;
+        }
+
+        /* Fantasma que segue o mouse */
+        .dragging-ghost {
+            position: fixed;
+            z-index: 9999;
+            width: 280px;
+            max-width: 70vw;
+            background: #fff9ea;
+            border-radius: 18px;
+            padding: 12px 16px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            pointer-events: none;
+            transform: rotate(1deg) scale(0.98);
+            border-left: 6px solid #e2891a;
+            opacity: 0.95;
+            transition: none;
+        }
+
+        .card-header {
+            margin: 6px 0 10px 0;
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .card-header .pt-cost {
+            font-weight: 800;
+            color: #1ba500;
+            border-radius: 60px;
+            border: 2px solid #9b4b1a;
+            padding: 4px 10px;
+            background: #fef7e0;
+            font-size: 1.1rem;
+        }
+
+        .card-header .name-power {
+            font-weight: 700;
+            color: #2d1b0a;
+            font-size: 1.2rem;
+        }
+
+        .card-header .name-power::after {
+            content: ' |';
+            margin-left: 6px;
+            color: #b87a3a;
+        }
+
+        .card-header .others-costs {
+            font-weight: 600;
+            background: #ece3d4;
+            padding: 3px 10px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            color: #6b3f1c;
+        }
+
+        .card-content {
+            margin-top: 18px;
+            margin-left: 6px;
+            color: #2c1c0c;
+            line-height: 1.4;
+            font-size: 0.95rem;
+            padding-right: 60px;
+        }
+
+        .card-toolbar {
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            display: flex;
+            gap: 8px;
+            z-index: 6;
+        }
+
+        .card-toolbar button {
+            background: #fef8f0;
+            border: 1px solid #deb887;
+            padding: 5px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: 0.1s linear;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            background: linear-gradient(145deg, #fff5e8, #ffe6d0);
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 0px 12px;
+            border-radius: 30px;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .edit-btn { background: #e9f3ff; border-color: #7aa5c2; }
+        .delete-btn { background: #fff0f0; border-color: #e0b4b4; color: #b13b3b; }
+
+        .list-controls {
+            position: sticky;
+            top: 0;
+            background: rgb(156, 108, 38);
+            backdrop-filter: blur(8px);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            z-index: 20;
+            margin-bottom: 20px;
+            border-radius: 60px;
+        }
+
+        .list-controls button {
+            background: #ffefdb;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .list-controls button:hover {
+            background: #ffe2bc;
+            transform: scale(0.97);
+        }
+    </style>
+</head>
+<body>
+<div class="fundo">
+    <div class="card-row">
+    <!-- Lista 1 -->
+    <div class="list-powers" id="lista1">
+        <div class="list-controls">
+            <button class="createCardBtn">✨ Criar Poder</button>
+        </div>
+    </div>
+    
+    <!-- Lista 2 -->
+    <div class="list-powers" id="lista2">
+        <div class="list-controls">
+            <button class="createCardBtn">✨ Criar Poder</button>
+        </div>
+    </div>
+    <!-- Pode adicionar quantas quiser, sempre com ID único -->
+</div>
+</div>
+
+<script>
+    class ListaPoderes {
+  constructor(containerElement, listId, defaultCards = []) {
+    this.container = containerElement;
+    this.listId = listId;
+    this.storageKey = `powers_data_${listId}`;
+    this.defaultCards = defaultCards;
+
+    // Estado do drag (isolado)
+    this.dragActive = false;
+    this.originalCard = null;
+    this.placeholder = null;
+    this.ghost = null;
+
+    // Bind para eventos
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.onClickContainer = this.onClickContainer.bind(this);
+    this.onMouseDownContainer = this.onMouseDownContainer.bind(this);
+
+    this.init();
+  }
+
+  escapeHtml(str) {
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+  }
+
+  createCardElement(cardData) {
+    const card = document.createElement('div');
+    card.className = 'card-power';
+    card.setAttribute('data-id', cardData.id);
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="pt-cost">${cardData.pt}</span>
+        <span class="name-power">${this.escapeHtml(cardData.name)}</span>
+        <span class="others-costs">${this.escapeHtml(cardData.otherCost)}</span>
+      </div>
+      <div class="card-toolbar">
+        <button class="edit-btn">✎ Editar</button>
+        <button class="delete-btn">🗑 Excluir</button>
+        <button class="drag-handle">☰</button>
+      </div>
+      <div class="card-content"><p>${this.escapeHtml(cardData.desc)}</p></div>
+    `;
+    return card;
+  }
+
+  loadData() {
+    const json = localStorage.getItem(this.storageKey);
+    if (!json) return null;
+    try {
+      const data = JSON.parse(json);
+      if (data && Array.isArray(data.items) && Array.isArray(data.order)) {
+        return data;
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  saveData(order, items) {
+    localStorage.setItem(this.storageKey, JSON.stringify({ order, items }));
+  }
+
+  getItemsMap() {
+    const map = new Map();
+    this.container.querySelectorAll('.card-power').forEach(card => {
+      const id = card.dataset.id;
+      if (!id) return;
+      const name = card.querySelector('.name-power')?.innerText || '';
+      const pt = card.querySelector('.pt-cost')?.innerText || '0';
+      const otherCost = card.querySelector('.others-costs')?.innerText || '';
+      const desc = card.querySelector('.card-content p')?.innerText || '';
+      map.set(id, {
+        id,
+        pt: parseInt(pt) || 0,
+        name,
+        otherCost,
+        desc
+      });
+    });
+    return map;
+  }
+
+  persist() {
+    const cards = Array.from(this.container.querySelectorAll('.card-power'));
+    const order = cards.map(c => c.dataset.id);
+    const items = [];
+    const itemsMap = this.getItemsMap();
+    order.forEach(id => {
+      if (itemsMap.has(id)) items.push(itemsMap.get(id));
+    });
+    this.saveData(order, items);
+  }
+
+  render() {
+    const data = this.loadData();
+    let cardsData = this.defaultCards;
+
+    if (data && data.items.length > 0) {
+      const itemsMap = new Map(data.items.map(i => [i.id, i]));
+      cardsData = data.order.map(id => itemsMap.get(id)).filter(Boolean);
+      data.items.forEach(item => {
+        if (!cardsData.some(c => c.id === item.id)) cardsData.push(item);
+      });
+    }
+
+    this.container.querySelectorAll('.card-power').forEach(c => c.remove());
+
+    cardsData.forEach(cardData => {
+      const cardEl = this.createCardElement(cardData);
+      this.container.appendChild(cardEl);
+    });
+
+    this.persist();
+  }
+
+  createNewCard() {
+    let maxId = 0;
+    this.container.querySelectorAll('.card-power').forEach(c => {
+      const id = parseInt(c.dataset.id);
+      if (id > maxId) maxId = id;
+    });
+    const newId = maxId + 1;
+
+    const newCardData = {
+      id: newId,
+      pt: 10,
+      name: `Novo Poder ${newId}`,
+      otherCost: '-0 PM',
+      desc: 'Descrição editável.'
+    };
+
+    const oldPos = this.capturePositions();
+    const newCard = this.createCardElement(newCardData);
+    this.container.appendChild(newCard);
+    const newPos = this.capturePositions();
+    this.animateCards(oldPos, newPos);
+    this.persist();
+    newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  editCard(card) {
+    const nameSpan = card.querySelector('.name-power');
+    const descP = card.querySelector('.card-content p');
+    const ptSpan = card.querySelector('.pt-cost');
+    const costSpan = card.querySelector('.others-costs');
+
+    const newName = prompt('✏️ Nome do poder:', nameSpan.innerText);
+    if (newName !== null) nameSpan.innerText = newName;
+
+    const newDesc = prompt('📝 Descrição:', descP.innerText);
+    if (newDesc !== null) descP.innerText = newDesc;
+
+    const newPt = prompt('🔢 Custo em PT:', ptSpan.innerText);
+    if (newPt !== null && !isNaN(parseInt(newPt))) ptSpan.innerText = parseInt(newPt);
+
+    const newCost = prompt('⚡ Outros custos:', costSpan.innerText);
+    if (newCost !== null) costSpan.innerText = newCost;
+
+    this.persist();
+  }
+
+  deleteCard(card) {
+    if (confirm(`Excluir "${card.querySelector('.name-power').innerText}" permanentemente?`)) {
+      const oldPos = this.capturePositions();
+      card.remove();
+      const newPos = this.capturePositions();
+      this.animateCards(oldPos, newPos);
+      this.persist();
+    }
+  }
+
+  capturePositions() {
+    const pos = {};
+    this.container.querySelectorAll('.card-power').forEach(card => {
+      if (card.dataset.id) pos[card.dataset.id] = card.getBoundingClientRect().top;
+    });
+    return pos;
+  }
+
+  animateCards(oldPositions, newPositions) {
+    const cards = this.container.querySelectorAll('.card-power');
+    cards.forEach(card => {
+      const oldTop = oldPositions[card.dataset.id];
+      const newTop = newPositions[card.dataset.id];
+      if (oldTop !== undefined && newTop !== undefined && Math.abs(oldTop - newTop) > 0.5) {
+        card.style.transform = `translateY(${oldTop - newTop}px)`;
+        card.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+        requestAnimationFrame(() => {
+          card.style.transform = '';
+          card.addEventListener('transitionend', () => {
+            card.style.transition = '';
+          }, { once: true });
+        });
+      }
+    });
+  }
+
+  getCards() {
+    return Array.from(this.container.querySelectorAll('.card-power:not(.dragging-original)'));
+  }
+
+  createPlaceholder(card) {
+    const ph = document.createElement('div');
+    ph.className = 'card-placeholder';
+    ph.style.height = `${card.offsetHeight}px`;
+    ph.style.marginBottom = '16px';
+    return ph;
+  }
+
+  createGhost(card, e) {
+    const rect = card.getBoundingClientRect();
+    const clone = card.cloneNode(true);
+    clone.classList.add('dragging-ghost');
+    clone.style.position = 'fixed';
+    clone.style.top = `${rect.top}px`;
+    clone.style.left = `${rect.left}px`;
+    clone.style.width = `${rect.width}px`;
+    clone.style.opacity = '0.95';
+    clone.style.pointerEvents = 'none';
+    document.body.appendChild(clone);
+    return clone;
+  }
+
+  updateGhostPosition(e) {
+    if (this.ghost) {
+      this.ghost.style.left = `${e.clientX - 20}px`;
+      this.ghost.style.top = `${e.clientY - 15}px`;
+    }
+  }
+
+  getTargetIndex(mouseY) {
+    const cards = this.getCards().filter(c => c !== this.placeholder);
+    for (let i = 0; i < cards.length; i++) {
+      const rect = cards[i].getBoundingClientRect();
+      const middle = rect.top + rect.height / 2;
+      if (mouseY < middle) return i;
+    }
+    return cards.length;
+  }
+
+  movePlaceholder(mouseY) {
+    if (!this.placeholder) return;
+    const targetIndex = this.getTargetIndex(mouseY);
+    const cardsOnly = this.getCards().filter(c => c !== this.placeholder);
+    let refNode = null;
+    if (targetIndex < cardsOnly.length) refNode = cardsOnly[targetIndex];
+    const currentIdx = Array.from(this.container.children).indexOf(this.placeholder);
+    const newIdx = refNode ? Array.from(this.container.children).indexOf(refNode) : this.container.children.length;
+    if (currentIdx !== newIdx) {
+      if (refNode) this.container.insertBefore(this.placeholder, refNode);
+      else this.container.appendChild(this.placeholder);
+    }
+  }
+
+  startDrag(e, card) {
+    if (this.dragActive) return;
+    e.preventDefault();
+    this.dragActive = true;
+    this.originalCard = card;
+
+    const beforePositions = this.capturePositions();
+    card.classList.add('dragging-original');
+    this.placeholder = this.createPlaceholder(card);
+    this.container.appendChild(this.placeholder);
+    this.ghost = this.createGhost(card, e);
+    this.updateGhostPosition(e);
+
+    const afterPositions = this.capturePositions();
+    this.animateCards(beforePositions, afterPositions);
+
+    window.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('mouseup', this.onMouseUp);
+  }
+
+  onMouseMove(e) {
+    if (!this.dragActive) return;
+    e.preventDefault();
+    this.updateGhostPosition(e);
+    this.movePlaceholder(e.clientY);
+  }
+
+  onMouseUp(e) {
+    if (!this.dragActive) return;
+    this.finishDrag();
+  }
+
+  finishDrag() {
+    if (!this.dragActive) return;
+    const beforePositions = this.capturePositions();
+    if (this.placeholder && this.originalCard) {
+      this.container.insertBefore(this.originalCard, this.placeholder);
+      this.placeholder.remove();
+    }
+    if (this.originalCard) this.originalCard.classList.remove('dragging-original');
+    const afterPositions = this.capturePositions();
+    this.animateCards(beforePositions, afterPositions);
+
+    if (this.ghost) this.ghost.remove();
+    this.dragActive = false;
+    this.originalCard = null;
+    this.placeholder = null;
+    this.ghost = null;
+
+    window.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+
+    this.persist();
+  }
+
+  onClickContainer(e) {
+    const createBtn = e.target.closest('.createCardBtn');
+    if (createBtn) {
+      this.createNewCard();
+      return;
+    }
+    const editBtn = e.target.closest('.edit-btn');
+    if (editBtn) {
+      const card = editBtn.closest('.card-power');
+      if (card) this.editCard(card);
+      return;
+    }
+    const deleteBtn = e.target.closest('.delete-btn');
+    if (deleteBtn) {
+      const card = deleteBtn.closest('.card-power');
+      if (card) this.deleteCard(card);
+      return;
+    }
+  }
+
+  onMouseDownContainer(e) {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    e.preventDefault();
+    const card = handle.closest('.card-power');
+    if (card && !this.dragActive) {
+      this.startDrag(e, card);
+    }
+  }
+
+  init() {
+    this.render();
+    this.container.addEventListener('click', this.onClickContainer);
+    this.container.addEventListener('mousedown', this.onMouseDownContainer);
+    this.container.addEventListener('dragstart', e => e.preventDefault());
+  }
+}
+
+// ---------- INICIALIZAÇÃO (crie quantas listas quiser) ----------
+const cardsIniciais1 = [
+  { id: 1, pt: 18, name: "Fúria Elemental", otherCost: "-2 PM", desc: "Lança uma onda de fogo e gelo, causando dano em área." },
+  { id: 2, pt: 22, name: "Armadura de Sombras", otherCost: "-3 PM", desc: "Aumenta defesa e furtividade. Sustentado por PM." },
+  { id: 3, pt: 15, name: "Toque Vampírico", otherCost: "-1 PM", desc: "Drena vida e restaura metade como PV." }
+];
+
+const cardsIniciais2 = [
+  { id: 1, pt: 12, name: "Rajada de Vento", otherCost: "-1 PM", desc: "Empurra inimigos próximos para trás." }
+];
+
+const lista1 = new ListaPoderes(document.getElementById('lista1'), 'lista1', cardsIniciais1);
+const lista2 = new ListaPoderes(document.getElementById('lista2'), 'lista2', cardsIniciais2);
+
+// Para adicionar mais listas, insira no HTML um <div> com id único, ex: id="lista3"
+// e instancie: new ListaPoderes(document.getElementById('lista3'), 'lista3', []);
+</script>
+</body>
+</html>
