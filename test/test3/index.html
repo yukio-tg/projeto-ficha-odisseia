@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-<body style="background: #313131;">
-<div id="secao-radar" style="background: sua-cor; max-width: 350px;"></div>
+<body>
+<div class="folha" style="background: #313131; height: 100vh; max-width: 800px; margin: 0 auto; padding: 20px; header">
+  <div class="big-container" style="display: flex;">
+    <div class="container" style="border: 1px solid #fff; width: 100%;"></div>
+    <div class="container" style="display: flex; align-items: flex-end; justify-content: flex-end;">
+      <div id="secao-radar" style="background: sua-cor; width: 350px;"></div>
+    </div>
+  </div>
+</div>
 <script src="radar-rpg.js"></script>
 <script>
   RadarRPG.create(document.getElementById('secao-radar'));

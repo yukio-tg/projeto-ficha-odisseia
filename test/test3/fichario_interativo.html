@@ -1,0 +1,544 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .binder-wrap {
+    min-height: 580px;
+    background: #2a1f14;
+    background-image: repeating-linear-gradient(
+      90deg, transparent, transparent 40px,
+      rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px
+    ),
+    repeating-linear-gradient(
+      0deg, transparent, transparent 40px,
+      rgba(255,255,255,0.015) 40px, rgba(255,255,255,0.015) 41px
+    );
+    border-radius: 12px;
+    padding: 32px 28px 32px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
+    font-family: 'Crimson Pro', Georgia, serif;
+    overflow: hidden;
+  }
+
+  .spine {
+    width: 28px;
+    min-height: 520px;
+    background: linear-gradient(180deg, #1a1208 0%, #3d2d18 30%, #2a1f14 70%, #1a1208 100%);
+    border-radius: 6px 0 0 6px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: inset -2px 0 8px rgba(0,0,0,0.5), inset 2px 0 4px rgba(255,200,100,0.08);
+  }
+
+  .rings {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+    top: 40px;
+  }
+
+  .ring {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #8a6a30;
+    background: #4a3820;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5), 0 1px 1px rgba(200,160,60,0.2);
+  }
+
+  .tabs-col {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-right: -2px;
+    z-index: 10;
+    padding-top: 8px;
+  }
+
+  .tab {
+    width: 44px;
+    min-height: 48px;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.25s ease;
+    box-shadow: -2px 2px 6px rgba(0,0,0,0.4);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 10px 6px;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-right: none;
+    user-select: none;
+  }
+
+  .tab:hover { transform: translateX(-4px); filter: brightness(1.15); }
+
+  .tab.active {
+    transform: translateX(-6px);
+    filter: brightness(1.25);
+    box-shadow: -4px 2px 12px rgba(0,0,0,0.5);
+    z-index: 20;
+  }
+
+  .tab-1  { background: #d44f3e; color: #fff0ee; }
+  .tab-2  { background: #e0813a; color: #fff5ee; }
+  .tab-3  { background: #c8a830; color: #fffbee; }
+  .tab-4  { background: #4f9e5c; color: #f0fff3; }
+  .tab-5  { background: #3a85c0; color: #f0f8ff; }
+  .tab-6  { background: #7c5cbf; color: #f6f0ff; }
+
+  .sheets-area {
+    flex: 1;
+    position: relative;
+    min-height: 500px;
+  }
+
+  .sheet {
+    position: absolute;
+    inset: 0;
+    background: #fdf8f0;
+    border-radius: 0 10px 10px 0;
+    padding: 36px 40px 36px 36px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(18px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    overflow-y: auto;
+    max-height: 540px;
+    box-shadow: 4px 4px 20px rgba(0,0,0,0.35), 8px 8px 40px rgba(0,0,0,0.2);
+  }
+
+  .sheet.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+    z-index: 5;
+  }
+
+  .sheet:not(.active) {
+    opacity: 0.25;
+    transform: translateX(6px) scale(0.99);
+    z-index: 1;
+  }
+
+  .sheet:nth-child(2):not(.active) { transform: translateX(10px) scale(0.985); z-index: 2; }
+  .sheet:nth-child(3):not(.active) { transform: translateX(14px) scale(0.98); z-index: 3; }
+
+  .sheet-ruled {
+    position: absolute;
+    inset: 0;
+    border-radius: 0 10px 10px 0;
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent 27px,
+      #e8d8c0 27px,
+      #e8d8c0 28px
+    );
+    background-position: 0 56px;
+    pointer-events: none;
+    opacity: 0.45;
+  }
+
+  .sheet-margin {
+    position: absolute;
+    left: 72px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #e0a0a0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .hole {
+    position: absolute;
+    left: 18px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #2a1f14;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
+    pointer-events: none;
+  }
+
+  .sheet-content { position: relative; z-index: 2; }
+
+  .sheet-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 100px;
+    margin-bottom: 18px;
+  }
+
+  .tag-1 { background: #fde8e6; color: #b03328; }
+  .tag-2 { background: #fdf0e4; color: #b86020; }
+  .tag-3 { background: #fdf8e2; color: #9a7a10; }
+  .tag-4 { background: #e8f7ec; color: #2e7040; }
+  .tag-5 { background: #e4f2fc; color: #1a5c90; }
+  .tag-6 { background: #f0eafc; color: #5c3a9a; }
+
+  .sheet-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #2c1e0e;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .sheet-subtitle {
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+    color: #8a6a40;
+    margin-bottom: 22px;
+    letter-spacing: 0.04em;
+  }
+
+  .sheet-body {
+    font-size: 16px;
+    color: #3a2c1a;
+    line-height: 1.75;
+  }
+
+  .sheet-body p { margin-bottom: 14px; }
+
+  .sheet-body h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #2c1e0e;
+    margin: 18px 0 8px;
+  }
+
+  .callout {
+    border-left: 3px solid;
+    padding: 10px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 15px;
+    font-style: italic;
+  }
+
+  .callout-1 { border-color: #d44f3e; background: #fef5f4; color: #6a2820; }
+  .callout-2 { border-color: #e0813a; background: #fef8f2; color: #7a4810; }
+  .callout-3 { border-color: #c8a830; background: #fefcf0; color: #6a5808; }
+  .callout-4 { border-color: #4f9e5c; background: #f2fbf4; color: #245830; }
+  .callout-5 { border-color: #3a85c0; background: #f0f8fe; color: #1a4870; }
+  .callout-6 { border-color: #7c5cbf; background: #f8f4fe; color: #3e2870; }
+
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
+
+  .pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.06em;
+  }
+
+  .pill-r { background: #fde8e6; color: #8a2218; border: 1px solid #f5b8b2; }
+  .pill-o { background: #fdf0e4; color: #8a4410; border: 1px solid #f5c890; }
+  .pill-y { background: #fdf8e2; color: #7a6008; border: 1px solid #f0d870; }
+  .pill-g { background: #e8f7ec; color: #1e5828; border: 1px solid #90d8a0; }
+  .pill-b { background: #e4f2fc; color: #124878; border: 1px solid #80c0ee; }
+  .pill-p { background: #f0eafc; color: #3e2070; border: 1px solid #c0a0ee; }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #e8d0b0;
+    margin: 20px 0;
+  }
+
+  .num-block { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+
+  .num-badge {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    flex-shrink: 0; margin-top: 2px;
+  }
+
+  .nb-r { background: #d44f3e; color: #fff; }
+  .nb-o { background: #e0813a; color: #fff; }
+  .nb-y { background: #c8a830; color: #fff; }
+  .nb-g { background: #4f9e5c; color: #fff; }
+  .nb-b { background: #3a85c0; color: #fff; }
+  .nb-p { background: #7c5cbf; color: #fff; }
+</style>
+
+<div class="binder-wrap">
+
+  <div class="spine">
+    <div class="rings">
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+      <div class="ring"></div>
+    </div>
+  </div>
+
+  <div class="tabs-col">
+    <div class="tab tab-1 active" onclick="showSheet(0)" title="Introdução">Intro</div>
+    <div class="tab tab-2" onclick="showSheet(1)" title="Metodologia">Método</div>
+    <div class="tab tab-3" onclick="showSheet(2)" title="Conceitos">Conceito</div>
+    <div class="tab tab-4" onclick="showSheet(3)" title="Análise">Análise</div>
+    <div class="tab tab-5" onclick="showSheet(4)" title="Resultados">Result</div>
+    <div class="tab tab-6" onclick="showSheet(5)" title="Conclusão">Conclusão</div>
+  </div>
+
+  <div class="sheets-area">
+
+    <div class="sheet active" id="sheet-0">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-1">Ficha 01</span>
+        <div class="sheet-title">Introdução ao Fichário</div>
+        <div class="sheet-subtitle">Uma navegação organizada por abas coloridas</div>
+        <div class="sheet-body">
+          <p>Bem-vindo ao fichário digital. Cada aba à esquerda corresponde a uma folha diferente — todas coexistem no mesmo espaço, empilhadas umas sobre as outras.</p>
+          <div class="callout callout-1">
+            "A organização é a arte de deixar o essencial visível e o supérfluo invisível."
+          </div>
+          <p>Clique em qualquer marcador colorido para trazer aquela folha à frente. As demais recuam discretamente ao fundo, permanecendo acessíveis a qualquer momento.</p>
+          <h3>Sobre este fichário</h3>
+          <p>As folhas são pautadas, assim como cadernos de anotação tradicionais. A margem rosa à esquerda delimita a área de escrita, e os furos laterais simulam a argola que mantém tudo unido.</p>
+          <div class="pill-row">
+            <span class="pill pill-r">Navegação por abas</span>
+            <span class="pill pill-r">Folhas sobrepostas</span>
+            <span class="pill pill-r">Organização visual</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-1">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-2">Ficha 02</span>
+        <div class="sheet-title">Metodologia</div>
+        <div class="sheet-subtitle">Como estruturar suas fichas de estudo</div>
+        <div class="sheet-body">
+          <p>Uma boa metodologia de fichamento começa pela delimitação clara do tema. Cada folha deve conter um único eixo temático, evitando dispersão de conteúdo.</p>
+          <h3>Passos recomendados</h3>
+          <div class="num-block">
+            <span class="num-badge nb-o">1</span>
+            <span>Leitura integral do material antes de qualquer anotação.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-o">2</span>
+            <span>Identificação das ideias centrais e argumentos de suporte.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-o">3</span>
+            <span>Registro em linguagem própria — nunca cópia literal.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-o">4</span>
+            <span>Revisão periódica para consolidação da memória.</span>
+          </div>
+          <div class="callout callout-2">
+            Fichas bem feitas valem mais do que anotações longas e confusas.
+          </div>
+          <div class="pill-row">
+            <span class="pill pill-o">Leitura ativa</span>
+            <span class="pill pill-o">Síntese</span>
+            <span class="pill pill-o">Revisão espaçada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-2">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-3">Ficha 03</span>
+        <div class="sheet-title">Conceitos-chave</div>
+        <div class="sheet-subtitle">Glossário e definições fundamentais</div>
+        <div class="sheet-body">
+          <p>Todo campo de conhecimento possui um vocabulário próprio. Dominar os conceitos centrais é o primeiro passo para compreensão profunda de qualquer área.</p>
+          <hr class="divider">
+          <h3>Fichário</h3>
+          <p>Sistema de organização documental em folhas indexadas, permitindo recuperação rápida de informações por categorias ou temas.</p>
+          <h3>Indexação</h3>
+          <p>Processo de atribuição de marcadores (abas, cores, etiquetas) a documentos para facilitar sua localização e relacionamento com outros itens.</p>
+          <h3>Aba de referência</h3>
+          <p>Marcador físico ou visual que indica a posição de uma seção dentro do fichário. Tipicamente colorida para distinção imediata entre categorias.</p>
+          <div class="pill-row">
+            <span class="pill pill-y">Fichário</span>
+            <span class="pill pill-y">Indexação</span>
+            <span class="pill pill-y">Taxonomia</span>
+            <span class="pill pill-y">Referência</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-3">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-4">Ficha 04</span>
+        <div class="sheet-title">Análise</div>
+        <div class="sheet-subtitle">Interpretação crítica do material fichado</div>
+        <div class="sheet-body">
+          <p>A análise transcende o registro: é o momento de relacionar ideias, identificar contradições e extrair inferências que o texto original não torna explícitas.</p>
+          <div class="callout callout-4">
+            Analisar é perguntar "por quê" e "como" em vez de apenas "o quê".
+          </div>
+          <h3>Dimensões da análise</h3>
+          <div class="num-block">
+            <span class="num-badge nb-g">①</span>
+            <span><strong>Interna:</strong> coerência dos argumentos dentro do próprio texto.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-g">②</span>
+            <span><strong>Comparativa:</strong> relação com outras obras e teorias do campo.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-g">③</span>
+            <span><strong>Contextual:</strong> inserção histórica, social ou epistemológica do texto.</span>
+          </div>
+          <hr class="divider">
+          <p>Registre suas análises sempre em destaque visual distinto das anotações descritivas — use cores, marcadores ou recuos diferentes.</p>
+          <div class="pill-row">
+            <span class="pill pill-g">Crítica interna</span>
+            <span class="pill pill-g">Comparação</span>
+            <span class="pill pill-g">Contexto</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-4">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-5">Ficha 05</span>
+        <div class="sheet-title">Resultados</div>
+        <div class="sheet-subtitle">O que foi aprendido e consolidado</div>
+        <div class="sheet-body">
+          <p>Esta folha reúne as sínteses finais de cada seção. É o mapa do tesouro — aqui estão as ideias que sobreviveram ao processo de leitura, análise e revisão.</p>
+          <h3>Aprendizados centrais</h3>
+          <div class="num-block">
+            <span class="num-badge nb-b">→</span>
+            <span>A organização por cores reduz o tempo de recuperação de informação em até 40%.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-b">→</span>
+            <span>Fichas temáticas permitem revisão seletiva e não linear do conteúdo.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-b">→</span>
+            <span>O ato de resumir em linguagem própria consolida a compreensão de modo duradouro.</span>
+          </div>
+          <div class="callout callout-5">
+            Resultados não são pontos finais — são pontos de partida para novas perguntas.
+          </div>
+          <div class="pill-row">
+            <span class="pill pill-b">Síntese</span>
+            <span class="pill pill-b">Retenção</span>
+            <span class="pill pill-b">Aplicação</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sheet" id="sheet-5">
+      <div class="sheet-ruled"></div>
+      <div class="sheet-margin"></div>
+      <div class="hole" style="top: 60px;"></div>
+      <div class="hole" style="top: 180px;"></div>
+      <div class="hole" style="top: 300px;"></div>
+      <div class="sheet-content">
+        <span class="sheet-tag tag-6">Ficha 06</span>
+        <div class="sheet-title">Conclusão</div>
+        <div class="sheet-subtitle">Fechamento e próximos passos</div>
+        <div class="sheet-body">
+          <p>Todo bom fichário tem uma ficha de encerramento — não para terminar o pensamento, mas para abrir o próximo ciclo de leitura e investigação.</p>
+          <div class="callout callout-6">
+            "O verdadeiro sinal de inteligência não é o conhecimento, mas a imaginação." — Einstein
+          </div>
+          <h3>Próximos passos sugeridos</h3>
+          <div class="num-block">
+            <span class="num-badge nb-p">1</span>
+            <span>Revisar todas as fichas após 7 dias para consolidação.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-p">2</span>
+            <span>Expandir as seções de análise com novas leituras relacionadas.</span>
+          </div>
+          <div class="num-block">
+            <span class="num-badge nb-p">3</span>
+            <span>Criar um índice geral cruzando conceitos entre fichas.</span>
+          </div>
+          <hr class="divider">
+          <p>Este fichário digital é um template — substitua os conteúdos de cada folha pelo seu próprio material de estudo ou trabalho.</p>
+          <div class="pill-row">
+            <span class="pill pill-p">Revisão</span>
+            <span class="pill pill-p">Expansão</span>
+            <span class="pill pill-p">Indexação cruzada</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showSheet(idx) {
+  var sheets = document.querySelectorAll('.sheet');
+  var tabs = document.querySelectorAll('.tab');
+  sheets.forEach(function(s, i) {
+    s.classList.remove('active');
+    if (i !== idx) {
+      s.style.zIndex = (i < idx) ? (i + 1) : (sheets.length - i);
+    }
+  });
+  tabs.forEach(function(t) { t.classList.remove('active'); });
+  sheets[idx].classList.add('active');
+  sheets[idx].style.zIndex = 10;
+  tabs[idx].classList.add('active');
+}
+
+showSheet(0);
+</script>

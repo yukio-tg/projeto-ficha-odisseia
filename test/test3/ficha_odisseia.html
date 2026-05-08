@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odisseia — Ficha de Personagem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=calculate,check,cloud_alert,crown,expand_content,hide,home,logout,person,progress_activity,remove,save"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --p0: #f5ead0;
+            --p1: #ecdbb0;
+            --p2: #d9c48c;
+            --p3: #c4a660;
+            --p4: #a8883a;
+            --ink0: #120d04;
+            --ink1: #2a1e08;
+            --ink2: #4a3410;
+            --ink3: #7a5c28;
+            --blood0: #5c0e07;
+            --blood1: #8a1810;
+            --blood2: #b52418;
+            --gold0: #8a5e10;
+            --gold1: #c4892a;
+            --gold2: #e8b84a;
+            --gold3: #f5d878;
+            --leath0: #1e0f04;
+            --leath1: #2e1808;
+            --leath2: #4a2810;
+            --leath3: #6a3c1a;
+            --leath4: #8a5028;
+            --tab-w: 120px;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100%;
+            background: var(--leath0);
+            font-family: 'IM Fell English', Georgia, serif;
+            color: var(--ink0);
+            background-image:
+                radial-gradient(ellipse 60% 40% at 15% 25%, #2a1000 0%, transparent 70%),
+                radial-gradient(ellipse 50% 60% at 85% 75%, #1a0800 0%, transparent 70%);
+        }
+
+        /* APP SHELL */
+        .app {
+            display: flex;
+            min-height: 100vh;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--tab-w);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 12px 0 12px;
+            background: linear-gradient(180deg, var(--leath1) 0%, var(--leath0) 100%);
+            z-index: 0;
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 0 8px 14px;
+            border-bottom: 1px solid var(--leath3);
+            margin-bottom: 10px;
+        }
+
+        .sidebar-logo a {
+            text-decoration: none;
+        }
+
+        .sidebar-logo-rune {
+            font-size: 26.4px;
+            color: var(--gold1);
+            display: block;
+            margin-bottom: 4px;
+            text-shadow: 0 0 14px rgba(232, 184, 74, 0.5);
+            transition: all .1s;
+        }
+
+        .sidebar-logo-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 11.4px;
+            color: var(--gold2);
+            letter-spacing: 0.12em;
+            line-height: 1.4;
+        }
+
+        a span:hover {
+            color: var(--gold3);
+        }
+
+        .tab-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 0 0 0 8px;
+        }
+
+        .tab-list li {
+            font-family: 'Cinzel', serif;
+            font-size: 11.4px;
+            letter-spacing: 0.08em;
+            color: var(--leath4);
+            padding: 9px 10px;
+            border-radius: 6px 0 0 6px;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s, padding-left 0.15s;
+            user-select: none;
+            border: 1px solid transparent;
+            border-right: none;
+            position: relative;
+        }
+
+        .tab-list li:hover {
+            background: var(--leath2);
+            color: var(--gold2);
+            padding-left: 14px;
+        }
+
+        .tab-list li.active {
+            background: hsl(50, 41%, 82%);
+            color: var(--ink0);
+            font-weight: 700;
+            padding-left: 12px;
+        }
+
+        .tab-list li.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--blood1);
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* MAIN SHEET */
+        .sheet {
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--p0);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sheet::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: repeating-linear-gradient(0deg,
+                    transparent 0px, transparent 31px,
+                    rgba(100, 70, 20, 0.07) 32px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .sheet::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 100% 30% at 50% 0%, rgba(50, 25, 0, 0.15) 0%, transparent 100%),
+                radial-gradient(ellipse 30% 60% at 0% 50%, rgba(60, 30, 0, 0.10) 0%, transparent 100%),
+                radial-gradient(ellipse 30% 60% at 100% 50%, rgba(60, 30, 0, 0.10) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* HEADER */
+        .sheet-header {
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(180deg, var(--leath1) 0%, var(--leath2) 100%);
+            border-bottom: 1px solid var(--leath3);
+            flex-shrink: 0;
+        }
+
+        .header-body {
+            padding: 14px 24px 5px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .header-crest {
+            width: 54px;
+            height: 54px;
+            flex-shrink: 0;
+            border: 2px solid var(--gold1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            background: radial-gradient(circle, var(--leath2) 0%, var(--leath1) 100%);
+            box-shadow: 0 0 0 3px var(--leath0), 0 0 0 4px var(--gold0);
+            color: var(--gold3)
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .header-eyebrow {
+            font-family: 'Cinzel', serif;
+            font-size: 10.2px;
+            letter-spacing: 0.38em;
+            color: var(--gold1);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .header-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(20.4px, 3vw, 32.4px);
+            color: var(--gold3);
+            letter-spacing: 0.05em;
+            line-height: 1;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .owner-sheet,
+        .logged,
+        .not-logged,
+        .header-buttons,
+        .header-buttons #saved,
+        .header-buttons #non-saved,
+        .header-buttons #problem-save {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+        }
+
+        .owner-sheet span,
+        .logged span,
+        #saved span,
+        #non-saved span,
+        #problem-save span {
+            margin-right: 5px;
+        }
+
+        .owner-sheet {
+            color: var(--gold1);
+            text-shadow: 0 0 2px var(--gold1);
+        }
+
+        .logged {
+            display: none;
+        }
+
+        .logged,
+        .not-logged {
+            color: var(--gold1);
+            opacity: 0.85;
+        }
+
+        .not-logged a {
+            color: var(--gold3);
+            opacity: 1;
+            margin: 0 0.2em;
+            text-shadow: 0 0 1px var(--gold3);
+        }
+
+        .not-logged a:hover {
+            color: var(--blood2);
+            text-shadow: 0 0 1px var(--blood2);
+        }
+
+        #saved {
+            color: var(--gold1);
+        }
+
+        #problem-save,
+        #non-saved {
+            color: var(--blood2);
+        }
+
+        #autocalc-switch,
+        #manual-save {
+            background: none;
+            border: none;
+            color: var(--gold1);
+            opacity: 0.85;
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+            margin: 0 0px 0 20px;
+            transition: all .1s;
+            translate: 0 2px;
+        }
+
+        #autocalc-switch.active,
+        #manual-save.active {
+            font-variation-settings: 'FILL' 1;
+            opacity: 1;
+            color: var(--gold2);
+        }
+
+        #autocalc-switch:hover,
+        #manual-save:hover {
+            font-variation-settings: 'FILL' 1;
+            opacity: 0.9;
+            color: var(--gold1);
+            cursor: pointer;
+        }
+
+        #autocalc-switch:active,
+        #manual-save:active {
+            color: var(--gold3);
+            text-shadow: 0 0 2px var(--gold3);
+        }
+
+        /* SCROLL WRAPPER */
+        .page-wrap {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-wrap::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .page-wrap::-webkit-scrollbar-track {
+            background: var(--p1);
+        }
+
+        .page-wrap::-webkit-scrollbar-thumb {
+            background: var(--p3);
+            border-radius: 3px;
+        }
+
+        .page {
+            display: none;
+            padding: 22px 26px 48px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /*Geral*/
+        .info-container,
+        .base-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .info-img {
+            width: 350px;
+            /* tamanho padrão (sem imagem) */
+            height: 300px;
+            max-width: 350px;
+            /* limites máximos */
+            max-height: 300px;
+            border: 1px solid var(--leath0);
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #120d04e0;
+            position: relative;
+            /* para o botão de limpar */
+            display: inline-block;
+            /* permite que a caixa encolha até o mínimo */
+            vertical-align: top;
+            /* alinhamento dentro do flex da .info-container */
+        }
+
+        .info-img .centralize-y {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* centraliza o conteúdo (inputs) */
+            width: 100%;
+            height: 100%;
+            /* ocupa toda a caixa */
+        }
+
+        #retrato-inputs {
+            /* remove margem esquerda 50% e translate, pois o flex já centraliza */
+            margin: 0;
+            text-align: center;
+        }
+
+        #retrato-inputs input {
+            font-family: 'IM Fell English';
+            border: 1px solid var(--gold2);
+            border-radius: 5px;
+            background: var(--ink0);
+            padding: 5px;
+            box-shadow: 0 0 4px #6a3c1a;
+        }
+
+        #retrato-inputs input:active {
+            border-color: var(--gold3);
+            box-shadow: 0 0 4px var(--gold2);
+        }
+
+        #retrato-inputs input::placeholder {
+            color: var(--gold0);
+            text-align: center;
+        }
+
+        #retrato-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        #limpar-retrato {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            border: none;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            padding: 0;
+            line-height: 1;
+        }
+
+        #limpar-retrato span {
+            border-radius: 50%;
+            background-color: #5c0e074b;
+            color: var(--blood1);
+            border: 1px solid var(--blood1);
+            width: auto;
+            height: auto;
+            align-items: center;
+        }
+
+        #limpar-retrato span:hover {
+            background-color: var(--blood2);
+            border-color: var(--p0);
+            color: var(--p0);
+        }
+
+        .info-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .heranca-coisas{
+            display: flex;
+            align-items: center;
+        }
+
+        #heranca-options-btn{
+            
+        }
+
+        /* SECTION HEADING */
+        .sh {
+            font-family: 'Cinzel', serif;
+            font-size: 10.8px;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--blood1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 18px 0 12px;
+        }
+
+        .sh:first-child {
+            margin-top: 0;
+        }
+
+        .sh::before {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blood0));
+            opacity: 0.5;
+        }
+
+        .sh::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, var(--blood0), transparent);
+            opacity: 0.5;
+        }
+
+        .orn {
+            text-align: center;
+            color: var(--p4);
+            font-size: 14.4px;
+            letter-spacing: 10px;
+            margin: 16px 0;
+            opacity: 0.7;
+        }
+
+        /* STAT GRID */
+        .sg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .sb {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+            padding: 8px 4px 6px;
+            position: relative;
+            transition: border-color 0.15s;
+        }
+
+        .sb:hover {
+            border-color: var(--gold1);
+        }
+
+        .sb::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--gold1);
+            border-radius: 0 0 2px 2px;
+            opacity: 0.5;
+        }
+
+        .sl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--ink3);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .sv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 28.8px;
+            color: var(--ink0);
+            line-height: 1;
+        }
+
+        .sm {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 13.2px;
+            color: var(--ink3);
+            margin-top: 1px;
+        }
+
+        /* INFO FIELDS */
+        .ig {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 4px;
+        }
+
+        .if {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .il {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+        }
+
+        .iv {
+            font-family: 'IM Fell English', serif;
+            font-size: 16.2px;
+            color: var(--ink0);
+            padding-bottom: 3px;
+            border-bottom: 1px solid var(--p3);
+            min-height: 22px;
+        }
+
+        /* VITALS ROW */
+        .vr {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .vb {
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .vb.hp {
+            border-color: rgba(138, 24, 16, 0.4);
+        }
+
+        .vl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .vn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 36px;
+            line-height: 1;
+            color: var(--ink0);
+        }
+
+        .vb.hp .vn {
+            color: var(--blood1);
+        }
+
+        .vs {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* TRAITS */
+        .tr-list {
+            margin-bottom: 4px;
+        }
+
+        .tr {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.3);
+            align-items: baseline;
+        }
+
+        .tr-k {
+            font-family: 'Cinzel', serif;
+            font-size: 10.2px;
+            letter-spacing: 0.06em;
+            color: var(--ink2);
+            font-weight: 700;
+            text-transform: uppercase;
+            min-width: 86px;
+            flex-shrink: 0;
+        }
+
+        .tr-v {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            font-style: italic;
+        }
+
+        /* SKILL TABLE */
+        .stbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .stbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 6px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .stbl td {
+            padding: 5px 6px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+            font-family: 'IM Fell English', serif;
+            color: var(--ink1);
+            font-size: 15.6px;
+        }
+
+        .stbl td:last-child {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            color: var(--blood1);
+            text-align: center;
+            width: 44px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1.5px solid var(--p3);
+            display: inline-block;
+            cursor: pointer;
+            vertical-align: middle;
+            margin-right: 6px;
+            transition: background 0.12s;
+        }
+
+        .dot.on {
+            background: var(--blood1);
+            border-color: var(--blood1);
+        }
+
+        /* WEAPON CARDS */
+        .wg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .wc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 12px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+        }
+
+        .wn {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--blood1);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .ws {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .wsl {
+            font-family: 'Cinzel', serif;
+            font-size: 8.4px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .wsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 16.8px;
+            color: var(--ink0);
+        }
+
+        /* ABILITY CARDS */
+        .ac {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 14px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ac::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gold1);
+        }
+
+        .ac:hover {
+            border-color: var(--gold1);
+        }
+
+        .an {
+            font-family: 'Cinzel', serif;
+            font-size: 13.2px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--ink0);
+        }
+
+        .at {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 12.6px;
+            color: var(--gold0);
+            margin-left: 10px;
+        }
+
+        .ab {
+            font-size: 15px;
+            color: var(--ink2);
+            line-height: 1.6;
+            margin-top: 5px;
+            font-family: 'IM Fell English', serif;
+        }
+
+        /* SPELL GRID */
+        .spg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .spc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px;
+            background: linear-gradient(150deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .spc::after {
+            content: '✦';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 8px;
+            color: var(--p4);
+            opacity: 0.5;
+        }
+
+        .spc:hover {
+            border-color: var(--gold1);
+        }
+
+        .spn {
+            font-family: 'Cinzel', serif;
+            font-size: 12.6px;
+            font-weight: 700;
+            color: var(--blood0);
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+        }
+
+        .spm {
+            font-size: 11.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-bottom: 5px;
+        }
+
+        .spd {
+            font-family: 'IM Fell English', serif;
+            font-size: 13.8px;
+            color: var(--ink2);
+            line-height: 1.5;
+        }
+
+        /* GOLD STATS */
+        .gs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .gst {
+            flex: 1;
+            min-width: 76px;
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 8px 10px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+        }
+
+        .gsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 24px;
+            color: var(--blood1);
+            line-height: 1;
+        }
+
+        .gsl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* INV TABLE */
+        .itbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+
+        .itbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 8px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .itbl td {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            padding: 5px 8px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+        }
+
+        .itbl td.num {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            text-align: center;
+            color: var(--ink2);
+        }
+
+        /* NOTES */
+        .np {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 14px 16px;
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            line-height: 1.85;
+            background: var(--p1);
+            background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.12) 28px);
+        }
+
+        .np p+p {
+            margin-top: 20px;
+        }
+
+        /* BEAST */
+        .bt {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 16px;
+        }
+
+        .bi {
+            width: 62px;
+            height: 62px;
+            border: 2px solid var(--gold1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 33.6px;
+            background: radial-gradient(circle, var(--p1) 0%, var(--p2) 100%);
+            box-shadow: 0 0 0 2px var(--p0), 0 0 0 3px var(--p4);
+            flex-shrink: 0;
+        }
+
+        .bn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 20.4px;
+            color: var(--ink0);
+        }
+
+        .bk {
+            font-size: 14.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        .bm {
+            font-size: 13.2px;
+            font-style: italic;
+            color: var(--p4);
+            margin-top: 6px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width:560px) {
+            :root {
+                --tab-w: 68px;
+            }
+
+            .tab-list li {
+                font-size: 10.2px;
+                padding: 8px 8px;
+            }
+
+            .header-body {
+                padding: 10px 14px 12px;
+            }
+
+            .hv {
+                padding: 4px 8px;
+            }
+
+            .hv-val {
+                font-size: 19.2px;
+            }
+
+            .page {
+                padding: 14px 14px 36px;
+            }
+
+            .sg {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .vr {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .wg {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width:380px) {
+            :root {
+                --tab-w: 52px;
+            }
+
+            .tab-list li {
+                font-size: 9px;
+                padding: 7px 4px;
+                letter-spacing: 0;
+            }
+
+            .sidebar-logo {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <a href="voltadashboadr colocar link depois">
+                    <span class="material-symbols-outlined sidebar-logo-rune"
+                        style="font-variation-settings: 'FILL' 1;">home</span>
+                    <span class="sidebar-logo-title">INÍCIO</span>
+                </a>
+            </div>
+            <ul class="tab-list" id="tabs">
+                <li class="active" data-tab="geral">Geral</li>
+                <li data-tab="pericias">Perícias</li>
+                <li data-tab="combate">Combate</li>
+                <li data-tab="habilidades">Habilidades</li>
+                <li data-tab="magias">Magias</li>
+                <li data-tab="inventario">Inventário</li>
+                <li data-tab="besta">Besta</li>
+                <li data-tab="anotacoes">Anotações</li>
+            </ul>
+        </aside>
+
+        <main class="sheet">
+            <header class="sheet-header">
+                <div class="header-body">
+                    <div class="header-crest">⚜</div>
+                    <div class="header-text">
+                        <div class="header-title">Nome</div>
+                        <div class="header-eyebrow">Título</div>
+                    </div>
+                    <div class="header-info">
+                        <div class="header-login">
+                            <div class="owner-sheet">
+                                <span class="material-symbols-outlined"
+                                    style="font-variation-settings: 'FILL' 1;">crown</span>
+                                <div class="owner-account-name">Ywalrabdulaba</div>
+                            </div>
+                            <div class="logged">
+                                <span class="material-symbols-outlined"
+                                    style="font-variation-settings: 'FILL' 1;">person</span>
+                                <div class="your-account-name">dantagata2018@mgialc,aidnawduabw</div>
+                            </div>
+                            <div class="not-logged">
+                                Você não está logado, volte ao <a href="linkparaodashboard">Dashboard</a> e realize seu
+                                login
+                            </div>
+                        </div>
+                        <div class="header-buttons">
+                            <div class="header-feedback-save">
+                                <div id="saved"><span class="material-symbols-outlined"
+                                        style="font-variation-settings: 'FILL' 1;">check</span>Alterações salvas</div>
+                                <div id="non-saved" style="display:none;"><span class="material-symbols-outlined"
+                                        style="font-variation-settings: 'FILL' 1;">progress_activity</span>Alterações
+                                    não salvas</div>
+                                <div id="problem-save" style="display:none;"><span class="material-symbols-outlined"
+                                        style="font-variation-settings: 'FILL' 1;">cloud_alert</span>Há um erro no
+                                    salvamento: log</div>
+                            </div>
+                            <div class="header-autocalc"><button id="autocalc-switch" class="active"
+                                    data-field="autocalc-switch"><span
+                                        class="material-symbols-outlined">calculate</span></button></div>
+                            <div class="header-save">
+                                <button id="manual-save"><span class="material-symbols-outlined">save</span></button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-wrap">
+
+                <!-- GERAL -->
+                <div class="page active" id="tab-geral">
+                    <div class="info-container">
+                        <div class="info-img" id="retrato-area">
+                            <div class="centralize-y">
+                                <img id="retrato-img" src="" alt="Retrato" style="display: none">
+                                <div id="retrato-inputs">
+                                    <input type="text" id="retrato-url" data-field="retrato-url"
+                                        placeholder="Insira URL da imagem">
+                                </div>
+                            </div>
+                            <button type="button" id="limpar-retrato" style="display:none"><span
+                                    class="material-symbols-outlined">remove</span></button>
+                        </div>
+                        <div class="info-form">
+                            <label>Nome: <input type="text" data-field="nome" value=""></label>
+                            <label>Título: <input type="text" data-field="titulo-personagem" value=""></label>
+                            <div class="heranca-coisas">
+                                <button id="heranca-options-btn"><span
+                                        class="material-symbols-outlined">expand_content</span><span
+                                        class="material-symbols-outlined" style="display:none;">hide</span></button><label>Herança: <input
+                                        type="text" id="heranca" data-field="heranca" value="" list="heranca"></label>
+                            </div>
+                            <div class="heranca-options">
+                                <label>Aumento de Fortuna<input type="checkbox" data-field="aumentoDeFortuna"></label>
+                                <label>Aprendizado de Vida<input type="checkbox" data-field="aprendizadoDaVida"></label>
+                                <label>Habilidade Adquirida<input type="checkbox"
+                                        data-field="habilidadeAdquirida"></label>
+                            </div>
+                            <label>Fortuna:
+                                <select data-field="hierarquia">
+                                    <option value="pobre">Pobre</option>
+                                    <option value="trabalhador">Trabalhador</option>
+                                    <option value="vendedor">Vendedor</option>
+                                    <option value="burgues">Burguês</option>
+                                    <option value="barao">Barão</option>
+                                    <option value="duque">Duque</option>
+                                    <option value="herdeiro">Herdeiro</option>
+                                    <option value="imperador">Imperador</option>
+                                </select>
+                                <input type="number" data-field="dinheiro">
+                            </label>
+                            <label>Individualidade: <input type="text" data-field="individualidade-nome"
+                                    value=""></label>
+                            <label>Classe: <input type="text" data-field="classe-nome" value="" list="classes"></label>
+                            <label>Ramo: <input type="text" data-field="ramo-nome" value="" list="ramos"></label>
+                            <label>Vínculo: <input type="text" data-field="vinculo-nome" value=""></label>
+                            <label>Alinhamento: <input type="text" data-field="vinculo-nome" value=""></label>
+                            <label>Tamanho: <select data-field="tamanho">
+                                    <option value="tam-minusculo">Minúsculo</option>
+                                    <option value="tam-pequeno">Pequeno</option>
+                                    <option value="tam-medio">Médio</option>
+                                    <option value="tam-grande">Grande</option>
+                                    <option value="tam-enorme">Enorme</option>
+                                    <option value="tam-colossal">Colossal</option>
+                                </select></label>
+                            <label>Inertidão-base: <input type="number" data-field="inertidao-base" value=""></label>
+                        </div>
+                    </div>
+                    <div class="base-container">
+                        <div class="vitals"></div>
+                        <div class="attr">
+                            <div id="secao-radar" style="background: var(--ink0); width: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="page" id="tab-pericias">
+                    <div class="sh">Perícias</div>
+                    <table class="stbl">
+                        <thead>
+                            <tr>
+                                <th style="width:20px"></th>
+                                <th>Perícia</th>
+                                <th>Attr.</th>
+                                <th style="text-align:center">Bônus</th>
+                            </tr>
+                        </thead>
+                        <tbody id="skill-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- COMBATE -->
+                <div class="page" id="tab-combate">
+                    <div class="sh">Armas &amp; Ataques</div>
+                    <div class="wg">
+                        <div class="wc">
+                            <div class="wn">Espada Longa +1</div>
+                            <div class="ws">
+                                <div><span class="wsl">Ataque</span><span class="wsv">+6</span></div>
+                                <div><span class="wsl">Dano</span><span class="wsv">1d8+4</span></div>
+                                <div><span class="wsl">Tipo</span><span class="wsv">Cortante</span></div>
+                            </div>
+                        </div>
+                        <div class="wc">
+                            <div class="wn">Arco Longo</div>
+                            <div class="ws">
+                                <div><span class="wsl">Ataque</span><span class="wsv">+4</span></div>
+                                <div><span class="wsl">Dano</span><span class="wsv">1d8+1</span></div>
+                                <div><span class="wsl">Alcance</span><span class="wsv">150ft</span></div>
+                            </div>
+                        </div>
+                        <div class="wc">
+                            <div class="wn">Adaga Rúnica</div>
+                            <div class="ws">
+                                <div><span class="wsl">Ataque</span><span class="wsv">+5</span></div>
+                                <div><span class="wsl">Dano</span><span class="wsv">1d4+1</span></div>
+                                <div><span class="wsl">Tipo</span><span class="wsv">Perfur.</span></div>
+                            </div>
+                        </div>
+                        <div class="wc">
+                            <div class="wn">Cajado Arcano</div>
+                            <div class="ws">
+                                <div><span class="wsl">Ataque</span><span class="wsv">+6</span></div>
+                                <div><span class="wsl">Dano</span><span class="wsv">1d6+3</span></div>
+                                <div><span class="wsl">Tipo</span><span class="wsv">Concus.</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="orn">✦ ✦ ✦</div>
+                    <div class="sh">Salvaguardas</div>
+                    <div class="sg">
+                        <div class="sb">
+                            <div class="sl">Salv. Força</div>
+                            <div class="sv" style="font-size:24px">+5</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Salv. Intelig.</div>
+                            <div class="sv" style="font-size:24px">+6</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Prof. Bônus</div>
+                            <div class="sv" style="font-size:24px">+3</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Dados de Vida</div>
+                            <div class="sv" style="font-size:15.6px;line-height:1.3">4d10<br>+3d6</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HABILIDADES -->
+                <div class="page" id="tab-habilidades">
+                    <div class="sh">Habilidades Especiais</div>
+                    <div class="ac">
+                        <div><span class="an">Sopro da Batalha</span><span class="at">Ação · 2/Desc. Curto</span></div>
+                        <p class="ab">Invoca a fúria ancestral dos guerreiros de Vallenmoor. Até o fim do turno, seus
+                            ataques causam +1d6 de dano de fogo extra e você não pode ser derrubado.</p>
+                    </div>
+                    <div class="ac">
+                        <div><span class="an">Visão Arcana</span><span class="at">Passiva</span></div>
+                        <p class="ab">Detecta auras mágicas em 30 pés como ação bônus. Você aprende a escola de magia de
+                            todos os efeitos ativos na área.</p>
+                    </div>
+                    <div class="ac">
+                        <div><span class="an">Passo do Éter</span><span class="at">Ação bônus · 1/Desc. Longo</span>
+                        </div>
+                        <p class="ab">Teleporta-se até 15 pés para um espaço desocupado visível. Quando usado antes de
+                            um ataque, concede vantagem nesse ataque.</p>
+                    </div>
+                    <div class="ac">
+                        <div><span class="an">Herança Élfica</span><span class="at">Passiva</span></div>
+                        <p class="ab">Vantagem em resistências contra encantamentos. Meditar por 4 horas equivale a um
+                            descanso longo completo.</p>
+                    </div>
+                    <div class="ac">
+                        <div><span class="an">Ataque Extra</span><span class="at">Passiva</span></div>
+                        <p class="ab">Ao tomar a ação Atacar no seu turno, você pode realizar dois ataques em vez de um.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- MAGIAS -->
+                <div class="page" id="tab-magias">
+                    <div class="gs">
+                        <div class="gst">
+                            <div class="gsv">15</div>
+                            <div class="gsl">CD de Magia</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv">+6</div>
+                            <div class="gsl">Atq. Mágico</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv">3/3</div>
+                            <div class="gsl">Espaços Nív.3</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv">INT</div>
+                            <div class="gsl">Atrib. Base</div>
+                        </div>
+                    </div>
+                    <div class="sh">Magias Preparadas</div>
+                    <div class="spg">
+                        <div class="spc">
+                            <div class="spn">Míssil Mágico</div>
+                            <div class="spm">1º nível · Evocação · 1 ação</div>
+                            <div class="spd">3 dardos de força, cada um causando 1d4+1. Nunca erra.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Escudo</div>
+                            <div class="spm">1º nível · Abjuração · Reação</div>
+                            <div class="spd">+5 na CA até o início do próximo turno.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Imagem Espelhada</div>
+                            <div class="spm">2º nível · Ilusão · 1 ação</div>
+                            <div class="spd">3 duplicatas ilusórias protegem de ataques por 1 minuto.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Toque Chocante</div>
+                            <div class="spm">Truque · Evocação · 1 ação</div>
+                            <div class="spd">3d8 de dano relâmpago; desvantagem nas reações do alvo.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Detectar Magia</div>
+                            <div class="spm">1º nível · Adivinhação · Ritual</div>
+                            <div class="spd">Percebe auras mágicas em 30 pés por 10 minutos.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Bola de Fogo</div>
+                            <div class="spm">3º nível · Evocação · 1 ação</div>
+                            <div class="spd">8d6 fogo, 20 pés de raio, CD 15 Des. para metade.</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Voo</div>
+                            <div class="spm">3º nível · Transmutação · 1 ação</div>
+                            <div class="spd">Velocidade de voo de 60 pés por 10 min. (concentração).</div>
+                        </div>
+                        <div class="spc">
+                            <div class="spn">Luz</div>
+                            <div class="spm">Truque · Evocação · 1 ação</div>
+                            <div class="spd">Objeto emite luz em 20 pés por 1 hora. Cega se lançada nos olhos.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INVENTÁRIO -->
+                <div class="page" id="tab-inventario">
+                    <div class="gs">
+                        <div class="gst">
+                            <div class="gsv" style="color:var(--blood1)">68 lb</div>
+                            <div class="gsl">Carga Atual</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv" style="color:var(--ink2)">240 lb</div>
+                            <div class="gsl">Capacidade</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv" style="color:var(--gold1)">347 po</div>
+                            <div class="gsl">Ouro</div>
+                        </div>
+                        <div class="gst">
+                            <div class="gsv" style="color:var(--ink3)">120 pp</div>
+                            <div class="gsl">Prata</div>
+                        </div>
+                    </div>
+                    <div class="sh">Equipamentos</div>
+                    <table class="itbl">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th style="text-align:center;width:50px">Qtd.</th>
+                                <th style="text-align:center;width:60px">Peso</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Espada Longa +1</td>
+                                <td class="num">1</td>
+                                <td class="num">3 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Cota de Malha</td>
+                                <td class="num">1</td>
+                                <td class="num">35 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Arco Longo</td>
+                                <td class="num">1</td>
+                                <td class="num">2 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Aljava com 20 Flechas</td>
+                                <td class="num">1</td>
+                                <td class="num">5 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Adaga Rúnica</td>
+                                <td class="num">2</td>
+                                <td class="num">2 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Poção de Cura</td>
+                                <td class="num">3</td>
+                                <td class="num">1.5 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Grimório Arcano</td>
+                                <td class="num">1</td>
+                                <td class="num">3 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Rações (7 dias)</td>
+                                <td class="num">7</td>
+                                <td class="num">2 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Corda de Seda (50 pés)</td>
+                                <td class="num">1</td>
+                                <td class="num">5 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Tocha</td>
+                                <td class="num">5</td>
+                                <td class="num">0.5 lb</td>
+                            </tr>
+                            <tr>
+                                <td>Kit de Escrita</td>
+                                <td class="num">1</td>
+                                <td class="num">2 lb</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- BESTA -->
+                <div class="page" id="tab-besta">
+                    <div class="bt">
+                        <div class="bi">🦅</div>
+                        <div>
+                            <div class="bn">Sombravento</div>
+                            <div class="bk">Grifo — Companheiro Arcano · Nível 7</div>
+                            <div class="bm">"Leal como a pedra, feroz como a tempestade de outono."</div>
+                        </div>
+                    </div>
+                    <div class="sh">Atributos</div>
+                    <div class="sg" style="grid-template-columns:repeat(3,1fr)">
+                        <div class="sb">
+                            <div class="sl">Força</div>
+                            <div class="sv">18</div>
+                            <div class="sm">+4</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Destreza</div>
+                            <div class="sv">15</div>
+                            <div class="sm">+2</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Constituição</div>
+                            <div class="sv">16</div>
+                            <div class="sm">+3</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">PV</div>
+                            <div class="sv" style="color:var(--blood1)">44</div>
+                            <div class="sm">máx: 44</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">CA</div>
+                            <div class="sv">13</div>
+                            <div class="sm">natural</div>
+                        </div>
+                        <div class="sb">
+                            <div class="sl">Velocidade</div>
+                            <div class="sv" style="font-size:16.8px;line-height:1.3">40<br>80</div>
+                            <div class="sm">chão/voo</div>
+                        </div>
+                    </div>
+                    <div class="orn">✦ ✦ ✦</div>
+                    <div class="sh">Ações</div>
+                    <div class="ac">
+                        <div><span class="an">Garras</span><span class="at">Corpo a corpo · +6 · 2d6+4 cortante</span>
+                        </div>
+                        <p class="ab">Se o alvo for Médio ou menor, deve superar CD 15 de Força ou é derrubado.</p>
+                    </div>
+                    <div class="ac">
+                        <div><span class="an">Bico Dilacerante</span><span class="at">Corpo a corpo · +6 · 1d8+4
+                                perfurante</span></div>
+                        <p class="ab">Pode ser usado como ação bônus no mesmo turno que as garras acertarem.</p>
+                    </div>
+                </div>
+
+                <!-- ANOTAÇÕES -->
+                <div class="page" id="tab-anotacoes">
+                    <div class="sh">Crônicas &amp; Registros</div>
+                    <div class="np">
+                        <p><em>Sessão VI — A Cripta de Erathos:</em> Descobrimos o brasão oculto atrás do altar. Símbolo
+                            inconfundível de Myriel. A Irmã Valdris mencionou o "Véu Rasgado" antes de ser silenciada
+                            pelo capítulo…</p>
+                        <p>O mercador Orlan Dusk afirmou que o grimório negado pertenceu ao Arquimago Seldor, executado
+                            em 847 AR. Verificar registros da Torre dos Sete Selos.</p>
+                        <p>Tarefa pendente: retornar à Forja dos Anões de Kharak para temperar a adaga rúnica. Custo
+                            estimado: 200 po e escamas de salamandra de fogo.</p>
+                        <p>⚠ Não confiar no boticário de Velha Brechwood. Olhos de prata. Presença mágica encoberta.
+                            Possível espião do Conselho Oculto.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+
+    <script src="radar-rpg.js"></script>
+    <script>
+        RadarRPG.create(document.getElementById('secao-radar'));
+    </script>
+
+    <script>
+        const retratoImg = document.getElementById('retrato-img');
+        const retratoUrlInput = document.getElementById('retrato-url');
+        const limparRetratoBtn = document.getElementById('limpar-retrato');
+        const retratoInputs = document.getElementById('retrato-inputs');
+        const retratoArea = document.getElementById('retrato-area');
+
+        const MAX_W = 350;
+        const MAX_H = 300;
+
+        retratoImg.addEventListener('load', function () {
+            if (!this.src) return;
+
+            const nw = this.naturalWidth;
+            const nh = this.naturalHeight;
+
+            // Verifica se a imagem tem dimensões válidas
+            if (nw > 0 && nh > 0) {
+                const ratio = nw / nh;
+                let boxW, boxH;
+
+                if (ratio > MAX_W / MAX_H) {
+                    boxW = MAX_W;
+                    boxH = MAX_W / ratio;
+                } else {
+                    boxH = MAX_H;
+                    boxW = MAX_H * ratio;
+                }
+
+                retratoArea.style.width = boxW + 'px';
+                retratoArea.style.height = boxH + 'px';
+                this.style.width = '100%';
+                this.style.height = '100%';
+            } else {
+                // Fallback para imagens sem dimensões (ex.: certos SVGs)
+                // Usa o container fixo e deixa o object-fit:contain agir
+                retratoArea.style.width = '';   // volta para 350px do CSS
+                retratoArea.style.height = '';
+                this.style.width = '100%';
+                this.style.height = '100%';
+            }
+
+            this.style.display = 'block';
+            retratoInputs.style.display = 'none';
+            limparRetratoBtn.style.display = 'inline-flex';   // usa flex para centralizar ícone
+        });
+
+        retratoImg.addEventListener('error', limparRetrato);
+
+        retratoUrlInput.addEventListener('input', function () {
+            const url = this.value.trim();
+            if (url) {
+                retratoImg.src = url;
+            } else {
+                limparRetrato();
+            }
+        });
+
+        function limparRetrato() {
+            retratoImg.removeAttribute('src');
+            retratoImg.style.display = 'none';
+            retratoArea.style.width = '';
+            retratoArea.style.height = '';
+            retratoInputs.style.display = '';
+            limparRetratoBtn.style.display = 'none';
+            retratoUrlInput.value = '';
+        }
+
+        limparRetratoBtn.addEventListener('click', limparRetrato);
+    </script>
+
+    <script>
+        const tabs = document.querySelectorAll('#tabs li');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                const page = document.getElementById('tab-' + tab.dataset.tab);
+                if (page) {
+                    page.classList.add('active');
+                    document.querySelector('.page-wrap').scrollTop = 0;
+                }
+            });
+        });
+
+        const skills = [
+            ['Acrobacia', 'Des', false, '+1'], ['Arcanismo', 'Int', true, '+9'],
+            ['Atletismo', 'For', true, '+6'], ['Enganação', 'Car', false, '+1'],
+            ['Furtividade', 'Des', false, '+1'], ['História', 'Int', true, '+9'],
+            ['Intimidação', 'Car', false, '+1'], ['Intuição', 'Sab', false, '+0'],
+            ['Investigação', 'Int', true, '+9'], ['Medicina', 'Sab', false, '+0'],
+            ['Natureza', 'Int', false, '+3'], ['Percepção', 'Sab', true, '+3'],
+            ['Persuasão', 'Car', false, '+1'], ['Prestidigitação', 'Des', false, '+1'],
+            ['Religião', 'Int', true, '+9'], ['Sobrevivência', 'Sab', false, '+0'],
+        ];
+
+        const tbody = document.getElementById('skill-tbody');
+        skills.forEach(([name, attr, prof, bonus]) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><span class="dot${prof ? ' on' : ''}"></span></td><td>${name}</td><td style="font-family:'Cinzel',serif;font-size:9.6px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)">${attr}</td><td>${bonus}</td>`;
+            tr.querySelector('.dot').addEventListener('click', function () { this.classList.toggle('on'); });
+            tbody.appendChild(tr);
+        });
+    </script>
+</body>
+
+</html>
