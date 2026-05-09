@@ -456,6 +456,7 @@
             z-index: 5;
             padding: 0;
             line-height: 1;
+            background: none;
         }
 
         #limpar-retrato span {
@@ -478,15 +479,31 @@
             display: flex;
             flex-direction: column;
         }
+        
+        label{
+            font-size: 0.8em;
+        }
 
-        .heranca-coisas{
+        label input[type=text] {
+            background: linear-gradient(to top, #ffffff5d 10%, #ffffff00 90%);
+            border: none;
+            border-bottom: 1px solid var(--blood0);
+            padding: 0 3px;
+            color: var(--ink0);
+            font-size: 1.1em;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+        }
+
+        .heranca-coisas {
             display: flex;
             align-items: center;
         }
 
-        #heranca-options-btn{
-            
-        }
+        #heranca-options-btn {}
 
         /* SECTION HEADING */
         .sh {
@@ -1190,20 +1207,27 @@
                                     class="material-symbols-outlined">remove</span></button>
                         </div>
                         <div class="info-form">
-                            <label>Nome: <input type="text" data-field="nome" value=""></label>
-                            <label>Título: <input type="text" data-field="titulo-personagem" value=""></label>
+                            <div class="grouped">
+                                <label>Nome: <input type="text" data-field="nome" value=""></label>
+                                <label>Título: <input type="text" data-field="titulo-personagem" value=""></label>
+                            </div>
                             <div class="heranca-coisas">
                                 <button id="heranca-options-btn"><span
                                         class="material-symbols-outlined">expand_content</span><span
-                                        class="material-symbols-outlined" style="display:none;">hide</span></button><label>Herança: <input
-                                        type="text" id="heranca" data-field="heranca" value="" list="heranca"></label>
+                                        class="material-symbols-outlined"
+                                        style="display:none;">hide</span></button><label>Herança: <input type="text"
+                                        id="heranca" data-field="heranca" value="" list="heranca"></label>
                             </div>
-                            <div class="heranca-options">
-                                <label>Aumento de Fortuna<input type="checkbox" data-field="aumentoDeFortuna"></label>
-                                <label>Aprendizado de Vida<input type="checkbox" data-field="aprendizadoDaVida"></label>
-                                <label>Habilidade Adquirida<input type="checkbox"
-                                        data-field="habilidadeAdquirida"></label>
-                            </div>
+                            <ul class="heranca-options">
+                                <li><label>Aumento de Fortuna<input type="checkbox"
+                                            data-field="aumentoDeFortuna"></label></li>
+                                <li><label>Aprendizado de Vida<input type="checkbox"
+                                            data-field="aprendizadoDaVida"></label></li>
+                                <li>
+                                    <label>Habilidade Adquirida<input type="checkbox"
+                                            data-field="habilidadeAdquirida"></label>
+                                </li>
+                            </ul>
                             <label>Fortuna:
                                 <select data-field="hierarquia">
                                     <option value="pobre">Pobre</option>
@@ -1219,19 +1243,25 @@
                             </label>
                             <label>Individualidade: <input type="text" data-field="individualidade-nome"
                                     value=""></label>
-                            <label>Classe: <input type="text" data-field="classe-nome" value="" list="classes"></label>
-                            <label>Ramo: <input type="text" data-field="ramo-nome" value="" list="ramos"></label>
+                            <div class="grouped">
+                                <label>Classe: <input type="text" data-field="classe-nome" value=""
+                                        list="classes"></label>
+                                <label>Ramo: <input type="text" data-field="ramo-nome" value="" list="ramos"></label>
+                            </div>
                             <label>Vínculo: <input type="text" data-field="vinculo-nome" value=""></label>
                             <label>Alinhamento: <input type="text" data-field="vinculo-nome" value=""></label>
-                            <label>Tamanho: <select data-field="tamanho">
-                                    <option value="tam-minusculo">Minúsculo</option>
-                                    <option value="tam-pequeno">Pequeno</option>
-                                    <option value="tam-medio">Médio</option>
-                                    <option value="tam-grande">Grande</option>
-                                    <option value="tam-enorme">Enorme</option>
-                                    <option value="tam-colossal">Colossal</option>
-                                </select></label>
-                            <label>Inertidão-base: <input type="number" data-field="inertidao-base" value=""></label>
+                            <div class="grouped">
+                                <label>Tamanho: <select data-field="tamanho">
+                                        <option value="tam-minusculo">Minúsculo</option>
+                                        <option value="tam-pequeno">Pequeno</option>
+                                        <option value="tam-medio">Médio</option>
+                                        <option value="tam-grande">Grande</option>
+                                        <option value="tam-enorme">Enorme</option>
+                                        <option value="tam-colossal">Colossal</option>
+                                    </select></label>
+                                <label>Inertidão-base: <input type="number" data-field="inertidao-base"
+                                        value=""></label>
+                            </div>
                         </div>
                     </div>
                     <div class="base-container">
