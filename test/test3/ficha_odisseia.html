@@ -11,9 +11,13 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=calculate,check,cloud_alert,crown,expand_content,hide,home,logout,person,progress_activity,remove,save"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Habibi&family=Jost:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=arrow_drop_down,arrow_right,calculate,check,cloud_alert,crown,home,logout,person,progress_activity,remove,save"
         rel="stylesheet" />
     <style>
+        /* (todo o CSS permanece igual) */
         *,
         *::before,
         *::after {
@@ -379,44 +383,38 @@
             display: block;
         }
 
-        /*Geral*/
+        /* Geral */
         .info-container,
         .base-container {
             display: flex;
+            width: 100%;
             gap: 20px;
+            justify-content: space-evenly;
         }
 
         .info-img {
             width: 350px;
-            /* tamanho padrão (sem imagem) */
             height: 300px;
             max-width: 350px;
-            /* limites máximos */
             max-height: 300px;
             border: 1px solid var(--leath0);
             border-radius: 5px;
             overflow: hidden;
             background-color: #120d04e0;
             position: relative;
-            /* para o botão de limpar */
             display: inline-block;
-            /* permite que a caixa encolha até o mínimo */
             vertical-align: top;
-            /* alinhamento dentro do flex da .info-container */
         }
 
         .info-img .centralize-y {
             display: flex;
             align-items: center;
             justify-content: center;
-            /* centraliza o conteúdo (inputs) */
             width: 100%;
             height: 100%;
-            /* ocupa toda a caixa */
         }
 
         #retrato-inputs {
-            /* remove margem esquerda 50% e translate, pois o flex já centraliza */
             margin: 0;
             text-align: center;
         }
@@ -479,22 +477,38 @@
             display: flex;
             flex-direction: column;
         }
-        
-        label{
-            font-size: 0.8em;
+
+        fieldset {
+            border: 1px solid var(--ink2);
+            padding: 0 5px;
+            border-radius: 5px;
+            background-color: var(--p0);
         }
 
-        label input[type=text] {
-            background: linear-gradient(to top, #ffffff5d 10%, #ffffff00 90%);
+        legend {
+            font-size: 0.6em;
+            color: var(--ink2)
+        }
+
+        fieldset:focus-within {
+            border-color: var(--blood2);
+            background-color: var(--p1);
+        }
+
+        fieldset:focus-within legend {
+            color: var(--blood2);
+        }
+
+        input {
+            background: none;
             border: none;
-            border-bottom: 1px solid var(--blood0);
-            padding: 0 3px;
             color: var(--ink0);
             font-size: 1.1em;
             font-family: 'Times New Roman', Times, serif;
+            width: 100%;
         }
 
-        input[type="text"]:focus {
+        input:focus {
             outline: none;
         }
 
@@ -503,7 +517,74 @@
             align-items: center;
         }
 
-        #heranca-options-btn {}
+        #heranca-options-btn {
+            background: none;
+            border: none;
+        }
+
+        #heranca-options-btn span:hover {
+            color: var(--gold2);
+            transition: all .2s;
+            cursor: pointer;
+        }
+
+        .grouped {
+            display: flex;
+            gap: 20px;
+        }
+
+        ol.heranca-options {
+            margin: 5px 0;
+            text-align: center;
+            list-style: none;
+            text-indent: 10px;
+            display: none;
+        }
+
+        ol.heranca-options label {
+            display: flex;
+            flex-direction: row;
+        }
+
+        ol.heranca-options label input {
+            width: 15px;
+            margin-left: 10px;
+        }
+
+        #heranca-nome {
+            border-bottom: 1px solid var(--ink0);
+            transform: translateY(1px);
+        }
+
+        input[data-field="dinheiro"] {
+            margin-left: 5px;
+            max-width: 110px;
+        }
+
+        select {
+            border: none;
+            background: none;
+        }
+
+        select:focus-within {
+            outline: none;
+        }
+
+        select,
+        ::picker(select) {
+            appearance: base-select;
+        }
+
+        option {
+            padding: 1px 10px 1px 4px;
+            background-color: var(--p0);
+            font-size: 1em;
+        }
+
+        option:hover {
+            background-color: var(--blood2);
+            color: var(--p0);
+        }
 
         /* SECTION HEADING */
         .sh {
@@ -1075,14 +1156,6 @@
                 padding: 10px 14px 12px;
             }
 
-            .hv {
-                padding: 4px 8px;
-            }
-
-            .hv-val {
-                font-size: 19.2px;
-            }
-
             .page {
                 padding: 14px 14px 36px;
             }
@@ -1184,7 +1257,6 @@
                             <div class="header-save">
                                 <button id="manual-save"><span class="material-symbols-outlined">save</span></button>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -1207,72 +1279,126 @@
                                     class="material-symbols-outlined">remove</span></button>
                         </div>
                         <div class="info-form">
+                            <fieldset>
+                                <legend>Nome:</legend>
+                                <Input type="text" data-field="personagem-nome" value=""></Input>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Título:</legend>
+                                <Input type="text" data-field="personagem-titulo" value=""></Input>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Herança</legend>
+                                <div class="grouped" style="gap:5px;">
+                                    <button id="heranca-options-btn"><span
+                                            class="material-symbols-outlined">arrow_right</span><span
+                                            class="material-symbols-outlined"
+                                            style="display:none;">arrow_drop_down</span></button>
+                                    <input type="text" id="heranca-nome" data-field="heranca-nome" list="herancas"
+                                        value="">
+                                </div>
+                                <ol class="heranca-options">
+                                    <form>
+                                        <li><label><input type="radio" data-field="aumentoDeFortuna">Aumento de
+                                                Fortuna:</label></li>
+                                        <li><label><input type="radio" data-field="aprendizadoDaVida">Aprendizado de
+                                                Vida:</label></li>
+                                        <li><label><input type="radio" data-field="habilidadeAdquirida">Habilidade
+                                                Adquirida:</label></li>
+                                    </form>
+                                </ol>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Fortuna:</legend>
+                                <div class="grouped">
+                                    <select data-field="hierarquia">
+                                        <option value="pobre">Pobre</option>
+                                        <option value="trabalhador">Trabalhador</option>
+                                        <option value="vendedor">Vendedor</option>
+                                        <option value="burgues">Burguês</option>
+                                        <option value="barao">Barão</option>
+                                        <option value="duque">Duque</option>
+                                        <option value="herdeiro">Herdeiro</option>
+                                        <option value="imperador">Imperador</option>
+                                    </select>
+                                    <label>A$:<input type="number" data-field="dinheiro"></label>
+                                </div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Individualidade</legend>
+                                <input type="text" data-field="individualidade-nome" value="">
+                            </fieldset>
+                            <fieldset>
+                                <legend>Classe:</legend>
+                                <input type="text" data-field="classe-nome" value="" list="classes">
+                            </fieldset>
+                            <fieldset>
+                                <legend>Ramo:</legend>
+                                <input type="text" data-field="ramo-nome" list="ramos" value="">
+                            </fieldset>
+                            <fieldset>
+                                <legend>Vínculo:</legend>
+                                <input type="text" data-field="besta-nome" value="">
+                            </fieldset>
+                            <fieldset>
+                                <legend>Alinhamento:</legend>
+                                <input type="text" data-field="alinhamento-nome" value="">
+                            </fieldset>
                             <div class="grouped">
-                                <label>Nome: <input type="text" data-field="nome" value=""></label>
-                                <label>Título: <input type="text" data-field="titulo-personagem" value=""></label>
-                            </div>
-                            <div class="heranca-coisas">
-                                <button id="heranca-options-btn"><span
-                                        class="material-symbols-outlined">expand_content</span><span
-                                        class="material-symbols-outlined"
-                                        style="display:none;">hide</span></button><label>Herança: <input type="text"
-                                        id="heranca" data-field="heranca" value="" list="heranca"></label>
-                            </div>
-                            <ul class="heranca-options">
-                                <li><label>Aumento de Fortuna<input type="checkbox"
-                                            data-field="aumentoDeFortuna"></label></li>
-                                <li><label>Aprendizado de Vida<input type="checkbox"
-                                            data-field="aprendizadoDaVida"></label></li>
-                                <li>
-                                    <label>Habilidade Adquirida<input type="checkbox"
-                                            data-field="habilidadeAdquirida"></label>
-                                </li>
-                            </ul>
-                            <label>Fortuna:
-                                <select data-field="hierarquia">
-                                    <option value="pobre">Pobre</option>
-                                    <option value="trabalhador">Trabalhador</option>
-                                    <option value="vendedor">Vendedor</option>
-                                    <option value="burgues">Burguês</option>
-                                    <option value="barao">Barão</option>
-                                    <option value="duque">Duque</option>
-                                    <option value="herdeiro">Herdeiro</option>
-                                    <option value="imperador">Imperador</option>
-                                </select>
-                                <input type="number" data-field="dinheiro">
-                            </label>
-                            <label>Individualidade: <input type="text" data-field="individualidade-nome"
-                                    value=""></label>
-                            <div class="grouped">
-                                <label>Classe: <input type="text" data-field="classe-nome" value=""
-                                        list="classes"></label>
-                                <label>Ramo: <input type="text" data-field="ramo-nome" value="" list="ramos"></label>
-                            </div>
-                            <label>Vínculo: <input type="text" data-field="vinculo-nome" value=""></label>
-                            <label>Alinhamento: <input type="text" data-field="vinculo-nome" value=""></label>
-                            <div class="grouped">
-                                <label>Tamanho: <select data-field="tamanho">
+                                <fieldset>
+                                    <legend>Tamanho:</legend>
+                                    <select data-field="tamanho">
                                         <option value="tam-minusculo">Minúsculo</option>
                                         <option value="tam-pequeno">Pequeno</option>
-                                        <option value="tam-medio">Médio</option>
+                                        <option value="tam-medio" selected>Médio</option>
                                         <option value="tam-grande">Grande</option>
                                         <option value="tam-enorme">Enorme</option>
                                         <option value="tam-colossal">Colossal</option>
-                                    </select></label>
-                                <label>Inertidão-base: <input type="number" data-field="inertidao-base"
-                                        value=""></label>
+                                    </select>
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Inertidão-base:</legend>
+                                    <input type="number" data-field="inertidao-base" value="8">
+                                </fieldset>
                             </div>
                         </div>
                     </div>
-                    <div class="base-container">
-                        <div class="vitals"></div>
-                        <div class="attr">
-                            <div id="secao-radar" style="background: var(--ink0); width: 350px;"></div>
+                    <div class="info-container" style="margin-top: 20px;">
+                        <div class="base-container">
+                            <div class="vitals">
+                                <fieldset>
+                                    <legend>Pontos de Vida</legend>
+                                    <input type="number" data-field="pv-atual">/<input type="number" data-field="pv-total" value="">
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Pontos de Mana</legend>
+                                    <input type="number" data-field="mana-atual">/<input type="number" data-field="mana-total" value="">
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Pontos de Fé</legend>
+                                    <input type="number" data-field="fe-atual">/<input type="number" data-field="fe-total" value="">
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Defesa</legend>
+                                    <input type="number" data-field="defesa" value="10">
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Resistência de Dano</legend>
+                                    <input type="number" data-field="rd">
+                                </fieldset>
+                                <fieldset>
+                                    <legend>Deslocamento</legend>
+                                    <input type="number" data-field="deslocamento" value="9">m
+                                </fieldset>
+                            </div>
+                            <div class="attr">
+                                <div id="secao-radar" style="width: 350px;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-
+                <!-- PERÍCIAS -->
                 <div class="page" id="tab-pericias">
                     <div class="sh">Perícias</div>
                     <table class="stbl">
@@ -1609,10 +1735,25 @@
         </main>
     </div>
 
-
     <script src="radar-rpg.js"></script>
     <script>
-        RadarRPG.create(document.getElementById('secao-radar'));
+        (function () {
+            // Obtém as variáveis CSS do :root da página
+            const rootStyles = getComputedStyle(document.documentElement);
+            const theme = {
+                gold: rootStyles.getPropertyValue('--ink1').trim(),
+                goldLight: rootStyles.getPropertyValue('--gold3').trim(),
+                goldDim: rootStyles.getPropertyValue('--gold0').trim(),
+                crimson: rootStyles.getPropertyValue('--blood2').trim(),
+                ink: rootStyles.getPropertyValue('--p0').trim(),
+                inkDim: rootStyles.getPropertyValue('--ink3').trim(),
+                levelColor: rootStyles.getPropertyValue('--blood2').trim()
+            };
+
+            RadarRPG.create(document.getElementById('secao-radar'), {
+                theme: theme
+            });
+        })();
     </script>
 
     <script>
@@ -1631,7 +1772,6 @@
             const nw = this.naturalWidth;
             const nh = this.naturalHeight;
 
-            // Verifica se a imagem tem dimensões válidas
             if (nw > 0 && nh > 0) {
                 const ratio = nw / nh;
                 let boxW, boxH;
@@ -1649,9 +1789,7 @@
                 this.style.width = '100%';
                 this.style.height = '100%';
             } else {
-                // Fallback para imagens sem dimensões (ex.: certos SVGs)
-                // Usa o container fixo e deixa o object-fit:contain agir
-                retratoArea.style.width = '';   // volta para 350px do CSS
+                retratoArea.style.width = '';
                 retratoArea.style.height = '';
                 this.style.width = '100%';
                 this.style.height = '100%';
@@ -1659,7 +1797,7 @@
 
             this.style.display = 'block';
             retratoInputs.style.display = 'none';
-            limparRetratoBtn.style.display = 'inline-flex';   // usa flex para centralizar ícone
+            limparRetratoBtn.style.display = 'inline-flex';
         });
 
         retratoImg.addEventListener('error', limparRetrato);
@@ -1719,6 +1857,29 @@
             tr.querySelector('.dot').addEventListener('click', function () { this.classList.toggle('on'); });
             tbody.appendChild(tr);
         });
+    </script>
+
+    <!-- TOGGLE DA HERANÇA -->
+    <script>
+        (function () {
+            const btn = document.getElementById('heranca-options-btn');
+            const lista = document.querySelector('ol.heranca-options');
+            const arrowRight = btn.querySelector('span:first-child');       // arrow_right
+            const arrowDown = btn.querySelector('span:last-child');         // arrow_drop_down
+
+            btn.addEventListener('click', function () {
+                // Alterna a visibilidade da lista
+                if (lista.style.display === 'none' || lista.style.display === '') {
+                    lista.style.display = 'block';
+                    arrowRight.style.display = 'none';
+                    arrowDown.style.display = 'inline-block';
+                } else {
+                    lista.style.display = 'none';
+                    arrowRight.style.display = 'inline-block';
+                    arrowDown.style.display = 'none';
+                }
+            });
+        })();
     </script>
 </body>
 

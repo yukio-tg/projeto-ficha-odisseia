@@ -1,14 +1,27 @@
 const RadarRPG = (() => {
   let styleInjected = false;
 
+  // Valores padrão (tema original) – serão usados como fallback caso nenhum tema seja informado
+  const DEFAULT_THEME = {
+    gold: '#c9a84c',
+    goldLight: '#e8d48a',
+    goldDim: '#7a6130',
+    crimson: '#c0392b',
+    ink: '#d4c89a',
+    inkDim: '#7a7060',
+    levelColor: '#c0392b'
+  };
+
+  // CSS base usando variáveis CSS com fallback para os valores padrão
   const styles = `
     .radar-rpg {
-      --gold: #c9a84c;
-      --gold-light: #e8d48a;
-      --gold-dim: #7a6130;
-      --crimson: #c0392b;
-      --ink: #d4c89a;
-      --ink-dim: #7a7060;
+      --gold: ${DEFAULT_THEME.gold};
+      --gold-light: ${DEFAULT_THEME.goldLight};
+      --gold-dim: ${DEFAULT_THEME.goldDim};
+      --crimson: ${DEFAULT_THEME.crimson};
+      --ink: ${DEFAULT_THEME.ink};
+      --ink-dim: ${DEFAULT_THEME.inkDim};
+      --level-color: ${DEFAULT_THEME.levelColor};
       font-family: 'IM Fell English', Georgia, serif;
       color: var(--ink);
       width: 100%;
@@ -41,7 +54,8 @@ const RadarRPG = (() => {
     .radar-rpg .mode-switch input { opacity: 0; width: 0; height: 0; }
     .radar-rpg .slider {
       position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(201,168,76,0.25); transition: 0.3s; border-radius: 20px;
+      background-color: color-mix(in srgb, var(--gold) 25%, transparent);
+      transition: 0.3s; border-radius: 20px;
     }
     .radar-rpg .slider:before {
       position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
@@ -82,7 +96,7 @@ const RadarRPG = (() => {
     }
     .radar-rpg .mod-label {
       font-family: 'Cinzel', serif; font-size: clamp(0.38rem, 0.9vw, 0.48rem);
-      letter-spacing: 0.06em; text-transform: uppercase; color: rgba(180,160,100,0.55);
+      letter-spacing: 0.06em; text-transform: uppercase; color: color-mix(in srgb, var(--ink-dim) 55%, transparent);
       pointer-events: none; white-space: nowrap;
     }
     .radar-rpg .mod-input {
@@ -115,7 +129,7 @@ const RadarRPG = (() => {
     }
     .radar-rpg .level-label {
       font-family: 'Cinzel', serif; font-size: clamp(0.38rem, 1vw, 0.52rem);
-      letter-spacing: 0.14em; text-transform: uppercase; color: rgba(201,168,76,0.65);
+      letter-spacing: 0.14em; text-transform: uppercase; color: color-mix(in srgb, var(--gold) 65%, transparent);
       position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%);
       pointer-events: none; white-space: nowrap;
     }
@@ -153,6 +167,16 @@ const RadarRPG = (() => {
     styleInjected = true;
   }
 
+  // Converte cor hexadecimal (#RRGGBB) para string rgba
+  function hexToRgba(hex, alpha) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    const r = parseInt(hex.substring(0,2), 16);
+    const g = parseInt(hex.substring(2,4), 16);
+    const b = parseInt(hex.substring(4,6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   let idCounter = 0;
 
   class RadarInstance {
@@ -161,6 +185,18 @@ const RadarRPG = (() => {
       this.id = `rpg${++idCounter}`;
       container.classList.add('radar-rpg');
       container.innerHTML = '';
+
+      // Tema personalizável — mescla com DEFAULT_THEME
+      this.theme = { ...DEFAULT_THEME, ...(options.theme || {}) };
+
+      // Aplica as variáveis CSS no container para que o CSS injetado as utilize
+      container.style.setProperty('--gold', this.theme.gold);
+      container.style.setProperty('--gold-light', this.theme.goldLight);
+      container.style.setProperty('--gold-dim', this.theme.goldDim);
+      container.style.setProperty('--crimson', this.theme.crimson);
+      container.style.setProperty('--ink', this.theme.ink);
+      container.style.setProperty('--ink-dim', this.theme.inkDim);
+      container.style.setProperty('--level-color', this.theme.levelColor);
 
       this.attrs = options.attrs || [
         { abbr: 'FOR', color: '#c0392b' },
@@ -175,8 +211,10 @@ const RadarRPG = (() => {
       this.TICKS = options.ticks || 4;
       this.PADDING = options.padding || 76;
       this.INPUT_OFFSET = options.inputOffset || 42;
+      // Fator de raio mínimo (zero começa a esta distância do centro)
+      this.minRadiusFactor = options.minRadiusFactor || 0.18;
       this.levelVal = options.level || 1;
-      this.maxPoints = 10 + this.levelVal;        // ← limite apenas informativo
+      this.maxPoints = 10 + this.levelVal;
       this.values = options.values || Array(this.N).fill(0);
       this.modValues = options.modValues || Array(this.N).fill('');
 
@@ -265,16 +303,23 @@ const RadarRPG = (() => {
     }
 
     draw() {
-      const { ctx, canvas, DPR, N, TICKS, PADDING, MAX, attrs } = this;
+      const { ctx, canvas, DPR, N, TICKS, PADDING, MAX, attrs, theme, minRadiusFactor } = this;
       const displayValues = this.getDisplayValues();
       const W = canvas.width / DPR;
       const H = canvas.height / DPR;
       const cx = W / 2;
       const cy = H / 2;
       const R = Math.min(W, H) / 2 - PADDING;
+      const minRadius = R * minRadiusFactor; // raio mínimo (zero do gráfico)
 
       ctx.clearRect(0, 0, W, H);
 
+      // Cores derivadas do tema
+      const goldAlpha30 = hexToRgba(theme.gold, 0.30);
+      const goldAlpha11 = hexToRgba(theme.gold, 0.11);
+      const crimsonAlpha18 = hexToRgba(theme.crimson, 0.18);
+
+      // Grid
       for (let t = 1; t <= TICKS; t++) {
         const r = R * t / TICKS;
         ctx.beginPath();
@@ -283,11 +328,12 @@ const RadarRPG = (() => {
           i === 0 ? ctx.moveTo(v.x, v.y) : ctx.lineTo(v.x, v.y);
         }
         ctx.closePath();
-        ctx.strokeStyle = t === TICKS ? 'rgba(201,168,76,0.30)' : 'rgba(201,168,76,0.11)';
+        ctx.strokeStyle = t === TICKS ? goldAlpha30 : goldAlpha11;
         ctx.lineWidth = t === TICKS ? 1.5 : 1;
         ctx.stroke();
       }
 
+      // Eixos
       for (let i = 0; i < N; i++) {
         const v = this.vertex(cx, cy, R, i);
         ctx.beginPath();
@@ -298,8 +344,9 @@ const RadarRPG = (() => {
         ctx.stroke();
       }
 
+      // Rótulos dos anéis – agora mais visíveis (ink0 com opacidade total)
       ctx.font = '10px "Cinzel", serif';
-      ctx.fillStyle = 'rgba(90,80,60,0.85)';
+      ctx.fillStyle = theme.ink0 || '#120d04';    // cor bem escura / preta do pergaminho
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       for (let t = 1; t < TICKS; t++) {
@@ -308,22 +355,25 @@ const RadarRPG = (() => {
         ctx.fillText(label, cx + 5, cy - r);
       }
 
+      // Polígono de dados – começa no minRadius em vez do centro
       ctx.beginPath();
       for (let i = 0; i < N; i++) {
-        const r = R * displayValues[i] / MAX;
+        // Mapeia 0..MAX para o intervalo [minRadius, R]
+        const r = minRadius + (R - minRadius) * (displayValues[i] / MAX);
         const v = this.vertex(cx, cy, r, i);
         i === 0 ? ctx.moveTo(v.x, v.y) : ctx.lineTo(v.x, v.y);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(192,57,43,0.18)';
+      ctx.fillStyle = crimsonAlpha18;
       ctx.fill();
-      ctx.strokeStyle = '#c0392b';
+      ctx.strokeStyle = theme.crimson;
       ctx.lineWidth = 2;
       ctx.lineJoin = 'round';
       ctx.stroke();
 
+      // Pontos nos vértices (também ajustados)
       for (let i = 0; i < N; i++) {
-        const r = R * displayValues[i] / MAX;
+        const r = minRadius + (R - minRadius) * (displayValues[i] / MAX);
         const v = this.vertex(cx, cy, r, i);
         ctx.beginPath();
         ctx.arc(v.x, v.y, 4.8, 0, Math.PI * 2);
@@ -370,7 +420,6 @@ const RadarRPG = (() => {
           inp.value = v;
           this.draw();
           this.updateTotal();
-          // sem mais trava – apenas informativo
         });
         inp.addEventListener('blur', () => { inp.value = this.values[i]; });
 
@@ -427,10 +476,12 @@ const RadarRPG = (() => {
     updateHexGlow() {
       if (!this.hexSvgEl) return;
       const t   = (this.levelVal - 1) / 19;
-      const r   = Math.round(192 + t * 63);
-      const g   = Math.round(57  + t * 111);
-      const b   = Math.round(43  + t * 9);
-      const hex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+      const baseColor = this.theme.levelColor;
+      const baseHex = baseColor.replace('#', '');
+      const r = Math.round(parseInt(baseHex.substring(0,2), 16) + t * (255 - parseInt(baseHex.substring(0,2), 16)));
+      const g = Math.round(parseInt(baseHex.substring(2,4), 16) + t * (255 - parseInt(baseHex.substring(2,4), 16)));
+      const b = Math.round(parseInt(baseHex.substring(4,6), 16) + t * (255 - parseInt(baseHex.substring(4,6), 16)));
+      const hex = '#' + [r,g,b].map(x => Math.min(255, x).toString(16).padStart(2,'0')).join('');
       const outer = this.hexSvgEl.querySelector('.hex-outer');
       const inner = this.hexSvgEl.querySelector('.hex-inner');
       if (outer) outer.setAttribute('stroke', hex);
@@ -461,8 +512,8 @@ const RadarRPG = (() => {
         if (isNaN(v) || v < 1) v = 1;
         if (v > 20) v = 20;
         this.levelVal = v;
-        this.maxPoints = 10 + v;      // ← atualiza o máximo informativo
-        this.updateTotal();           // ← atualiza a exibição
+        this.maxPoints = 10 + v;
+        this.updateTotal();
         this.updateHexGlow();
       });
       inp.addEventListener('blur', () => { inp.value = this.levelVal; });
@@ -530,7 +581,7 @@ const RadarRPG = (() => {
       inner.classList.add('hex-inner');
       inner.setAttribute('points', this.hexPoints(hcx, hcy, size * 0.72).map(p => p.join(',')).join(' '));
       inner.setAttribute('fill', 'none');
-      inner.setAttribute('stroke', '#c0392b55');
+      inner.setAttribute('stroke', this.theme.crimson + '55');
       inner.setAttribute('stroke-width', '0.8');
       svg.appendChild(inner);
 
@@ -538,7 +589,7 @@ const RadarRPG = (() => {
       outer.classList.add('hex-outer');
       outer.setAttribute('points', this.hexPoints(hcx, hcy, size).map(p => p.join(',')).join(' '));
       outer.setAttribute('fill', 'none');
-      outer.setAttribute('stroke', '#c0392b');
+      outer.setAttribute('stroke', this.theme.crimson);
       outer.setAttribute('stroke-width', '2');
       outer.setAttribute('filter', `url(#hglow-${this.id})`);
       svg.appendChild(outer);
@@ -547,7 +598,7 @@ const RadarRPG = (() => {
         const dot = document.createElementNS(svgNS, 'circle');
         dot.setAttribute('cx', px); dot.setAttribute('cy', py);
         dot.setAttribute('r', '2.2');
-        dot.setAttribute('fill', '#c9a84c');
+        dot.setAttribute('fill', this.theme.gold);
         dot.setAttribute('opacity', '0.7');
         svg.appendChild(dot);
       });
