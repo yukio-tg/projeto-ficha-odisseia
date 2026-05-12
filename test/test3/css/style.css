@@ -1,0 +1,3616 @@
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --p0: #f7ecd4;
+            --p1: #eedcb2;
+            --p2: #dcc890;
+            --p3: #c8aa64;
+            --p4: #aa8c3c;
+            --ink0: #120d04;
+            --ink1: #2a1e08;
+            --ink2: #4a3410;
+            --ink3: #7a5c28;
+            --blood0: #5c0e07;
+            --blood1: #8a1810;
+            --blood2: #b52418;
+            --mana0: #0d075c;
+            --mana1: #1c108a;
+            --mana2: #2318b5;
+            --tunic0: #52075c;
+            --tunic1: #7c108a;
+            --tunic2: #b018b5;
+            --gold0: #8a5e10;
+            --gold1: #c4892a;
+            --gold2: #e8b84a;
+            --gold3: #f5d878;
+            --leath0: #1a0d02;
+            --leath1: #281504;
+            --leath2: #42200a;
+            --leath3: #623414;
+            --leath4: #8a4e20;
+            --tab-w: 128px;
+            --sheet-bg: #f4e8c8;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100%;
+            background: var(--leath0);
+            font-family: 'IM Fell English', Georgia, serif;
+            color: var(--ink0);
+            background-image:
+                radial-gradient(ellipse 80% 60% at 10% 20%, #2e1200 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 90% 80%, #180800 0%, transparent 60%),
+                radial-gradient(ellipse 40% 40% at 50% 50%, #120900 0%, transparent 70%);
+        }
+
+        /* APP SHELL */
+        .app {
+            display: flex;
+            min-height: 100vh;
+            max-width: 1020px;
+            margin: 0 auto;
+            box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: var(--tab-w);
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 0 16px;
+            background: linear-gradient(180deg, var(--leath1) 0%, var(--leath0) 60%, #0e0700 100%);
+            z-index: 10;
+            border-right: 1px solid var(--leath3);
+            box-shadow: inset -4px 0 12px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Ornamental corner detail on sidebar */
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+        }
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 0 8px 18px;
+            border-bottom: 1px solid rgba(138, 78, 32, 0.35);
+            margin-bottom: 14px;
+            position: relative;
+        }
+
+        .sidebar-logo::after {
+            content: '✦';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: var(--gold1);
+            background: var(--leath1);
+            padding: 0 4px;
+        }
+
+        .sidebar-logo a {
+            text-decoration: none;
+        }
+
+        .sidebar-logo-rune {
+            font-size: 28px;
+            color: var(--gold2);
+            display: block;
+            margin-bottom: 6px;
+            text-shadow: 0 0 20px rgba(232, 184, 74, 0.6), 0 0 40px rgba(232, 184, 74, 0.2);
+            transition: all .2s;
+        }
+
+        .sidebar-logo-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 9px;
+            color: var(--gold1);
+            letter-spacing: 0.22em;
+            line-height: 1.4;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+
+        a span:hover {
+            color: var(--gold3);
+            text-shadow: 0 0 24px rgba(245, 216, 120, 0.8);
+        }
+
+        .tab-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            padding: 0 0 0 10px;
+            flex: 1;
+        }
+
+        .tab-list li {
+            font-family: 'Cinzel', serif;
+            font-size: 10.8px;
+            letter-spacing: 0.1em;
+            color: var(--leath4);
+            padding: 10px 10px;
+            border-radius: 6px 0 0 6px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, padding-left 0.15s, box-shadow 0.2s;
+            user-select: none;
+            border: 1px solid transparent;
+            border-right: none;
+            position: relative;
+            text-transform: uppercase;
+        }
+
+        .tab-list li:hover {
+            background: rgba(98, 52, 20, 0.5);
+            color: var(--gold2);
+            padding-left: 15px;
+        }
+
+        .tab-list li.active {
+            background: linear-gradient(90deg, #f0e4c0 0%, #f7ecd4 100%);
+            color: var(--ink0);
+            font-weight: 700;
+            padding-left: 13px;
+            box-shadow: 2px 0 0 var(--sheet-bg), -1px 0 6px rgba(0, 0, 0, 0.3);
+            border-color: var(--p3);
+        }
+
+        .tab-list li.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 3px;
+            background: linear-gradient(180deg, var(--blood0), var(--blood1), var(--blood0));
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Sidebar bottom ornament */
+        .sidebar-bottom {
+            padding: 14px 8px 0;
+            border-top: 1px solid rgba(138, 78, 32, 0.3);
+            text-align: center;
+            color: var(--leath3);
+            font-size: 16px;
+            letter-spacing: 6px;
+            opacity: 0.6;
+        }
+
+        /* MAIN SHEET */
+        .sheet {
+            flex: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--sheet-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Parchment ruled lines */
+        .sheet::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(0deg, transparent 0px, transparent 31px, rgba(90, 60, 15, 0.06) 32px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Parchment vignette + edge shading */
+        .sheet::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 120% 25% at 50% 0%, rgba(40, 18, 0, 0.18) 0%, transparent 100%),
+                radial-gradient(ellipse 25% 100% at 0% 50%, rgba(50, 22, 0, 0.12) 0%, transparent 100%),
+                radial-gradient(ellipse 25% 100% at 100% 50%, rgba(50, 22, 0, 0.12) 0%, transparent 100%),
+                radial-gradient(ellipse 120% 25% at 50% 100%, rgba(40, 18, 0, 0.10) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* HEADER */
+        .sheet-header {
+            position: relative;
+            z-index: 2;
+            background: linear-gradient(180deg, var(--leath0) 0%, var(--leath1) 50%, var(--leath2) 100%);
+            border-bottom: 2px solid var(--leath3);
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Gold trim line at bottom of header */
+        .sheet-header::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+            z-index: 3;
+        }
+
+        .header-body {
+            padding: 16px 28px 10px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .header-crest {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+            border: 2px solid var(--gold1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            background: radial-gradient(circle, var(--leath2) 0%, var(--leath0) 100%);
+            box-shadow:
+                0 0 0 3px var(--leath0),
+                0 0 0 5px var(--gold0),
+                0 0 20px rgba(196, 137, 42, 0.3);
+            color: var(--gold2);
+            text-shadow: 0 0 16px rgba(232, 184, 74, 0.7);
+        }
+
+        .header-text {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .header-eyebrow {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.42em;
+            color: var(--gold1);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            opacity: 0.85;
+        }
+
+        .header-title {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: clamp(18px, 3vw, 30px);
+            color: var(--gold3);
+            letter-spacing: 0.06em;
+            line-height: 1;
+            text-shadow:
+                0 2px 12px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(196, 137, 42, 0.3);
+        }
+
+        .header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .owner-sheet,
+        .logged,
+        .not-logged,
+        .header-buttons,
+        .header-buttons #saved,
+        .header-buttons #non-saved,
+        .header-buttons #problem-save {
+            display: flex;
+            align-items: center;
+            justify-content: end;
+        }
+
+        .owner-sheet span,
+        .logged span,
+        #saved span,
+        #non-saved span,
+        #problem-save span {
+            margin-right: 5px;
+        }
+
+        .owner-sheet {
+            color: var(--gold1);
+            text-shadow: 0 0 2px var(--gold1);
+        }
+
+        .logged {
+            display: none;
+        }
+
+        .logged,
+        .not-logged {
+            color: var(--gold1);
+            opacity: 0.85;
+        }
+
+        .not-logged a {
+            color: var(--gold3);
+            opacity: 1;
+            margin: 0 0.2em;
+            text-shadow: 0 0 1px var(--gold3);
+        }
+
+        .not-logged a:hover {
+            color: var(--blood2);
+            text-shadow: 0 0 1px var(--blood2);
+        }
+
+        #saved {
+            color: var(--gold1);
+        }
+
+        #problem-save,
+        #non-saved {
+            color: var(--blood2);
+        }
+
+        #autocalc-switch,
+        #manual-save {
+            background: none;
+            border: none;
+            color: var(--gold1);
+            opacity: 0.85;
+            font-variation-settings: 'FILL' 0, 'wght' 300;
+            margin: 0 0px 0 20px;
+            transition: all .1s;
+            translate: 0 2px;
+        }
+
+        #autocalc-switch.active,
+        #manual-save.active {
+            font-variation-settings: 'FILL' 1;
+            opacity: 1;
+            color: var(--gold2);
+        }
+
+        #autocalc-switch:hover,
+        #manual-save:hover {
+            font-variation-settings: 'FILL' 1;
+            opacity: 0.9;
+            color: var(--gold1);
+            cursor: pointer;
+        }
+
+        #autocalc-switch:active,
+        #manual-save:active {
+            color: var(--gold3);
+            text-shadow: 0 0 2px var(--gold3);
+        }
+
+        /* SCROLL WRAPPER */
+        .page-wrap {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-wrap::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .page-wrap::-webkit-scrollbar-track {
+            background: var(--p1);
+        }
+
+        .page-wrap::-webkit-scrollbar-thumb {
+            background: var(--p3);
+            border-radius: 3px;
+        }
+
+        .page {
+            display: none;
+            padding: 22px 26px 48px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Geral */
+        .info-container,
+        .base-container {
+            display: flex;
+            width: 100%;
+            gap: 20px;
+            justify-content: space-evenly;
+        }
+
+        /* RETRATO AMPLIADO (450x400) */
+        .info-img {
+            width: 400px;
+            height: 320px;
+            max-width: 400px;
+            max-height: 320px;
+            border: 1px solid var(--leath0);
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #120d04e0;
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .info-img .centralize-y {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        #retrato-inputs {
+            margin: 0;
+            text-align: center;
+        }
+
+        #retrato-inputs input {
+            font-family: 'IM Fell English';
+            border: 1px solid var(--gold2);
+            border-radius: 5px;
+            background: var(--ink0);
+            padding: 5px;
+            box-shadow: 0 0 4px #6a3c1a;
+        }
+
+        #retrato-inputs input:active {
+            border-color: var(--gold3);
+            box-shadow: 0 0 4px var(--gold2);
+        }
+
+        #retrato-inputs input::placeholder {
+            color: var(--gold0);
+            text-align: center;
+        }
+
+        #retrato-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        #limpar-retrato {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            border: none;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            padding: 0;
+            line-height: 1;
+            background: none;
+        }
+
+        #limpar-retrato span {
+            border-radius: 50%;
+            background-color: #5c0e074b;
+            color: var(--blood1);
+            border: 1px solid var(--blood1);
+            width: auto;
+            height: auto;
+            align-items: center;
+        }
+
+        #limpar-retrato span:hover {
+            background-color: var(--blood2);
+            border-color: var(--p0);
+            color: var(--p0);
+        }
+
+        .info-form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        fieldset {
+            border: 1px solid var(--ink2);
+            padding: 0 5px;
+            border-radius: 5px;
+            background-color: var(--p0);
+        }
+
+        legend {
+            font-size: 0.6em;
+            color: var(--ink2);
+        }
+
+        fieldset:focus-within {
+            border-color: var(--blood2);
+            background-color: var(--p1);
+        }
+
+        fieldset:focus-within legend {
+            color: var(--blood2);
+        }
+
+        input {
+            background: none;
+            border: none;
+            color: var(--ink0);
+            font-size: 1.1em;
+            font-family: 'Times New Roman', Times, serif;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .heranca-coisas {
+            display: flex;
+            align-items: center;
+        }
+
+        #heranca-options-btn {
+            background: none;
+            border: none;
+        }
+
+        #heranca-options-btn span:hover {
+            color: var(--gold2);
+            transition: all .2s;
+            cursor: pointer;
+        }
+
+        .grouped {
+            display: flex;
+            gap: 20px;
+        }
+
+        ol.heranca-options {
+            margin: 5px 0;
+            text-align: center;
+            list-style: none;
+            text-indent: 10px;
+            display: none;
+        }
+
+        ol.heranca-options label {
+            display: flex;
+            flex-direction: row;
+        }
+
+        ol.heranca-options label input {
+            width: 15px;
+            margin-left: 10px;
+        }
+
+        #heranca-nome {
+            border-bottom: 1px solid var(--ink0);
+            transform: translateY(1px);
+        }
+
+        input[data-field="dinheiro"] {
+            margin-left: 5px;
+            max-width: 110px;
+        }
+
+        select {
+            border: none;
+            background: none;
+        }
+
+        select:focus-within {
+            outline: none;
+        }
+
+        select,
+        ::picker(select) {
+            appearance: base-select;
+        }
+
+        option {
+            padding: 1px 10px 1px 4px;
+            background-color: var(--p0);
+            font-size: 1em;
+        }
+
+        option:hover {
+            background-color: var(--blood2);
+            color: var(--p0);
+        }
+
+        /* SECTION HEADING */
+        .sh {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: var(--blood1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0 14px;
+        }
+
+        .sh:first-child {
+            margin-top: 0;
+        }
+
+        .sh::before,
+        .sh::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blood0), transparent);
+            opacity: 0.6;
+        }
+
+        /* Small diamond ornament after section headings */
+        .sh>span {
+            position: relative;
+        }
+
+        .orn {
+            text-align: center;
+            color: var(--gold1);
+            font-size: 13px;
+            letter-spacing: 12px;
+            margin: 18px 0;
+            opacity: 0.6;
+        }
+
+        /* STAT GRID */
+        .sg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .sb {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+            padding: 8px 4px 6px;
+            position: relative;
+            transition: border-color 0.15s;
+        }
+
+        .sb:hover {
+            border-color: var(--gold1);
+        }
+
+        .sb::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--gold1);
+            border-radius: 0 0 2px 2px;
+            opacity: 0.5;
+        }
+
+        .sl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--ink3);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .sv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 28.8px;
+            color: var(--ink0);
+            line-height: 1;
+        }
+
+        .sm {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 13.2px;
+            color: var(--ink3);
+            margin-top: 1px;
+        }
+
+        /* INFO FIELDS */
+        .ig {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 4px;
+        }
+
+        .if {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .il {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+        }
+
+        .iv {
+            font-family: 'IM Fell English', serif;
+            font-size: 16.2px;
+            color: var(--ink0);
+            padding-bottom: 3px;
+            border-bottom: 1px solid var(--p3);
+            min-height: 22px;
+        }
+
+        /* VITALS ROW */
+        .vr {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .vb {
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .vb.hp {
+            border-color: rgba(138, 24, 16, 0.4);
+        }
+
+        .vl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .vn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 36px;
+            line-height: 1;
+            color: var(--ink0);
+        }
+
+        .vb.hp .vn {
+            color: var(--blood1);
+        }
+
+        .vs {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* TRAITS */
+        .tr-list {
+            margin-bottom: 4px;
+        }
+
+        .tr {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.3);
+            align-items: baseline;
+        }
+
+        .tr-k {
+            font-family: 'Cinzel', serif;
+            font-size: 10.2px;
+            letter-spacing: 0.06em;
+            color: var(--ink2);
+            font-weight: 700;
+            text-transform: uppercase;
+            min-width: 86px;
+            flex-shrink: 0;
+        }
+
+        .tr-v {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            font-style: italic;
+        }
+
+        /* SKILL TABLE */
+        .stbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .stbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 6px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .stbl td {
+            padding: 5px 6px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+            font-family: 'IM Fell English', serif;
+            color: var(--ink1);
+            font-size: 15.6px;
+        }
+
+        .stbl td:last-child {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            color: var(--blood1);
+            text-align: center;
+            width: 44px;
+        }
+
+        /* WEAPON CARDS */
+        .wg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .wc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 12px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+        }
+
+        .wn {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--blood1);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .ws {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .wsl {
+            font-family: 'Cinzel', serif;
+            font-size: 8.4px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .wsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 16.8px;
+            color: var(--ink0);
+        }
+
+        /* ABILITY CARDS */
+        .ac {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 14px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ac::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gold1);
+        }
+
+        .ac:hover {
+            border-color: var(--gold1);
+        }
+
+        .an {
+            font-family: 'Cinzel', serif;
+            font-size: 13.2px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--ink0);
+        }
+
+        .at {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 12.6px;
+            color: var(--gold0);
+            margin-left: 10px;
+        }
+
+        .ab {
+            font-size: 15px;
+            color: var(--ink2);
+            line-height: 1.6;
+            margin-top: 5px;
+            font-family: 'IM Fell English', serif;
+        }
+
+        /* SPELL GRID */
+        .spg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .spc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px;
+            background: linear-gradient(150deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .spc::after {
+            content: '✦';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 8px;
+            color: var(--p4);
+            opacity: 0.5;
+        }
+
+        .spc:hover {
+            border-color: var(--gold1);
+        }
+
+        .spn {
+            font-family: 'Cinzel', serif;
+            font-size: 12.6px;
+            font-weight: 700;
+            color: var(--blood0);
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+        }
+
+        .spm {
+            font-size: 11.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-bottom: 5px;
+        }
+
+        .spd {
+            font-family: 'IM Fell English', serif;
+            font-size: 13.8px;
+            color: var(--ink2);
+            line-height: 1.5;
+        }
+
+        /* GOLD STATS */
+        .gs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .gst {
+            flex: 1;
+            min-width: 76px;
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 8px 10px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+        }
+
+        .gsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 24px;
+            color: var(--blood1);
+            line-height: 1;
+        }
+
+        .gsl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* INV TABLE */
+        .itbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+
+        .itbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 8px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .itbl td {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            padding: 5px 8px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+        }
+
+        .itbl td.num {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            text-align: center;
+            color: var(--ink2);
+        }
+
+        /* NOTES */
+        .np {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 14px 16px;
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            line-height: 1.85;
+            background: var(--p1);
+            background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.12) 28px);
+        }
+
+        .np p+p {
+            margin-top: 20px;
+        }
+
+        /* BEAST */
+        .bt {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 16px;
+        }
+
+        .bi {
+            width: 62px;
+            height: 62px;
+            border: 2px solid var(--gold1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 33.6px;
+            background: radial-gradient(circle, var(--p1) 0%, var(--p2) 100%);
+            box-shadow: 0 0 0 2px var(--p0), 0 0 0 3px var(--p4);
+            flex-shrink: 0;
+        }
+
+        .bn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 20.4px;
+            color: var(--ink0);
+        }
+
+        .bk {
+            font-size: 14.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        .bm {
+            font-size: 13.2px;
+            font-style: italic;
+            color: var(--p4);
+            margin-top: 6px;
+        }
+
+        /* ======== NOVOS ESTILOS PARA BARRAS DE COMPLETUDE ======== */
+        .vital-bar-container {
+            margin-bottom: 12px;
+        }
+
+        .vital-bar {
+            position: relative;
+            width: 100%;
+            height: 34px;
+            background: var(--ink0);
+            border: 1px solid var(--ink0);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .vital-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--blood1), var(--blood2));
+            transition: width 0.2s ease;
+            width: 0%;
+        }
+
+        .vital-bar-fill.mana {
+            height: 100%;
+            background: linear-gradient(to right, var(--mana1), var(--mana2));
+            transition: width 0.2s ease;
+            width: 0%;
+        }
+
+        .vital-bar-fill.fe {
+            height: 100%;
+            background: linear-gradient(to right, var(--tunic1), var(--tunic2));
+            transition: width 0.2s ease;
+            width: 0%;
+        }
+
+        .vital-bar-inputs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            pointer-events: none;
+        }
+
+        .vital-bar-inputs input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 16px;
+            width: 55px;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            pointer-events: auto;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            -moz-appearance: textfield;
+        }
+
+        .vital-bar-inputs input::-webkit-outer-spin-button,
+        .vital-bar-inputs input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .vital-bar-inputs .separator {
+            color: #ffffff;
+            font-size: 18px;
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+
+        /* ══════════════════════════════════════
+           NEW GERAL TAB STYLES
+           ══════════════════════════════════════ */
+
+        /* Top grid: portrait + identity */
+        .geral-top-grid {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        /* Portrait column stretches to match identity column height */
+        .portrait-column {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-img {
+            width: 100%;
+            max-width: 220px;
+            flex: 1;
+            border: 1px solid var(--leath3);
+            border-radius: 4px;
+            overflow: hidden;
+            background: linear-gradient(160deg, #1a0d02 0%, #0e0700 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+
+        /* Decorative corner brackets */
+        .portrait-corner {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .portrait-corner::before,
+        .portrait-corner::after {
+            content: '';
+            position: absolute;
+            background: var(--gold1);
+        }
+
+        .portrait-corner::before {
+            width: 100%;
+            height: 2px;
+        }
+
+        .portrait-corner::after {
+            width: 2px;
+            height: 100%;
+        }
+
+        .portrait-corner-tl {
+            top: -2px;
+            left: -2px;
+        }
+
+        .portrait-corner-tl::before {
+            top: 0;
+            left: 0;
+        }
+
+        .portrait-corner-tl::after {
+            top: 0;
+            left: 0;
+        }
+
+        .portrait-corner-tr {
+            top: -2px;
+            right: -2px;
+        }
+
+        .portrait-corner-tr::before {
+            top: 0;
+            right: 0;
+            left: auto;
+        }
+
+        .portrait-corner-tr::after {
+            top: 0;
+            right: 0;
+            left: auto;
+        }
+
+        .portrait-corner-bl {
+            bottom: -2px;
+            left: -2px;
+        }
+
+        .portrait-corner-bl::before {
+            bottom: 0;
+            top: auto;
+            left: 0;
+        }
+
+        .portrait-corner-bl::after {
+            bottom: 0;
+            top: auto;
+            left: 0;
+        }
+
+        .portrait-corner-br {
+            bottom: -2px;
+            right: -2px;
+        }
+
+        .portrait-corner-br::before {
+            bottom: 0;
+            top: auto;
+            right: 0;
+            left: auto;
+        }
+
+        .portrait-corner-br::after {
+            bottom: 0;
+            top: auto;
+            right: 0;
+            left: auto;
+        }
+
+        .info-img .centralize-y {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex: 1;
+        }
+
+        #retrato-inputs {
+            text-align: center;
+            padding: 32px 16px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .portrait-placeholder-icon {
+            font-size: 48px;
+            color: var(--gold0);
+            opacity: 0.4;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+
+        .portrait-placeholder-text {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--leath4);
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        #retrato-inputs input {
+            font-family: 'IM Fell English';
+            border: 1px solid var(--gold0);
+            border-radius: 4px;
+            background: rgba(30, 15, 4, 0.6);
+            color: var(--gold2);
+            padding: 6px 8px;
+            font-size: 12px;
+            width: 100%;
+        }
+
+        #retrato-inputs input::placeholder {
+            color: var(--leath4);
+            text-align: center;
+        }
+
+        #retrato-inputs input:focus {
+            outline: none;
+            border-color: var(--gold2);
+        }
+
+        #retrato-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+            display: block;
+        }
+
+        #limpar-retrato {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            border: none;
+            display: inline-flex;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 5;
+            padding: 0;
+            line-height: 1;
+            background: none;
+        }
+
+        #limpar-retrato span {
+            border-radius: 50%;
+            background-color: rgba(92, 14, 7, 0.5);
+            color: var(--blood1);
+            border: 1px solid var(--blood1);
+            font-size: 18px;
+        }
+
+        #limpar-retrato span:hover {
+            background-color: var(--blood2);
+            border-color: var(--p0);
+            color: var(--p0);
+        }
+
+        /* Identity column */
+        .identity-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .identity-name-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ifl {
+            font-family: 'Cinzel', serif;
+            font-size: 8.5px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .ifinput-name {
+            font-family: 'Cinzel Decorative', serif !important;
+            font-size: 20px !important;
+            color: var(--ink0) !important;
+            border: none !important;
+            border-bottom: 2px solid var(--p3) !important;
+            background: transparent !important;
+            padding: 2px 0 4px !important;
+            width: 100%;
+            letter-spacing: 0.04em;
+            transition: border-color 0.2s;
+        }
+
+        .ifinput-name:focus {
+            outline: none;
+            border-bottom-color: var(--blood1) !important;
+        }
+
+        .ifinput-name::placeholder {
+            color: var(--p3);
+        }
+
+        .ifinput-title {
+            font-family: 'IM Fell English', serif !important;
+            font-style: italic !important;
+            font-size: 15px !important;
+            color: var(--ink2) !important;
+            border: none !important;
+            border-bottom: 1px solid var(--p2) !important;
+            background: transparent !important;
+            padding: 2px 0 3px !important;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+
+        .ifinput-title:focus {
+            outline: none;
+            border-bottom-color: var(--blood1) !important;
+        }
+
+        .ifinput-title::placeholder {
+            color: var(--p3);
+        }
+
+        .identity-divider {
+            text-align: center;
+            color: var(--gold1);
+            font-size: 14px;
+            opacity: 0.5;
+            letter-spacing: 0.2em;
+            margin: 2px 0;
+        }
+
+        .identity-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 12px;
+        }
+
+        .identity-tamanho-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        fieldset {
+            border: 1px solid var(--p2);
+            padding: 2px 8px 5px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            transition: border-color 0.15s, background 0.15s;
+        }
+
+        legend {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 4px;
+        }
+
+        fieldset:focus-within {
+            border-color: var(--blood1);
+            background: rgba(255, 245, 225, 0.5);
+        }
+
+        fieldset:focus-within legend {
+            color: var(--blood1);
+        }
+
+        input {
+            background: none;
+            border: none;
+            color: var(--ink0);
+            font-size: 1em;
+            font-family: 'IM Fell English', Georgia, serif;
+            width: 100%;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        .heranca-fieldset {
+            margin-top: 2px;
+        }
+
+        .heranca-coisas {
+            display: flex;
+            align-items: center;
+        }
+
+        #heranca-options-btn {
+            background: none;
+            border: none;
+            color: var(--ink3);
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        #heranca-options-btn span:hover {
+            color: var(--gold2);
+            transition: all .2s;
+        }
+
+        .grouped {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        ol.heranca-options {
+            margin: 6px 0 2px 20px;
+            list-style: none;
+            display: none;
+        }
+
+        ol.heranca-options li {
+            margin: 4px 0;
+        }
+
+        ol.heranca-options label {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            font-family: 'IM Fell English', serif;
+            font-size: 13px;
+            color: var(--ink2);
+            cursor: pointer;
+        }
+
+        ol.heranca-options label input {
+            width: auto;
+            cursor: pointer;
+            accent-color: var(--blood1);
+        }
+
+        #heranca-nome {
+            border-bottom: 1px solid var(--p3);
+        }
+
+        .fortune-block {
+            margin-top: 2px;
+        }
+
+        .fortune-fieldset {}
+
+        .money-label {
+            font-family: 'Cinzel', serif;
+            color: var(--ink3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        input[data-field="dinheiro"] {
+            max-width: 90px;
+            width: 90px;
+            font-size: 1.5em;
+        }
+
+        select {
+            border: none;
+            background: none;
+            font-family: 'IM Fell English', serif;
+            font-size: 1em;
+            color: var(--ink0);
+            cursor: pointer;
+            width: 100%;
+        }
+
+        select:focus {
+            outline: none;
+        }
+
+        select,
+        ::picker(select) {
+            appearance: base-select;
+        }
+
+        option {
+            padding: 2px 10px 2px 4px;
+            background-color: var(--p0);
+            font-size: 1em;
+        }
+
+        option:hover {
+            background-color: var(--blood2);
+            color: var(--p0);
+        }
+
+        /* ══ VITALS & ATTRS ══ */
+        .vitals-attrs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .vitals-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Vital cards */
+        .vital-card {
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid var(--p2);
+            background: linear-gradient(135deg, var(--p1) 0%, var(--p0) 100%);
+        }
+
+        .vital-card-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8.5px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            padding: 6px 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vital-card-icon {
+            font-size: 11px;
+            letter-spacing: 0;
+        }
+
+        .vital-card-hp {
+            border-color: rgba(138, 24, 16, 0.3);
+        }
+
+        .vital-card-hp .vital-card-label {
+            color: var(--blood1);
+        }
+
+        .vital-card-mana {
+            border-color: rgba(35, 24, 181, 0.25);
+        }
+
+        .vital-card-mana .vital-card-label {
+            color: var(--mana1);
+        }
+
+        .vital-card-fe {
+            border-color: rgba(112, 24, 133, 0.25);
+        }
+
+        .vital-card-fe .vital-card-label {
+            color: var(--tunic1);
+        }
+
+        .vital-bar {
+            position: relative;
+            width: calc(100% - 20px);
+            height: 36px;
+            margin: 6px 10px 8px;
+            background: rgba(18, 13, 4, 0.85);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .vital-bar-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--blood0), var(--blood2));
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        .vital-bar-fill.mana {
+            background: linear-gradient(to right, var(--mana0), var(--mana2));
+        }
+
+        .vital-bar-fill.fe {
+            background: linear-gradient(to right, var(--tunic0), var(--tunic2));
+        }
+
+        .vital-bar-inputs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            pointer-events: none;
+        }
+
+        .vital-bar-inputs input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 17px;
+            width: 52px;
+            text-align: center;
+            padding: 0;
+            margin: 0;
+            pointer-events: auto;
+            text-shadow: 0 0 6px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.8);
+            -moz-appearance: textfield;
+        }
+
+        .vital-bar-inputs input::-webkit-outer-spin-button,
+        .vital-bar-inputs input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .vital-bar-inputs .separator {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            pointer-events: none;
+        }
+
+        /* Small stats row */
+        .small-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .small-stat-block {
+            border: 1px solid var(--p2);
+            border-radius: 5px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 7px 8px 8px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .small-stat-block::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--gold1);
+            opacity: 0.4;
+            border-radius: 0 0 2px 2px;
+        }
+
+        .small-stat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .small-stat-input {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .small-stat-input input {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 22px;
+            color: var(--ink0);
+            text-align: center;
+            width: 52px;
+            line-height: 1;
+        }
+
+        .small-stat-unit {
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            color: var(--ink3);
+        }
+
+        /* Radar column */
+        .radar-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(ellipse 70% 60% at 50% 40%, rgba(26, 13, 2, 0.07) 0%, transparent 70%),
+                linear-gradient(160deg, var(--p1) 0%, var(--p0) 60%, var(--p1) 100%);
+            border: 1px solid var(--p3);
+            border-radius: 8px;
+            padding: 18px 12px 10px;
+            position: relative;
+            box-shadow:
+                inset 0 1px 0 rgba(245, 216, 120, 0.18),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+                0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .radar-column::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+            opacity: 0.65;
+        }
+
+        /* Section title inside radar column */
+        .radar-column-title {
+            font-family: 'IM Fell English', serif;
+            font-size: 9px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--ink0);
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        /* Vital bar container (legacy, keep for other tabs) */
+        .vital-bar-container {
+            margin-bottom: 10px;
+        }
+
+        /* ══ STAT GRID (other tabs) ══ */
+        .sg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .sb {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+            padding: 8px 4px 6px;
+            position: relative;
+            transition: border-color 0.15s;
+        }
+
+        .sb:hover {
+            border-color: var(--gold1);
+        }
+
+        .sb::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--gold1);
+            border-radius: 0 0 2px 2px;
+            opacity: 0.5;
+        }
+
+        .sl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.1em;
+            color: var(--ink3);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .sv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 28.8px;
+            color: var(--ink0);
+            line-height: 1;
+        }
+
+        .sm {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 13.2px;
+            color: var(--ink3);
+            margin-top: 1px;
+        }
+
+        /* VITALS ROW (other tabs) */
+        .vr {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .vb {
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .vb.hp {
+            border-color: rgba(138, 24, 16, 0.4);
+        }
+
+        .vl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .vn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 36px;
+            line-height: 1;
+            color: var(--ink0);
+        }
+
+        .vb.hp .vn {
+            color: var(--blood1);
+        }
+
+        .vs {
+            font-size: 12px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* INFO FIELDS (other tabs) */
+        .ig {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 4px;
+        }
+
+        .if {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .il {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+        }
+
+        .iv {
+            font-family: 'IM Fell English', serif;
+            font-size: 16.2px;
+            color: var(--ink0);
+            padding-bottom: 3px;
+            border-bottom: 1px solid var(--p3);
+            min-height: 22px;
+        }
+
+        /* TRAITS */
+        .tr-list {
+            margin-bottom: 4px;
+        }
+
+        .tr {
+            display: flex;
+            gap: 12px;
+            padding: 6px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.3);
+            align-items: baseline;
+        }
+
+        .tr-k {
+            font-family: 'Cinzel', serif;
+            font-size: 10.2px;
+            letter-spacing: 0.06em;
+            color: var(--ink2);
+            font-weight: 700;
+            text-transform: uppercase;
+            min-width: 86px;
+            flex-shrink: 0;
+        }
+
+        .tr-v {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            font-style: italic;
+        }
+
+        /* SKILL TABLE */
+        .stbl {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .stbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 6px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .stbl td {
+            padding: 5px 6px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+            font-family: 'IM Fell English', serif;
+            color: var(--ink1);
+            font-size: 15.6px;
+        }
+
+        .stbl td:last-child {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            color: var(--blood1);
+            text-align: center;
+            width: 44px;
+        }
+
+        /* WEAPON CARDS */
+        .wg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .wc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 12px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wc::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+        }
+
+        .wn {
+            font-family: 'Cinzel', serif;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--blood1);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .ws {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .wsl {
+            font-family: 'Cinzel', serif;
+            font-size: 8.4px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin-bottom: 1px;
+        }
+
+        .wsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 16.8px;
+            color: var(--ink0);
+        }
+
+        /* ABILITY CARDS */
+        .ac {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px 14px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ac::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--gold1);
+        }
+
+        .ac:hover {
+            border-color: var(--gold1);
+        }
+
+        .an {
+            font-family: 'Cinzel', serif;
+            font-size: 13.2px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--ink0);
+        }
+
+        .at {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 12.6px;
+            color: var(--gold0);
+            margin-left: 10px;
+        }
+
+        .ab {
+            font-size: 15px;
+            color: var(--ink2);
+            line-height: 1.6;
+            margin-top: 5px;
+            font-family: 'IM Fell English', serif;
+        }
+
+        /* SPELL GRID */
+        .spg {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .spc {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 10px;
+            background: linear-gradient(150deg, var(--p1) 0%, var(--p0) 100%);
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .spc::after {
+            content: '✦';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 8px;
+            color: var(--p4);
+            opacity: 0.5;
+        }
+
+        .spc:hover {
+            border-color: var(--gold1);
+        }
+
+        .spn {
+            font-family: 'Cinzel', serif;
+            font-size: 12.6px;
+            font-weight: 700;
+            color: var(--blood0);
+            letter-spacing: 0.06em;
+            margin-bottom: 3px;
+        }
+
+        .spm {
+            font-size: 11.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-bottom: 5px;
+        }
+
+        .spd {
+            font-family: 'IM Fell English', serif;
+            font-size: 13.8px;
+            color: var(--ink2);
+            line-height: 1.5;
+        }
+
+        /* GOLD STATS */
+        .gs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .gst {
+            flex: 1;
+            min-width: 76px;
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 8px 10px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            text-align: center;
+        }
+
+        .gsv {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 24px;
+            color: var(--blood1);
+            line-height: 1;
+        }
+
+        .gsl {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* INV TABLE */
+        .itbl {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+        }
+
+        .itbl th {
+            font-family: 'Cinzel', serif;
+            font-size: 9.6px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            padding: 0 8px 8px 0;
+            text-align: left;
+            border-bottom: 1.5px solid var(--p3);
+        }
+
+        .itbl td {
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            padding: 5px 8px 5px 0;
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+        }
+
+        .itbl td.num {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 14.4px;
+            text-align: center;
+            color: var(--ink2);
+        }
+
+        /* NOTES */
+        .np {
+            border: 1px solid var(--p3);
+            border-radius: 5px;
+            padding: 14px 16px;
+            font-family: 'IM Fell English', serif;
+            font-size: 15.6px;
+            color: var(--ink1);
+            line-height: 1.85;
+            background: var(--p1);
+            background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.12) 28px);
+        }
+
+        .np p+p {
+            margin-top: 20px;
+        }
+
+        /* BEAST */
+        .bt {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 14px;
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            margin-bottom: 16px;
+        }
+
+        .bi {
+            width: 62px;
+            height: 62px;
+            border: 2px solid var(--gold1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 33.6px;
+            background: radial-gradient(circle, var(--p1) 0%, var(--p2) 100%);
+            box-shadow: 0 0 0 2px var(--p0), 0 0 0 3px var(--p4);
+            flex-shrink: 0;
+        }
+
+        .bn {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 20.4px;
+            color: var(--ink0);
+        }
+
+        .bk {
+            font-size: 14.4px;
+            font-style: italic;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        .bm {
+            font-size: 13.2px;
+            font-style: italic;
+            color: var(--p4);
+            margin-top: 6px;
+        }
+
+        /* ══════════════════════════════════════
+           COMBAT STATS ROW (Defesa / RD / Desl.)
+           ══════════════════════════════════════ */
+        .combat-stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .cstat-block {
+            border: 1px solid var(--p2);
+            border-radius: 6px;
+            background: linear-gradient(160deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 0 0 8px 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .cstat-block:hover {
+            border-color: var(--gold1);
+            box-shadow: 0 2px 10px rgba(196, 137, 42, 0.12);
+        }
+
+        /* top accent bar — different per block */
+        .cstat-accent {
+            width: 100%;
+            height: 3px;
+            margin-bottom: 6px;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .cstat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 3px;
+        }
+
+        .cstat-main-value {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+            margin-bottom: 4px;
+        }
+
+        .cstat-main-input {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 30px;
+            color: var(--ink0);
+            text-align: center;
+            width: 64px;
+            line-height: 1;
+            background: none;
+            border: none;
+            -moz-appearance: textfield;
+        }
+
+        .cstat-main-input--sm {
+            font-size: 24px;
+            width: 48px;
+        }
+
+        .cstat-main-input::-webkit-inner-spin-button,
+        .cstat-main-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .cstat-main-input:focus {
+            outline: none;
+            color: var(--blood1);
+        }
+
+        .cstat-unit {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            color: var(--ink3);
+        }
+
+        .cstat-divider {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 8px;
+            margin-bottom: 5px;
+        }
+
+        .cstat-divider::before,
+        .cstat-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(100, 70, 20, 0.25));
+        }
+
+        .cstat-divider::after {
+            background: linear-gradient(270deg, transparent, rgba(100, 70, 20, 0.25));
+        }
+
+        .cstat-divider-text {
+            font-family: 'Cinzel', serif;
+            font-size: 7px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            opacity: 0.7;
+            white-space: nowrap;
+        }
+
+        .cstat-special-list {
+            width: 100%;
+            padding: 0 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .cstat-special-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .cstat-type-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(100, 70, 20, 0.2);
+            border-radius: 3px;
+            padding: 2px 5px;
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 11px;
+            color: var(--ink1);
+            min-width: 0;
+        }
+
+        .cstat-type-input::placeholder {
+            color: var(--p3);
+            font-style: italic;
+        }
+
+        .cstat-type-input:focus {
+            outline: none;
+            border-color: var(--blood1);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .cstat-val-input {
+            width: 34px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(100, 70, 20, 0.2);
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 11px;
+            color: var(--ink0);
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .cstat-val-input::-webkit-inner-spin-button,
+        .cstat-val-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .cstat-val-input::placeholder {
+            color: var(--p3);
+            font-style: normal;
+        }
+
+        .cstat-val-input:focus {
+            outline: none;
+            border-color: var(--blood1);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .cstat-add-btn {
+            margin-top: 5px;
+            background: none;
+            border: 1px dashed rgba(100, 70, 20, 0.3);
+            border-radius: 4px;
+            width: calc(100% - 16px);
+            padding: 1px 0;
+            font-size: 14px;
+            color: var(--ink3);
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+            line-height: 1;
+        }
+
+        .cstat-add-btn:hover {
+            opacity: 1;
+            border-color: var(--gold1);
+            color: var(--gold0);
+        }
+
+        /* Deslocamento modes */
+        .desl-modes {
+            width: 100%;
+            padding: 0 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .desl-mode-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .desl-mode-icon {
+            font-size: 11px;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .desl-mode-label-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(100, 70, 20, 0.2);
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 10.5px;
+            color: var(--ink1);
+            min-width: 0;
+        }
+
+        .desl-mode-label-input::placeholder {
+            color: var(--p3);
+        }
+
+        .desl-mode-label-input:focus {
+            outline: none;
+            border-color: var(--mana1);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .desl-mode-val {
+            width: 32px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(100, 70, 20, 0.2);
+            border-radius: 3px;
+            padding: 2px 3px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 11px;
+            color: var(--ink0);
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .desl-mode-val::-webkit-inner-spin-button,
+        .desl-mode-val::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .desl-mode-val::placeholder {
+            color: var(--p3);
+            font-family: 'IM Fell English', serif;
+            font-size: 9px;
+        }
+
+        .desl-mode-val:focus {
+            outline: none;
+            border-color: var(--mana1);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .desl-mode-unit {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            color: var(--ink3);
+            flex-shrink: 0;
+        }
+
+        /* ══════════════════════════════════════
+           NOTES & KEEPS
+           ══════════════════════════════════════ */
+        .notes-and-keeps {
+            border: 1px solid var(--p3);
+            border-radius: 6px;
+            overflow: hidden;
+            background: linear-gradient(170deg, var(--p1) 0%, var(--p0) 60%, #f0e3be 100%);
+            background-image:
+                repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.1) 28px);
+            box-shadow: inset 0 1px 0 rgba(245, 216, 120, 0.2), 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .notes-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px 7px 12px;
+            background: linear-gradient(90deg, var(--leath1) 0%, var(--leath2) 60%, var(--leath1) 100%);
+            border-bottom: 1px solid var(--leath3);
+        }
+
+        .notes-quill {
+            font-size: 14px;
+            color: var(--gold2);
+            text-shadow: 0 0 8px rgba(232, 184, 74, 0.5);
+            flex-shrink: 0;
+        }
+
+        .notes-title {
+            font-family: 'Cinzel', serif;
+            font-size: 8.5px;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--gold1);
+            flex: 1;
+        }
+
+        .notes-body {
+            padding: 0;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 110px;
+            max-height: 220px;
+            resize: vertical;
+            background: transparent;
+            border: none;
+            padding: 10px 14px;
+            font-family: 'IM Fell English', serif;
+            font-size: 14.5px;
+            color: var(--ink1);
+            line-height: 28px;
+            outline: none;
+            display: block;
+        }
+
+        .notes-textarea::placeholder {
+            color: var(--p3);
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .notes-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px 7px 12px;
+            border-top: 1px solid rgba(100, 70, 20, 0.15);
+            flex-wrap: wrap;
+        }
+
+        .notes-char-count {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.1em;
+            color: var(--ink3);
+            opacity: 0.6;
+            margin-right: auto;
+        }
+
+        .notes-pin-btn {
+            background: none;
+            border: 1px solid rgba(100, 70, 20, 0.25);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.08em;
+            color: var(--ink3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .notes-pin-btn:hover {
+            background: rgba(100, 70, 20, 0.1);
+            border-color: var(--gold1);
+            color: var(--gold0);
+        }
+
+        .notes-keeps {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .keep-chip {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, var(--leath1), var(--leath2));
+            border: 1px solid var(--leath3);
+            border-radius: 20px;
+            padding: 2px 8px 2px 6px;
+            max-width: 140px;
+        }
+
+        .keep-chip-text {
+            font-family: 'IM Fell English', serif;
+            font-size: 11px;
+            color: var(--gold2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 110px;
+            font-style: italic;
+        }
+
+        .keep-chip-del {
+            background: none;
+            border: none;
+            color: var(--leath4);
+            font-size: 9px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: color 0.1s;
+        }
+
+        .keep-chip-del:hover {
+            color: var(--blood2);
+        }
+
+        /* Estilos para os novos controles de perícia */
+        .pericia-grau {
+            width: 55px;
+            background: var(--p1);
+            border: 1px solid var(--p3);
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            text-align: center;
+        }
+
+        .pericia-mod-extra {
+            width: 70px;
+            background: rgba(255, 255, 240, 0.6);
+            border: 1px solid var(--p3);
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-family: 'IM Fell English', serif;
+            text-align: center;
+        }
+
+        .pericia-mod-extra:focus {
+            outline: none;
+            border-color: var(--blood1);
+        }
+
+        .stbl td {
+            vertical-align: middle;
+            padding: 6px 4px;
+        }
+
+        /* ── Attribute color palette ── */
+        :root {
+            --attr-for: #b52418;
+            --attr-des: #4a7cb5;
+            --attr-con: #d4620a;
+            --attr-int: #d4a800;
+            --attr-sab: #3a8a5c;
+            --attr-car: #8a4ab5;
+        }
+
+        /* Blocos de atributos */
+        .atributos-resumo {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 6px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .atributo-card {
+            background: linear-gradient(160deg, var(--p1) 0%, var(--p0) 100%);
+            border: 1px solid var(--attr-color, var(--p3));
+            border-radius: 6px;
+            padding: 6px 6px 5px;
+            text-align: center;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            flex: 1;
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top accent bar in attr color */
+        .atributo-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--attr-color, var(--gold1));
+            border-radius: 6px 6px 0 0;
+        }
+
+        .atributo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--attr-color, var(--p3));
+        }
+
+        /* Per-attribute color vars on the elements */
+        .atributo-card[data-attr="FOR"] {
+            --attr-color: var(--attr-for);
+        }
+
+        .atributo-card[data-attr="DES"] {
+            --attr-color: var(--attr-des);
+        }
+
+        .atributo-card[data-attr="CON"] {
+            --attr-color: var(--attr-con);
+        }
+
+        .atributo-card[data-attr="INT"] {
+            --attr-color: var(--attr-int);
+        }
+
+        .atributo-card[data-attr="SAB"] {
+            --attr-color: var(--attr-sab);
+        }
+
+        .atributo-card[data-attr="CAR"] {
+            --attr-color: var(--attr-car);
+        }
+
+        .atributo-nome {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.18em;
+            color: var(--attr-color, var(--ink3));
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            margin-top: 1px;
+            font-weight: 700;
+        }
+
+        .atributo-valores-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .atributo-valor {
+            font-family: 'Cinzel Decorative', serif;
+            color: var(--ink0);
+            font-size: 17px;
+            line-height: 1;
+        }
+
+        .atributo-mod {
+            font-family: 'Cinzel', serif;
+            color: var(--attr-color, var(--blood1));
+            font-size: 9px;
+            line-height: 1;
+            font-weight: 600;
+        }
+
+        .atributo-total {
+            font-family: 'Cinzel Decorative', serif;
+            color: var(--attr-color, var(--gold0));
+            font-size: 13px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            margin-top: 3px;
+            padding-top: 3px;
+            line-height: 1;
+            opacity: 0.9;
+        }
+
+        .atributo-card small {
+            font-family: 'IM Fell English', serif;
+            font-size: 10px;
+            color: var(--ink3);
+            display: block;
+        }
+
+        .pericia-proficiencia {
+            width: 55px;
+            background: var(--p1);
+            border: 1px solid var(--p3);
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            text-align: center;
+        }
+
+        .pericia-bonus {
+            width: 70px;
+            background: rgba(255, 255, 240, 0.6);
+            border: 1px solid var(--p3);
+            border-radius: 4px;
+            padding: 2px 4px;
+            font-family: 'IM Fell English', serif;
+            text-align: center;
+        }
+
+        .pericia-bonus:focus {
+            outline: none;
+            border-color: var(--blood1);
+        }
+
+        /* ── Proficiência pip selector ── */
+        .prof-pips {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .prof-pip {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 1.5px solid var(--p3);
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .prof-pip:hover {
+            border-color: var(--gold1);
+            transform: scale(1.15);
+        }
+
+        .prof-pip.active {
+            background: var(--blood1);
+            border-color: var(--blood0);
+            box-shadow: 0 0 4px rgba(138, 24, 16, 0.4);
+        }
+
+        .prof-pip[data-level="0"] {
+            border-style: dashed;
+            opacity: 0.5;
+        }
+
+        .prof-pip[data-level="1"].active {
+            background: #7a7a6a;
+            border-color: #555;
+            box-shadow: none;
+        }
+
+        .prof-pip[data-level="2"].active {
+            background: var(--gold0);
+            border-color: var(--gold1);
+            box-shadow: 0 0 3px rgba(196, 137, 42, 0.4);
+        }
+
+        .prof-pip[data-level="3"].active {
+            background: var(--blood1);
+            border-color: var(--blood0);
+        }
+
+        .prof-pip[data-level="4"].active {
+            background: var(--mana1);
+            border-color: var(--mana0);
+            box-shadow: 0 0 4px rgba(35, 24, 181, 0.4);
+        }
+
+        .prof-pip[data-level="5"].active {
+            background: var(--tunic1);
+            border-color: var(--tunic0);
+            box-shadow: 0 0 5px rgba(112, 24, 133, 0.5);
+        }
+
+        .prof-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            color: var(--ink3);
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            min-width: 30px;
+        }
+
+        /* ── Contador de proficiência — centered ── */
+        .proficiencia-counter {
+            background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
+            border: 1px solid var(--leath3);
+            border-radius: 8px;
+            padding: 8px 20px;
+            margin: 0 auto 16px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(196, 137, 42, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .proficiencia-counter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+        }
+
+        .counter-label {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            color: var(--gold1);
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            opacity: 0.85;
+        }
+
+        .counter-fraction {
+            display: flex;
+            align-items: baseline;
+            gap: 2px;
+        }
+
+        .counter-value {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 20px;
+            line-height: 1;
+            color: var(--gold3);
+            text-shadow: 0 0 12px rgba(245, 216, 120, 0.4);
+        }
+
+        .counter-sep {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            color: var(--leath4);
+        }
+
+        .counter-max {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 16px;
+            line-height: 1;
+            color: var(--leath4);
+        }
+
+        .counter-warning {
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            color: var(--blood2);
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .counter-pips-preview {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            margin-left: 4px;
+        }
+
+        .counter-pip-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--leath4);
+            opacity: 0.4;
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .counter-pip-dot.used {
+            background: var(--gold2);
+            opacity: 1;
+        }
+
+        /* ── Arrow info button ── */
+        .pericia-info-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            color: var(--ink3);
+            font-size: 16px;
+            line-height: 1;
+            transition: color 0.15s, transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            opacity: 0.45;
+            vertical-align: middle;
+            margin-right: 2px;
+        }
+
+        .pericia-info-btn:hover {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
+        .pericia-info-btn.open {
+            opacity: 1;
+            transform: rotate(90deg);
+        }
+
+        /* ── Pericia row attr color accent ── */
+        .stbl tbody tr[data-attr-color] td:first-child {
+            border-left: 2px solid var(--row-attr-color, transparent);
+        }
+
+        /* ── Pericia description row ── */
+        .pericia-desc-row td {
+            padding: 0 !important;
+            border-bottom: none !important;
+        }
+
+        .pericia-desc-content {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pericia-desc-content.open {
+            max-height: 200px;
+        }
+
+        .pericia-desc-inner {
+            font-family: 'Jost', sans-serif;
+            font-weight: 400;
+            font-size: 12.5px;
+            color: var(--ink1);
+            line-height: 1.65;
+            padding: 5px 12px 9px 20px;
+            border-left: 3px solid var(--row-attr-color, var(--gold1));
+            margin: 0 0 0 0;
+            background: rgba(255, 255, 240, 0.35);
+            border-bottom: 1px dotted rgba(100, 70, 20, 0.18);
+            text-align: left;
+        }
+
+        /* Opacidade para perícias não treinadas (grau 0) */
+        .pericia-row-grau0 {
+            opacity: 0.55;
+            transition: opacity 0.2s;
+        }
+
+        .pericia-row-grau0:hover {
+            opacity: 0.85;
+        }
+
+        /* Fix table column widths for alignment */
+        .stbl .col-nome {
+            width: auto;
+        }
+
+        .stbl .col-attr {
+            width: 52px;
+        }
+
+        .stbl .col-base {
+            width: 44px;
+            text-align: center;
+        }
+
+        .stbl .col-prof {
+            width: 110px;
+            text-align: center;
+        }
+
+        .stbl .col-bonus {
+            width: 70px;
+            text-align: center;
+        }
+
+        .stbl .col-total {
+            width: 70px;
+            text-align: center;
+        }
+
+        /* ══════════════════════════════════════
+           PONTOS TEMPORÁRIOS — toggle button & bar
+           ══════════════════════════════════════ */
+
+        .vital-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px 0;
+        }
+
+        .vital-card-label {
+            padding: 0 !important;
+        }
+
+        .vital-temp-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-family: 'Cinzel', serif;
+            font-size: 7.5px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            opacity: 0.55;
+            transition: opacity 0.2s, color 0.2s, background 0.2s;
+            line-height: 1;
+        }
+
+        .vital-temp-toggle:hover {
+            opacity: 1;
+            background: rgba(100, 70, 20, 0.08);
+        }
+
+        .vital-temp-toggle.active {
+            opacity: 1;
+        }
+
+        .vital-card-hp .vital-temp-toggle.active {
+            color: var(--blood1);
+        }
+
+        .vital-card-mana .vital-temp-toggle.active {
+            color: var(--mana1);
+        }
+
+        .vital-card-fe .vital-temp-toggle.active {
+            color: var(--tunic1);
+        }
+
+        .vital-temp-toggle .toggle-arrow {
+            font-size: 14px;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1;
+            display: inline-block;
+        }
+
+        .vital-temp-toggle.active .toggle-arrow {
+            transform: rotate(90deg);
+        }
+
+        /* Temp bar wrapper — collapsible */
+        .vital-temp-wrapper {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+            opacity: 0;
+            padding: 0 10px;
+        }
+
+        .vital-temp-wrapper.open {
+            max-height: 60px;
+            opacity: 1;
+        }
+
+        .vital-temp-label {
+            font-family: 'Cinzel', serif;
+            font-size: 7px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            opacity: 0.7;
+            margin-bottom: 2px;
+            margin-top: 2px;
+        }
+
+        .vital-bar.vital-bar--temp {
+            height: 28px;
+            margin: 0 0 8px;
+            width: 100%;
+            background: rgba(18, 13, 4, 0.6);
+        }
+
+        .vital-bar--temp .vital-bar-fill {
+            opacity: 0.65;
+            background: repeating-linear-gradient(45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.08) 4px,
+                    rgba(255, 255, 255, 0.08) 8px),
+                linear-gradient(to right, var(--blood0), var(--blood2));
+        }
+
+        .vital-bar--temp .vital-bar-fill.mana {
+            background: repeating-linear-gradient(45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.08) 4px,
+                    rgba(255, 255, 255, 0.08) 8px),
+                linear-gradient(to right, var(--mana0), var(--mana2));
+        }
+
+        .vital-bar--temp .vital-bar-fill.fe {
+            background: repeating-linear-gradient(45deg,
+                    transparent,
+                    transparent 4px,
+                    rgba(255, 255, 255, 0.08) 4px,
+                    rgba(255, 255, 255, 0.08) 8px),
+                linear-gradient(to right, var(--tunic0), var(--tunic2));
+        }
+
+        .vital-bar--temp .vital-bar-inputs input {
+            font-size: 13px;
+            width: 48px;
+        }
+
+        .vital-bar--temp .vital-bar-inputs .separator {
+            font-size: 13px;
+        }
+
+        /* ══════════════════════════════════════
+           SIDEBAR — MOBILE IMPROVEMENTS
+           ══════════════════════════════════════ */
+
+        /* Mobile bottom nav — hidden by default */
+        .sidebar-mobile-nav {
+            display: none;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            :root {
+                --tab-w: 0px;
+            }
+
+            .app {
+                flex-direction: column;
+            }
+
+            /* Hide the left sidebar entirely on mobile */
+            .sidebar {
+                display: none;
+            }
+
+            /* Show bottom nav bar on mobile */
+            .sidebar-mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 100;
+                background: linear-gradient(0deg, var(--leath0) 0%, var(--leath1) 100%);
+                border-top: 1px solid var(--leath3);
+                box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+                overflow-x: auto;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .sidebar-mobile-nav::-webkit-scrollbar {
+                display: none;
+            }
+
+            .sidebar-mobile-nav::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+                background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+            }
+
+            .sidebar-mobile-nav ul {
+                display: flex;
+                list-style: none;
+                width: 100%;
+                min-width: max-content;
+            }
+
+            .sidebar-mobile-nav ul li {
+                font-family: 'Cinzel', serif;
+                font-size: 9px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--leath4);
+                padding: 10px 14px 12px;
+                cursor: pointer;
+                user-select: none;
+                white-space: nowrap;
+                border-top: 2px solid transparent;
+                transition: color 0.2s, border-color 0.2s, background 0.2s;
+                flex-shrink: 0;
+            }
+
+            .sidebar-mobile-nav ul li:hover {
+                color: var(--gold2);
+                background: rgba(98, 52, 20, 0.3);
+            }
+
+            .sidebar-mobile-nav ul li.active {
+                color: var(--gold3);
+                border-top-color: var(--blood1);
+                background: rgba(18, 13, 4, 0.4);
+                font-weight: 700;
+            }
+
+            /* Main sheet fills full width */
+            .sheet {
+                min-height: calc(100vh - 48px);
+            }
+
+            /* Add padding so content doesn't hide behind bottom nav */
+            .page-wrap {
+                padding-bottom: 52px;
+            }
+
+            .header-body {
+                padding: 10px 14px 12px;
+            }
+
+            .page {
+                padding: 14px 14px 36px;
+            }
+
+            .sg {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .vr {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .wg {
+                grid-template-columns: 1fr;
+            }
+
+            .vitals-attrs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .combat-stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cstat-desl {
+                grid-column: 1 / -1;
+            }
+
+            .geral-top-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .portrait-column {
+                display: flex;
+                justify-content: center;
+            }
+
+            .info-img {
+                max-width: 100%;
+                min-height: 220px;
+                height: 220px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .sidebar-mobile-nav ul li {
+                font-size: 8px;
+                padding: 10px 10px 12px;
+            }
+        }
