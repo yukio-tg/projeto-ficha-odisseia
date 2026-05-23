@@ -16,12 +16,21 @@ export function refreshAllBars() {
     updateBar('fe-atual', 'fe-total', document.getElementById('fe-fill'));
 
     // Barras temporárias (caso existam)
-    const tempFields = ['pv-temp', 'mana-temp', 'fe-temp'];
-    tempFields.forEach(prefix => {
-        const currField = prefix + '-atual';
-        const totalField = prefix + '-total';
-        const fillEl = document.getElementById(prefix + '-fill');
-        if (fillEl) updateBar(currField, totalField, fillEl);
+    const tempFields = [
+        { curr: 'pv-temp-atual', total: 'pv-temp-total', fillId: 'hp-temp-fill' },
+        { curr: 'mana-temp-atual', total: 'mana-temp-total', fillId: 'mana-temp-fill' },
+        { curr: 'fe-temp-atual', total: 'fe-temp-total', fillId: 'fe-temp-fill' }
+    ];
+    tempFields.forEach(({ curr, total, fillId }) => {
+        const currInput = document.querySelector(`[data-field="${curr}"]`);
+        const totalInput = document.querySelector(`[data-field="${total}"]`);
+        const fillEl = document.getElementById(fillId);
+        if (currInput && totalInput && fillEl) {
+            const currVal = parseInt(currInput.value, 10) || 0;
+            const totalVal = parseInt(totalInput.value, 10) || 0;
+            const percent = totalVal > 0 ? Math.min(100, (currVal / totalVal) * 100) : 0;
+            fillEl.style.width = percent + '%';
+        }
     });
 }
 
@@ -41,15 +50,13 @@ export function initBars() {
 
     // Toggle dos temporários (se existirem)
     document.querySelectorAll('.vital-temp-toggle').forEach(btn => {
-        const targetId = btn.dataset.target;
-        if (!targetId) return;
         btn.addEventListener('click', () => {
-            const wrapper = document.getElementById(targetId);
-            if (!wrapper) return;
-            const isOpen = wrapper.classList.contains('open');
-            wrapper.classList.toggle('open', !isOpen);
-            btn.classList.toggle('active', !isOpen);
-            if (!isOpen) refreshAllBars();
+            const wrapper = document.getElementById(btn.dataset.target);
+            if (wrapper) {
+                wrapper.classList.toggle('open');
+                btn.classList.toggle('active');
+                refreshAllBars(); // força atualização ao abrir
+            }
         });
     });
 }

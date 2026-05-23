@@ -1,6 +1,10 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
 import { autoCalcEnabled } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
+let afterSkillsUpdate = null;
+export function setAfterSkillsUpdate(fn) {
+    afterSkillsUpdate = fn;
+}
 
 // Dados das perícias
 export const periciasData = [
@@ -300,6 +304,37 @@ export function atualizarPericias(force = false) {
     atualizarInertidao();
     atualizarContadorProficiencia();
     calcStats();
+    if (afterSkillsUpdate) afterSkillsUpdate();
+}
+
+export function getTotalPericia(nomePericia, attrOverride = null) {
+    const pericia = periciasEstado.find(p => p.nome.toLowerCase() === nomePericia.trim().toLowerCase());
+    if (!pericia) return '';
+
+    const attr = attrOverride || pericia.attr;
+    const wrap = getRadarAttrWrap(attr);
+    if (!wrap) return '0';
+    const baseAttrInput = wrap.querySelector('.attr-input');
+    const modAttrInput = wrap.querySelector('.mod-input');
+    const baseAttr = baseAttrInput ? parseInt(baseAttrInput.value, 10) || 0 : 0;
+    const modAttr = modAttrInput ? parseInt(modAttrInput.value, 10) || 0 : 0;
+    const baseTotal = baseAttr + modAttr;
+
+    let bonusNum = 0;
+    if (pericia.bonus) {
+        const match = pericia.bonus.trim().match(/^[-+]?\d+/);
+        if (match) bonusNum = parseInt(match[0], 10);
+    }
+    const soma = bonusNum + baseTotal;
+    const diceMap = { 0:'', 1:'1d4', 2:'1d6', 3:'1d8', 4:'1d10', 5:'1d12' };
+    const dice = diceMap[pericia.proficiencia] || '';
+
+    if (dice) {
+        if (soma !== 0) return dice + (soma >= 0 ? '+' : '') + soma;
+        else return dice;
+    } else {
+        return (soma >= 0 ? '+' : '') + soma;
+    }
 }
 
 export function initSkills() {

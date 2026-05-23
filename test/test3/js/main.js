@@ -4,10 +4,10 @@ import { initRadar } from './core/radar-service.js';
 import { initAutocomplete } from './ui/autocomplete.js';
 import { initBars } from './ui/vitals.js';
 import { initPortrait } from './ui/portrait.js';
-import { initSkills, atualizarPericias } from './ui/skills.js';
+import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
 import { initHeaderSync } from './ui/header.js';
-import { initCombatExtras } from './ui/combat.js';
+import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';   // <-- novo
 import { atualizarHeranca, removerBonusAtuais, aplicarNovoBonus } from './core/heranca-logic.js';
 import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
@@ -19,9 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initBars();
     initPortrait();
     initSkills();
+    setAfterSkillsUpdate(() => {
+        atualizarAtaquesAcerto(true);
+        document.dispatchEvent(new Event('reacoes:atualizar-stats'));
+    });
     initTabs();
     initHeaderSync();
-    initCombatExtras();
+    initCombat();
+    popularReacoesPreset();
     initHerancaToggle();   // <-- ativa o toggle
 
     // Botão autocalc
@@ -64,8 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (autoCalcEnabled) {
                     atualizarInertidao();
                     atualizarHeranca();
-                    updateVisibilityByLevel();  // NOVO
+                    updateVisibilityByLevel();
                     calcStats();
+                    atualizarAcoesPorNivel();
+                    atualizarAvisoReacoes();
+                    document.dispatchEvent(new Event('reacoes:atualizar-stats'));
                 }
             });
         }
@@ -80,6 +88,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (autoCalcEnabled) updateFeVisibility();
             });
         }
+
+        // Atualiza stats bars de reação quando qualquer atributo do radar muda
+        document.querySelector('#secao-radar')?.addEventListener('input', (e) => {
+            if (e.target.classList.contains('attr-input') || e.target.classList.contains('mod-input')) {
+                document.dispatchEvent(new Event('reacoes:atualizar-stats'));
+            }
+        });
 
         const herancaInput = document.querySelector('[data-field="heranca-nome"]');
         if (herancaInput) {
@@ -101,16 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        const escolhaSelect = document.querySelector('[data-field="aprendizadoEscolha"]');
-        if (escolhaSelect) {
-            escolhaSelect.addEventListener('change', () => {
-                if (autoCalcEnabled) {
-                    removerBonusAtuais();
-                    aplicarNovoBonus();
-                }
-            });
-        }
-
         // Classe input
         const classeInput = document.querySelector('[data-field="classe-nome"]');
         if (classeInput) {
@@ -118,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (autoCalcEnabled) {
                     atualizarHeranca();   // se houver dependência, mas herança não depende de classe
                     calcStats();
+                    atualizarAcoesPorNivel();
+                    atualizarAvisoReacoes();
                 }
             });
             classeInput.addEventListener('change', () => {
@@ -133,5 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVisibilityByLevel();
         calcStats();
         updateFeVisibility();
+        atualizarAcoesPorNivel();
+        atualizarAvisoReacoes();
+        atualizarAtaquesAcerto(false);
     }, 600);
 });

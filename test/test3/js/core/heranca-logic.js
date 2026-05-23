@@ -2,12 +2,14 @@ import { HERANCA_DATA, HIERARQUIA_ORDEM } from '../config/herancas.js';
 import { getNivel, getRadarAttrWrap } from './radar-service.js';
 import { autoCalcEnabled } from './state.js';
 
-export let herancaAttrBonusAplicado = { FOR:0, DES:0, CON:0, INT:0, SAB:0, CAR:0 };
+export let herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
 
 const checkFortuna = document.querySelector('[data-field="aumentoDeFortuna"]');
 const checkAprendizado = document.querySelector('[data-field="aprendizadoDaVida"]');
 const checkHabilidade = document.querySelector('[data-field="habilidadeAdquirida"]');
 const checkboxes = [checkFortuna, checkAprendizado, checkHabilidade];
+
+let currentChoiceValue = null;
 
 function adjustRadarBaseAttribute(attr, delta) {
     const wrap = getRadarAttrWrap(attr);
@@ -25,7 +27,58 @@ export function removerBonusAtuais() {
     for (const [attr, val] of Object.entries(herancaAttrBonusAplicado)) {
         if (val !== 0) adjustRadarBaseAttribute(attr, -val);
     }
-    herancaAttrBonusAplicado = { FOR:0, DES:0, CON:0, INT:0, SAB:0, CAR:0 };
+    herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
+}
+
+function inicializarSelectEscolha(data) {
+    let select = document.querySelector('[data-field="aprendizadoEscolha"]');
+    const container = document.getElementById('aprendizado-escolha-container');
+    const nota = document.getElementById('aprendizado-nota');
+    if (!container || !nota) return null;
+
+    if (!select) {
+        select = document.createElement('select');
+        select.setAttribute('data-field', 'aprendizadoEscolha');
+        container.appendChild(select);
+    }
+
+    container.style.display = '';
+    nota.textContent = 'Escolha o atributo para receber +1 (Aprendizado da Vida):';
+    
+    if (select.options.length === 0 || select.options[0]?.value !== data.bonus.choices[0]) {
+        select.innerHTML = '';
+        data.bonus.choices.forEach(attr => {
+            const opt = document.createElement('option');
+            opt.value = attr;
+            opt.textContent = attr + ' (+1)';
+            select.appendChild(opt);
+        });
+    }
+    
+    if (!select._listenerAdded) {
+        select.addEventListener('change', () => {
+            if (!autoCalcEnabled) return;
+            const newValue = select.value;
+            if (newValue && newValue !== currentChoiceValue) {
+                removerBonusAtuais();
+                aplicarBonusPorEscolha(newValue);
+                currentChoiceValue = newValue;
+            }
+        });
+        select._listenerAdded = true;
+    }
+    
+    return select;
+}
+
+function aplicarBonusPorEscolha(attr) {
+    if (!attr) return false;
+    const bonusObj = { [attr]: 1 };
+    for (const [attrKey, val] of Object.entries(bonusObj)) {
+        adjustRadarBaseAttribute(attrKey, val);
+        herancaAttrBonusAplicado[attrKey] = (herancaAttrBonusAplicado[attrKey] || 0) + val;
+    }
+    return true;
 }
 
 export function aplicarNovoBonus() {
@@ -33,43 +86,35 @@ export function aplicarNovoBonus() {
     const chave = herancaNome.toLowerCase();
     const data = HERANCA_DATA[chave];
     const aprendizadoAtivo = checkAprendizado && checkAprendizado.checked;
+    
     if (!data || !aprendizadoAtivo) {
         const container = document.getElementById('aprendizado-escolha-container');
         if (container) container.style.display = 'none';
         return false;
     }
 
-    let bonusObj = {};
     if (data.bonus.type === 'fixed') {
-        bonusObj[data.bonus.attr] = data.bonus.value;
+        const bonusObj = { [data.bonus.attr]: data.bonus.value };
+        for (const [attr, val] of Object.entries(bonusObj)) {
+            adjustRadarBaseAttribute(attr, val);
+            herancaAttrBonusAplicado[attr] = (herancaAttrBonusAplicado[attr] || 0) + val;
+        }
         const container = document.getElementById('aprendizado-escolha-container');
         if (container) container.style.display = 'none';
-    } else if (data.bonus.type === 'choice') {
-        const container = document.getElementById('aprendizado-escolha-container');
-        const select = document.querySelector('[data-field="aprendizadoEscolha"]');
-        const nota = document.getElementById('aprendizado-nota');
-        if (container && select && nota) {
-            container.style.display = '';
-            nota.textContent = 'Escolha o atributo para receber +1 (Aprendizado da Vida):';
-            select.innerHTML = '';
-            data.bonus.choices.forEach(attr => {
-                const opt = document.createElement('option');
-                opt.value = attr;
-                opt.textContent = attr + ' (+1)';
-                select.appendChild(opt);
-            });
-            if (!select.value) return false;
-            bonusObj[select.value] = 1;
-        } else {
-            return false;
+        return true;
+    }
+    
+    if (data.bonus.type === 'choice') {
+        const select = inicializarSelectEscolha(data);
+        if (!select) return false;
+        
+        if (!currentChoiceValue && select.options.length) {
+            currentChoiceValue = select.options[0].value;
+            select.value = currentChoiceValue;
         }
+        return aplicarBonusPorEscolha(currentChoiceValue);
     }
-
-    for (const [attr, val] of Object.entries(bonusObj)) {
-        adjustRadarBaseAttribute(attr, val);
-        herancaAttrBonusAplicado[attr] = (herancaAttrBonusAplicado[attr] || 0) + val;
-    }
-    return true;
+    return false;
 }
 
 export function limitarCheckboxes() {
@@ -90,7 +135,7 @@ export function limitarCheckboxes() {
 export function atualizarFortuna() {
     const herancaNome = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
     const chave = herancaNome.toLowerCase();
-    const data = HERANCA_DATA[chave] || { hierarquia:'pobre', dinheiro:0 };
+    const data = HERANCA_DATA[chave] || { hierarquia: 'pobre', dinheiro: 0 };
     const nivel = getNivel();
 
     let indiceBase = HIERARQUIA_ORDEM.indexOf(data.hierarquia);
@@ -103,8 +148,10 @@ export function atualizarFortuna() {
     if (checkFortuna && checkFortuna.checked) aumento++;
 
     const indiceFinal = Math.min(indiceBase + aumento, HIERARQUIA_ORDEM.length - 1);
-    document.querySelector('[data-field="hierarquia"]').value = HIERARQUIA_ORDEM[indiceFinal];
-    document.querySelector('[data-field="dinheiro"]').value = data.dinheiro;
+    const hierarquiaSelect = document.querySelector('[data-field="hierarquia"]');
+    if (hierarquiaSelect) hierarquiaSelect.value = HIERARQUIA_ORDEM[indiceFinal];
+    const dinheiroInput = document.querySelector('[data-field="dinheiro"]');
+    if (dinheiroInput) dinheiroInput.value = data.dinheiro;
 }
 
 export function atualizarHeranca() {

@@ -216,8 +216,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background-image:
-                repeating-linear-gradient(0deg, transparent 0px, transparent 31px, rgba(90, 60, 15, 0.06) 32px);
+            background-image: url("../image/page.png");
             pointer-events: none;
             z-index: 0;
         }
@@ -3462,6 +3461,806 @@
             font-size: 13px;
         }
 
+        /* ════════════════════════════════════════════════════════════════
+   COMBAT TAB — redesign additions
+   Append this block to the end of style.css.
+   All existing .cstat-*, .wg, .wc, .ac classes remain untouched.
+   ════════════════════════════════════════════════════════════════ */
+
+        /* ── Shared combat input / label primitives ── */
+        .combat-label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            display: block;
+            margin: 3px 0;
+        }
+
+        .combat-input {
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(100, 70, 20, 0.22);
+            border-radius: 4px;
+            padding: 4px 7px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 13px;
+            color: var(--ink0);
+            width: 100%;
+            transition: border-color 0.15s, background 0.15s;
+            -moz-appearance: textfield;
+        }
+
+        .combat-input::-webkit-inner-spin-button,
+        .combat-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .combat-input:focus {
+            outline: none;
+            border-color: var(--blood1);
+            background: rgba(255, 255, 255, 0.65);
+        }
+
+        .combat-input--sm {
+            width: 52px;
+            text-align: center;
+            font-size: 12px;
+            padding: 3px 5px;
+        }
+
+        /* Readonly state (auto-calculated from perícia) */
+        .combat-input--readonly {
+            background: rgba(138, 24, 16, 0.06);
+            border-color: rgba(138, 24, 16, 0.2);
+            color: var(--blood1);
+            cursor: default;
+        }
+
+        /* Flash animation for tick button */
+        .combat-input--flash {
+            animation: combat-flash 0.3s ease;
+        }
+
+        @keyframes combat-flash {
+            0% {
+                background: rgba(138, 24, 16, 0.18);
+            }
+
+            100% {
+                background: rgba(255, 255, 255, 0.35);
+            }
+        }
+
+        .combat-select {
+            background: var(--p1);
+            border: 1px solid rgba(100, 70, 20, 0.22);
+            border-radius: 4px;
+            padding: 4px 6px;
+            font-family: 'Cinzel', serif;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            color: var(--ink1);
+            width: 100%;
+            cursor: pointer;
+            transition: border-color 0.15s;
+        }
+
+        .combat-select:focus {
+            outline: none;
+            border-color: var(--blood1);
+        }
+
+        .combat-select--sm {
+            width: auto;
+            min-width: 72px;
+            font-size: 9px;
+            padding: 3px 5px;
+        }
+
+        .combat-select--tipo {
+            width: auto;
+            min-width: 60px;
+            font-size: 9px;
+            padding: 3px 5px;
+            flex-shrink: 0;
+        }
+
+        .combat-textarea {
+            width: 100%;
+            background: rgba(255, 255, 240, 0.4);
+            border: 1px solid rgba(100, 70, 20, 0.18);
+            border-radius: 4px;
+            padding: 7px 10px;
+            font-family: 'IM Fell English', serif;
+            font-size: 14px;
+            color: var(--ink1);
+            line-height: 1.55;
+            resize: vertical;
+            transition: border-color 0.15s;
+        }
+
+        .combat-textarea:focus {
+            outline: none;
+            border-color: var(--blood1);
+            background: rgba(255, 255, 240, 0.7);
+        }
+
+        /* ── Universal "add" button ── */
+        .combat-add-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 8px;
+            padding: 5px 12px;
+            background: none;
+            border: 1px solid rgba(100, 70, 20, 0.3);
+            border-radius: 2px;
+            font-family: 'Cinzel', serif;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            cursor: pointer;
+            opacity: 0.55;
+            transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+        }
+
+        .combat-add-btn:hover:not(:disabled) {
+            opacity: 1;
+            border-color: var(--gold1);
+            color: var(--gold0);
+        }
+
+        .combat-add-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+
+        .combat-cards-list .combat-add-btn{
+            padding: 0 4px;
+            gap: 1px;
+            margin: 0;
+            min-width: 20px;
+            justify-content: center;
+        }
+
+        .combat-cards-list .combat-add-btn span{
+            font-size: 1em;
+        }
+
+        /* Section hint text */
+        .combat-section-hint {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 12px;
+            color: var(--ink3);
+            margin-bottom: 8px;
+            opacity: 0.75;
+        }
+
+        /* ── Lists ── */
+        .combat-cards-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+
+        /* ── Base combat card ── */
+        .combat-card {
+            border: 1px solid var(--p2);
+            border-radius: 6px;
+            background: linear-gradient(158deg, var(--p1) 0%, var(--p0) 100%);
+            overflow: hidden;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            position: relative;
+        }
+
+        .combat-card:hover {
+            border-color: var(--p3);
+        }
+
+        .combat-card--open {
+            border-color: var(--gold1);
+            box-shadow: 0 2px 10px rgba(196, 137, 42, 0.1);
+        }
+
+        /* Top accent stripe — color varies per type */
+        .combat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .combat-card--ataque::before {
+            background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+        }
+
+        .combat-card--reacao::before {
+            background: linear-gradient(90deg, var(--mana0), var(--mana1), transparent);
+        }
+
+        .combat-card--oportunidade::before {
+            background: linear-gradient(90deg, var(--gold0), var(--gold1), transparent);
+        }
+
+        .combat-card--condicao::before {
+            background: linear-gradient(90deg, var(--tunic0), var(--tunic1), transparent);
+        }
+
+        .combat-card--bonus[data-bonus-tipo="bonus"]::before {
+            background: linear-gradient(90deg, var(--gold0), var(--gold1), transparent);
+        }
+
+        .combat-card--bonus[data-bonus-tipo="onus"]::before {
+            background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+        }
+
+
+        .reacao--brecha::before{
+            background: linear-gradient(90deg, var(--attr-int), transparent);
+        }
+
+        .reacao--brecha .combat-card__header-left input {
+            color: var(--attr-int);
+        }
+
+        .reacao--dramatizar::before{
+            background: linear-gradient(90deg, var(--attr-car), transparent);
+        }
+
+        .reacao--dramatizar .combat-card__header-left input {
+            color: var(--attr-car);
+        }
+
+        .reacao--esquivar::before{
+            background: linear-gradient(90deg, var(--attr-des), transparent);
+        }
+
+        .reacao--esquivar .combat-card__header-left input {
+            color: var(--attr-des);
+        }
+        
+        .reacao--contra-atacar::before{
+            background: linear-gradient(90deg, var(--attr-for), transparent);
+        }
+
+        .reacao--contra-atacar .combat-card__header-left input {
+            color: var(--attr-for);
+        }
+
+        .reacao--protecao-magica::before{
+            background: linear-gradient(90deg, var(--attr-sab), transparent);
+        }
+
+        .reacao--protecao-magica .combat-card__header-left input {
+            color: var(--attr-sab);
+        }
+
+        .reacao--bloquear::before{
+            background: linear-gradient(90deg, var(--attr-con), transparent);
+        }
+
+        .reacao--bloquear .combat-card__header-left input {
+            color: var(--attr-con);
+        }
+
+
+        /* Card body background tint for bonus/ônus */
+        .combat-card--bonus[data-bonus-tipo="bonus"] {
+            background: linear-gradient(158deg, var(--p1) 0%, #f5f0d7 100%);
+        }
+
+        .combat-card--bonus[data-bonus-tipo="onus"] {
+            background: linear-gradient(158deg, var(--p1) 0%, #f2e2e0 100%);
+        }
+
+        /* Expiring animation (condition removed via tick) */
+        .combat-card--expiring {
+            animation: combat-expire 0.35s ease forwards;
+        }
+
+        @keyframes combat-expire {
+            0% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateX(16px);
+            }
+        }
+
+        /* ── Card header ── */
+        .combat-card__header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 10px 8px 10px;
+            cursor: pointer;
+            user-select: none;
+            min-height: 40px;
+        }
+
+        .combat-card__header:focus-visible {
+            outline: 2px solid var(--blood1);
+            outline-offset: -2px;
+            border-radius: 5px;
+        }
+
+        .combat-card__header-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .combat-card__name-input {
+            flex: 1;
+            min-width: 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed transparent;
+            font-family: 'Cinzel', serif;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink0);
+            padding: 1px 2px;
+            transition: border-color 0.15s;
+        }
+
+        .combat-card--ataque .combat-card__name-input {
+            color: var(--blood1);
+        }
+
+        .combat-card--reacao .combat-card__name-input {
+            color: var(--mana1);
+        }
+
+        .combat-card--bonus .combat-card__name-input {
+            color: var(--ink0);
+        }
+
+        .combat-card__name-input:focus {
+            outline: none;
+            border-bottom-color: var(--blood1);
+        }
+
+        .combat-card__name-input[readonly] {
+            cursor: default;
+            color: var(--gold0);
+        }
+
+        /* ── Collapsed summary (attack cards only) ── */
+        .combat-card__header-summary {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 12px;
+            flex-shrink: 0;
+            transition: opacity 0.15s;
+        }
+
+        .combat-card__summary-sep {
+            color: var(--p3);
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+        }
+
+        .grouped-btn{
+            display: flex;
+            gap: 2px;
+            flex-direction: column;
+        }
+
+        .combat-card__summary-acerto, .combat-card__summary-dano, .combat-card__summary-crit{
+            padding: 1px 3px;
+            border: 1px solid var(--p3);
+            border-radius: 4px;
+            background-color: var(--p1);
+            color: var(--ink1);
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.06)
+        }
+
+        /* ── Delete button ── */
+        .combat-card__delete-btn {
+            background: none;
+            border: none;
+            padding: 3px;
+            cursor: pointer;
+            color: var(--blood1);
+            opacity: 0.4;
+            transition: opacity 0.15s, color 0.15s;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            border-radius: 3px;
+        }
+
+        .combat-card__delete-btn:hover {
+            opacity: 1;
+            color: var(--blood2);
+        }
+
+        /* ── Chevron ── */
+        .combat-card__chevron {
+            font-size: 18px;
+            color: var(--ink3);
+            opacity: 0.5;
+            flex-shrink: 0;
+            transition: transform 0.2s, opacity 0.15s;
+        }
+
+        .combat-card--open .combat-card__chevron {
+            opacity: 0.85;
+        }
+
+        /* ── Card body ── */
+        .combat-card__body {
+            padding: 0 12px 12px 12px;
+            border-top: 1px solid rgba(100, 70, 20, 0.12);
+        }
+
+        /* ── ATTACK BODY layout ── */
+        .ataque-fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px 12px;
+            padding-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .ataque-field-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Alcance spans full width */
+        .ataque-field-group--alcance {
+            grid-column: 1 / -1;
+        }
+
+        .ataque-desc-row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── AÇÕES POR RODADA tiles ── */
+        .acoes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .acoes-tile {
+            border: 1px solid var(--p2);
+            border-radius: 6px;
+            background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+            padding: 10px 8px 10px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.15s;
+        }
+
+        .acoes-tile::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: var(--gold1);
+            opacity: 0.4;
+            border-radius: 0 0 2px 2px;
+        }
+
+        .acoes-tile:hover {
+            border-color: var(--gold1);
+        }
+
+        .acoes-tile__label {
+            font-family: 'Cinzel', serif;
+            font-size: 8px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink3);
+            margin-bottom: 5px;
+        }
+
+        .acoes-tile__input {
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 28px;
+            color: var(--ink0);
+            text-align: center;
+            width: 52px;
+            background: none;
+            border: none;
+            -moz-appearance: textfield;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+
+        .acoes-tile__input::-webkit-inner-spin-button,
+        .acoes-tile__input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .acoes-tile__input:focus {
+            outline: none;
+            color: var(--blood1);
+        }
+
+        /* ── REAÇÕES aviso ── */
+        .reacoes-aviso {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 8px;
+            padding: 7px 10px;
+            border: 1px solid rgba(138, 94, 16, 0.3);
+            border-radius: 5px;
+            background: rgba(245, 216, 120, 0.12);
+        }
+
+        .reacoes-aviso-line {
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            font-size: 13px;
+            color: var(--gold0);
+        }
+
+        /* ── Oportunidade badge ── */
+        .combat-card__oportunidade-badge {
+            font-family: 'Cinzel', serif;
+            font-size: 7px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--gold0);
+            background: rgba(196, 137, 42, 0.12);
+            border: 1px solid rgba(196, 137, 42, 0.3);
+            border-radius: 3px;
+            padding: 2px 5px;
+            flex-shrink: 0;
+        }
+
+        /* ── Reação stats bar ── */
+        .reacao-stats-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 6px 12px 6px;
+            background: linear-gradient(to bottom, rgba(196,137,42,0.06), transparent);
+            border-bottom: 1px solid rgba(196,137,42,0.15);
+            min-height: 0;
+        }
+
+        .reacao-stats-bar:empty {
+            display: none;
+        }
+
+        .reacao-stat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(196,137,42,0.1);
+            border: 1px solid rgba(196,137,42,0.3);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-family: 'IM Fell English', serif;
+            font-size: 11px;
+        }
+
+        .reacao-stat-chip--sub {
+            background: rgba(196,137,42,0.05);
+            border-color: rgba(196,137,42,0.15);
+            font-size: 10px;
+            opacity: 0.75;
+        }
+
+        .reacao-stat-chip--highlight {
+            background: rgba(101,44,9,0.15);
+            border-color: var(--blood1, #8a1a1a);
+        }
+
+        .reacao-stat-chip__label {
+            color: var(--ink2, #5a3e10);
+            font-size: 9px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .reacao-stat-chip__label--full {
+            font-size: 10px;
+            text-transform: none;
+            letter-spacing: 0;
+            font-style: italic;
+        }
+
+        .reacao-stat-chip__valor {
+            color: var(--gold0, #8a5e10);
+            font-weight: 700;
+            font-size: 13px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .reacao-recurso-row {
+            margin-bottom: 10px;
+        }
+
+        .reacao-recurso-controls {
+            display: flex;
+            gap: 7px;
+            align-items: center;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .reacao-btn-gasto {
+            margin: 0 !important;
+            padding: 2px 8px !important;
+        }
+
+        .reacao-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* ── CONDITION cards ── */
+        .condicoes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .combat-card--condicao {
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            /* no accordion: always expanded, compact layout */
+            cursor: default;
+        }
+
+        .combat-card--condicao::before {
+            border-radius: 6px 6px 0 0;
+        }
+
+        .condicao-header-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .condicao-header-row .combat-card__name-input {
+            flex: 1;
+            color: var(--tunic1);
+            font-size: 10.5px;
+            border-bottom-color: transparent;
+            min-width: 0;
+        }
+
+        .condicao-header-row .combat-card__name-input:focus {
+            border-bottom-color: var(--tunic1);
+        }
+
+        .condicao-duracao-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-shrink: 0;
+        }
+
+        .condicao-tick-btn {
+            background: none;
+            border: 1px solid rgba(100, 70, 20, 0.2);
+            border-radius: 3px;
+            padding: 2px 4px;
+            cursor: pointer;
+            color: var(--ink3);
+            display: flex;
+            align-items: center;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .condicao-tick-btn:hover {
+            border-color: var(--blood1);
+            color: var(--blood1);
+        }
+
+        /* ── Remove btn on special rows (defesa/RD) ── */
+        .cstat-row-remove-btn {
+            background: none;
+            border: none;
+            padding: 2px;
+            cursor: pointer;
+            color: var(--blood1);
+            opacity: 0.4;
+            display: flex;
+            align-items: center;
+            border-radius: 3px;
+            transition: opacity 0.15s;
+        }
+
+        .cstat-row-remove-btn:hover {
+            opacity: 1;
+        }
+
+        /* Ajustes para campos de munição e reações especiais */
+        .ataque-field-group .combat-input--sm {
+            text-align: center;
+        }
+
+        [data-action="gastar-brecha-rd"],
+        [data-action="gastar-brecha-dano"] {
+            background: var(--leath2);
+            color: var(--gold2);
+            border-color: var(--gold1);
+        }
+
+        textarea[data-brecha-notes] {
+            background: rgba(30, 20, 10, 0.08);
+            border-left: 2px solid var(--gold1);
+            font-family: 'IM Fell English', serif;
+            font-style: italic;
+            transition: all 0.2s;
+        }
+
+        textarea[data-brecha-notes]:focus {
+            background: rgba(255, 245, 200, 0.3);
+            border-left-color: var(--blood1);
+        }
+
+        /* ── Responsive tweaks ── */
+        @media (max-width: 600px) {
+            .acoes-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .ataque-fields-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .condicoes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sheet {
+            transition: filter 0.3s ease;
+        }
+
+        #dynamic-overlay {
+            transition: background 0.3s ease;
+        }
+
+        #global-effect-overlay {
+            transition: background 0.25s ease, backdrop-filter 0.25s ease;
+            will-change: background, backdrop-filter;
+        }
+
+        #popup-condicao {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
         /* ══════════════════════════════════════
            SIDEBAR — MOBILE IMPROVEMENTS
            ══════════════════════════════════════ */
@@ -3606,7 +4405,12 @@
                 min-height: 220px;
                 height: 220px;
             }
+
+            .combat-cards-list {
+                grid-template-columns: 1fr;
+            }
         }
+
 
         @media (max-width: 380px) {
             .sidebar-mobile-nav ul li {
