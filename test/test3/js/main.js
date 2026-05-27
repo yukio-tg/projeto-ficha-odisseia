@@ -12,6 +12,7 @@ import { initHerancaToggle } from './ui/heranca-toggle.js';   // <-- novo
 import { atualizarHeranca, removerBonusAtuais, aplicarNovoBonus } from './core/heranca-logic.js';
 import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility } from './core/calculation.js';
+import { initPowers } from './ui/powers.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initRadar('secao-radar');
@@ -27,7 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initHeaderSync();
     initCombat();
     popularReacoesPreset();
-    initHerancaToggle();   // <-- ativa o toggle
+    initHerancaToggle();
+    initPowers();
 
     // Botão autocalc
     const autocalcBtn = document.getElementById('autocalc-switch');

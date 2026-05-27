@@ -1,0 +1,6 @@
+[
+  { "nome": "Quebrar Paredes", "ptCost": 5, "otherCosts": "2 PM", "descricao": "Pelo custo de 2PM, você racha uma parede.", "cor": "Vermelho" },
+  { "nome": "Visão Noturna", "ptCost": 3, "otherCosts": "1 PM/hora", "descricao": "Enxerga no escuro por 1 hora.", "cor": "Verde" },
+  { "nome": "Teleporte", "ptCost": 8, "otherCosts": "5 PM", "descricao": "Teletransporta-se até 10m.", "cor": "Azul" },
+  { "nome": "Bola de Fogo", "ptCost": 4, "otherCosts": "3 PM", "descricao": "Lança uma bola de fogo que causa 6d6 de dano.", "cor": "Laranja" }
+]
