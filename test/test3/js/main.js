@@ -13,6 +13,7 @@ import { atualizarHeranca, removerBonusAtuais, aplicarNovoBonus } from './core/h
 import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
+import { initMagias } from './ui/magias.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     initRadar('secao-radar');
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     popularReacoesPreset();
     initHerancaToggle();
     initPowers();
+    initMagias();
 
     // Botão autocalc
     const autocalcBtn = document.getElementById('autocalc-switch');

@@ -333,8 +333,6 @@ function mostrarAutocomplete(query) {
     
     // Caso ainda carregando
     if (dataLoading) {
-        dropdown.innerHTML = '<div class="autocomplete-message">⏳ Carregando poderes...</div>';
-        dropdown.style.display = 'block';
         return;
     }
     
@@ -352,8 +350,6 @@ function mostrarAutocomplete(query) {
     const qNorm = normalizar(query);
     const resultados = poderesDB.filter(p => normalizar(p.nome).includes(qNorm)).slice(0, 8);
     if (resultados.length === 0) {
-        dropdown.innerHTML = '<div class="autocomplete-message">Nenhum poder encontrado</div>';
-        dropdown.style.display = 'block';
         return;
     }
 
@@ -380,24 +376,44 @@ function setupAutocompleteKeyboard() {
     let currentIndex = -1;
     inputBusca.addEventListener('keydown', (e) => {
         const dropdown = document.querySelector('.autocomplete-powers-dropdown');
-        if (!dropdown || dropdown.style.display !== 'block') return;
-        const items = dropdown.querySelectorAll('.autocomplete-item-power');
-        if (!items.length) return;
-        if (e.key === 'ArrowDown') {
+        const isDropdownVisible = dropdown && dropdown.style.display === 'block';
+        const items = isDropdownVisible ? dropdown.querySelectorAll('.autocomplete-item-power') : [];
+
+        if (isDropdownVisible && items.length) {
+            // Navegação com setas apenas quando dropdown está visível
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentIndex = (currentIndex + 1) % items.length;
+                items.forEach((item, i) => item.classList.toggle('autocomplete-item-power--active', i === currentIndex));
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentIndex = (currentIndex - 1 + items.length) % items.length;
+                items.forEach((item, i) => item.classList.toggle('autocomplete-item-power--active', i === currentIndex));
+                return;
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (currentIndex >= 0 && items[currentIndex]) {
+                    items[currentIndex].click();   // seleciona o item do autocomplete
+                    return;
+                }
+            }
+            if (e.key === 'Escape') {
+                fecharAutocomplete();
+                return;
+            }
+        }
+
+        // Se o dropdown NÃO está visível, ou está mas não há item selecionado, Enter chama adicionar
+        if (e.key === 'Enter') {
             e.preventDefault();
-            currentIndex = (currentIndex + 1) % items.length;
-            items.forEach((item, i) => item.classList.toggle('autocomplete-item-power--active', i === currentIndex));
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            currentIndex = (currentIndex - 1 + items.length) % items.length;
-            items.forEach((item, i) => item.classList.toggle('autocomplete-item-power--active', i === currentIndex));
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (currentIndex >= 0 && items[currentIndex]) items[currentIndex].click();
-        } else if (e.key === 'Escape') {
-            fecharAutocomplete();
+            adicionarPoderDoBusca();
         }
     });
+
+    // Fechar dropdown ao clicar fora
     document.addEventListener('click', (e) => {
         const dropdown = document.querySelector('.autocomplete-powers-dropdown');
         if (!inputBusca.contains(e.target) && !dropdown?.contains(e.target)) fecharAutocomplete();

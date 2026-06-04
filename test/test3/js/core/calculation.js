@@ -22,13 +22,13 @@ export function atualizarInertidao() {
 
 const FORMULAS = {
     'coração': { pv: { base: 23, per: 4 }, pm: { base: 2, per: 1 }, pt: { base: 2, per: 1 }, inv: (f) => 7 + f, la: (s) => s, laPer: 0 },
-    'arcanista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => 3 + s, laPer: 2 },
-    'certeiro': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s, l) => s/2 },
-    'terrível': { pv: { base: 18, per: 3 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s, l) => s/2 },
-    'feromântico': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 4 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: 1 },
-    'teurgista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: 1 },
-    'engenhoso': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 7 + f, la: (s) => s, laPer: (s, l) => s/2 },
-    'treinador': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s, l) => s/2 }
+    'arcanista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => 3 + s, laPer: (s) => 2 + (s / 2) },
+    'certeiro': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s) => s / 2 },
+    'terrível': { pv: { base: 18, per: 3 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 },
+    'feromântico': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 4 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
+    'teurgista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
+    'engenhoso': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 7 + f, la: (s) => s, laPer: (s) => s / 2 },
+    'treinador': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s) => s / 2 }
 };
 
 export const calculatedLimits = { pt: 0, inv: 0, la: 0 };
@@ -46,7 +46,7 @@ function atualizarVital(prefix, maxVal, skipAtualUpdate = false) {
     if (!atualInput || !maxInput) return;
     const oldMax = parseInt(maxInput.value) || 0;
     const oldAtual = parseInt(atualInput.value) || 0;
-    
+
     if (!skipAtualUpdate) {
         // Comportamento original: se estava cheio ou zerado, atualiza para o novo máximo
         if (oldAtual === oldMax || (oldMax === 0 && oldAtual === 0)) {
@@ -163,29 +163,44 @@ export function calcStats() {
     // PV e PM com comportamento normal (atual pode ser sobrescrito se condição bater)
     atualizarVital('pv', pvMax);
     atualizarVital('mana', pmMax);
-    
+
     // ===== TRATAMENTO ESPECIAL PARA PT =====
     // Só atualiza o total e garante que o atual não ultrapasse o novo máximo
     // mas NÃO sobrescreve o atual com o máximo (o atual é controlado pelos cards de poder)
-    const ptAtualInput = document.querySelector('[data-field="pt-atual"]');
     const ptTotalInput = document.querySelector('[data-field="pt-total"]');
     if (ptTotalInput) {
-        const oldMax = parseInt(ptTotalInput.value) || 0;
-        const oldAtual = ptAtualInput ? parseInt(ptAtualInput.value) || 0 : 0;
-        if (oldAtual > ptMax) {
-            if (ptAtualInput) ptAtualInput.value = ptMax;
-        }
         ptTotalInput.value = ptMax;
-    } else {
-        // Se não existe, cria via atualizarVital com skipAtualUpdate = true
-        atualizarVital('pt', ptMax, true);
     }
-    
+    calculatedLimits.pt = ptMax;
+
     // Atualiza o limite exportado
     calculatedLimits.pt = ptMax;
     calculatedLimits.inv = invMax;
     calculatedLimits.la = laMax;
-    
+
+    // ===== TRATAMENTO ESPECIAL PARA LA =====
+    const laTotalInput = document.querySelector('[data-field="la-total"]');
+    if (laTotalInput) {
+        const oldTotal = parseInt(laTotalInput.value) || 0;
+        laTotalInput.value = laMax;
+        // Dispara evento 'input' para que o watcher de magias.js reaja ao novo total
+        laTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    const laAtualInput = document.querySelector('[data-field="la-atual"]');
+    if (laAtualInput) {
+        let oldAtual = parseInt(laAtualInput.value) || 0;
+        let novoAtual = oldAtual;
+        if (oldAtual > laMax) {
+            novoAtual = laMax;
+        }
+        if (novoAtual < 0) novoAtual = 0;
+        if (novoAtual !== oldAtual) {
+            laAtualInput.value = novoAtual;
+            laAtualInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
     // Fé (se ativo)
     if (feAtivo) {
         const feAtualInput = document.querySelector('[data-field="fe-atual"]');
@@ -204,7 +219,7 @@ export function calcStats() {
         const feMaxInput = document.querySelector('[data-field="fe-total"]');
         if (feMaxInput) feMaxInput.value = 0;
     }
-    
+
     // Reaplica classe de overflow (caso pt-total tenha mudado)
     verificarPtOverflow();
     refreshAllBars();

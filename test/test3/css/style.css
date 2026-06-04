@@ -4181,7 +4181,15 @@ textarea[data-brecha-notes]:focus {
     display: none;
 }
 
-/* ── PT over limit ───────────────────────────────────────────── */
+.easy-disclaimer{
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink3);
+    opacity: 0.75;
+    margin: 8px;
+    text-align: center;
+}
 
 /* ── PT over limit ───────────────────────────────────────────── */
 
@@ -4242,7 +4250,7 @@ textarea[data-brecha-notes]:focus {
 }
 
 .total-pt input {
-    width: 48px;
+    width: 60px;
     text-align: center;
     font-family: 'Cinzel', serif;
     font-size: 20px;
@@ -4259,7 +4267,7 @@ textarea[data-brecha-notes]:focus {
     color: var(--gold2);
 }
 
-.total-pt input[data-field="pt-total"] {
+.total-pt input[data-field="pt-total"], .total-pt input[data-field="la-total"] {
     color: var(--gold1);
     opacity: 0.7;
 }
@@ -4273,16 +4281,16 @@ textarea[data-brecha-notes]:focus {
     user-select: none;
 }
 
-.total-pt.pt-over-limit {
+.total-pt.pt-over-limit ,.total-pt.la-over-limit{
     border-color: var(--blood1);
     background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
 }
 
-.total-pt.pt-over-limit::before {
+.total-pt.pt-over-limit::before ,.total-pt.la-over-limit::before{
     background: linear-gradient(90deg, transparent, var(--blood1), var(--blood2), var(--blood1), transparent);
 }
 
-.total-pt.pt-over-limit input[data-field="pt-atual"] {
+.total-pt.pt-over-limit input[data-field="pt-atual"], .total-pt.la-over-limit input[data-field="la-atual"] {
     color: var(--blood2);
     text-shadow: 0 0 10px rgba(181,36,24,0.5);
 }
@@ -4290,7 +4298,7 @@ textarea[data-brecha-notes]:focus {
 
 /* ── Search bar ──────────────────────────────────────────────── */
 
-.power-container-searcher {
+.power-container-searcher,.magic-container-searcher{
     display: flex;
     align-items: center;
     gap: 10px;
@@ -4314,7 +4322,7 @@ textarea[data-brecha-notes]:focus {
 }
 
 /* ícone de lupa */
-.power-container-searcher > .material-symbols-outlined {
+.power-container-searcher > .material-symbols-outlined,.magic-container-searcher > .material-symbols-outlined{
     font-size: 18px;
     color: var(--ink3);
     opacity: 0.45;
@@ -4322,11 +4330,11 @@ textarea[data-brecha-notes]:focus {
     user-select: none;
 }
 
-.power-searchbox {
+.power-searchbox,.magic-searchbox{
     flex: 1;
 }
 
-.power-searchbox input {
+.power-searchbox input,.magic-searchbox input{
     width: 100%;
     font-family: 'IM Fell English', Georgia, serif;
     font-size: 16px;
@@ -4338,19 +4346,19 @@ textarea[data-brecha-notes]:focus {
     transition: border-color 0.15s;
 }
 
-.power-searchbox input:focus {
+.power-searchbox input:focus,.magic-searchbox input:focus{
     outline: none;
     border-bottom-color: var(--gold1);
 }
 
-.power-searchbox input::placeholder {
+.power-searchbox input::placeholder,.magic-searchbox input::placeholder{
     color: var(--ink3);
     font-style: italic;
     opacity: 0.6;
 }
 
 /* Botão Adicionar */
-.btn-add-power {
+.btn-add-power,.btn-add-magic{
     background: linear-gradient(135deg, var(--leath2) 0%, var(--leath3) 100%);
     border: 1px solid var(--gold0);
     border-radius: 8px;
@@ -4365,14 +4373,14 @@ textarea[data-brecha-notes]:focus {
     height: 36px;
 }
 
-.btn-add-power:hover {
+.btn-add-power:hover,.btn-add-magic:hover{
     background: linear-gradient(135deg, var(--leath3) 0%, var(--leath4) 100%);
     border-color: var(--gold2);
     color: var(--gold3);
     box-shadow: 0 0 8px rgba(196,137,42,0.25);
 }
 
-.btn-add-power:active {
+.btn-add-power:active,.btn-add-magic:active{
     transform: translateY(1px);
 }
 
@@ -4812,7 +4820,7 @@ textarea[data-brecha-notes]:focus {
     max-height: 140px;
     resize: vertical;
     font-family: 'IM Fell English', Georgia, serif;
-    font-size: 14px;
+    font-size: 16px;
     color: var(--ink1);
     background: none;
     border: 1px solid transparent;
@@ -4865,6 +4873,7 @@ textarea[data-brecha-notes]:focus {
 .card-power {
     animation: power-card-in 0.18s ease both;
 }
+
 /* RESPONSIVE */
 @media (max-width: 600px) {
     :root {

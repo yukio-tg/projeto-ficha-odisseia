@@ -1,0 +1,772 @@
+/* ==============================================
+   MAGIAS — Sistema completo de folha de magias
+   Alinhado ao design system do projeto (var CSS)
+   ============================================== */
+
+
+/* Graus e sheets: visibilidade controlada 100% pelo JS via style.display */
+
+/* ── Container geral das sheets ── */
+.magics-container, .page {
+    width: 100%;
+    min-height: 85%;
+}
+
+.magic-sheet {
+    width: 100%;
+    height: 100%;
+    background: var(--sheet-bg);
+    border: 1px solid var(--p3);
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* ── Tabs ── */
+.magic-sub-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    position: relative;
+    padding-bottom: 0;
+}
+
+.magic-tab-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    background: var(--p1);
+    border: 1px solid var(--p3);
+    border-right: none;
+    border-bottom: none;
+    color: var(--ink2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+    top: 2px;
+    border-radius: 0;
+    font-family: 'IM Fell English';
+}
+
+.magic-tab-btn:first-child {
+    border-radius: 6px 0 0 0;
+}
+
+.magic-tab-btn:last-child {
+    border-radius: 0 6px 0 0;
+    border-right: 1px solid var(--p3);
+}
+
+.magic-tab-btn:hover {
+    background-color: var(--p0);
+    color: var(--ink1);
+}
+
+.magic-tab-btn.active {
+    background: var(--sheet-bg);
+    color: var(--ink0);
+    border-bottom: 2px solid var(--sheet-bg);
+    z-index: 1;
+    box-shadow: none;
+}
+
+/* ── Seção de grau ── */
+.grau1,
+.grau2,
+.grau3,
+.grau4,
+.grauS {
+    margin-bottom: 1.25rem;
+}
+
+.grau1 > h2,
+.grau2 > h2,
+.grau3 > h2,
+.grau4 > h2,
+.grauS > h2 {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink3);
+    border-bottom: 1px solid var(--p2);
+    padding-bottom: 0.3rem;
+    margin: 0 0 0.6rem 0;
+}
+
+/* Containers internos de grau 1 (existem no HTML) */
+.card-arcanismo,
+.card-feromancia,
+.card-teurgia {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ── Card de magia ── */
+.magic-card {
+    border: 1px solid var(--p2);
+    border-radius: 6px;
+    background: var(--sheet-bg);
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+}
+
+.magic-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+
+/* Acento lateral por tipo */
+.magic-card--arcanismo {
+    border-left: 3px solid var(--mana2);
+}
+
+.magic-card--feromancia {
+    border-left: 3px solid var(--blood2);
+}
+
+.magic-card--teurgia {
+    border-left: 3px solid var(--tunic2);
+}
+
+/* ── Header do card ── */
+.magic-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    background: var(--p1);
+    border-bottom: 1px solid var(--p2);
+    flex-wrap: nowrap;
+    min-height: 36px;
+}
+
+/* Botão minimizar */
+.btn-magic-minimize {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    color: var(--ink3);
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.btn-magic-minimize:hover {
+    color: var(--ink0);
+}
+
+.btn-magic-minimize .material-symbols-outlined {
+    font-size: 18px;
+    transition: transform 0.2s;
+}
+
+/* LA input no header */
+.magic-la-input {
+    font-family: geor   gia;
+    width: 44px;
+    min-width: 38px;
+    padding: 0.15rem 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 4px;
+    color: var(--mana1);
+    flex-shrink: 0;
+    -moz-appearance: textfield;
+}
+
+.magic-la-input::-webkit-outer-spin-button,
+.magic-la-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.magic-la-input:focus {
+    outline: none;
+    border-color: var(--ink2);
+}
+
+/* Nome da magia */
+.magic-nome {
+    flex: 1;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--ink0);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.01em;
+}
+
+/* Custo base */
+.magic-custo {
+    font-size: 0.75rem;
+    color: var(--ink2);
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-style: italic;
+}
+
+/* Botões de editar e remover */
+.btn-magic-edit,
+.btn-magic-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.btn-magic-edit {
+    color: var(--ink3);
+}
+
+.btn-magic-edit:hover {
+    color: var(--gold0);
+}
+
+.btn-magic-remove {
+    color: var(--ink3);
+}
+
+.btn-magic-remove:hover {
+    color: var(--blood2);
+}
+
+.btn-magic-edit .material-symbols-outlined,
+.btn-magic-remove .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Body do card ── */
+.magic-card-body {
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* ── Info grid ── */
+.magic-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+}
+
+.magic-info-field {
+    display: flex;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    background: var(--p1);
+    border: 1px solid var(--p2);
+    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    align-items: baseline;
+}
+
+.magic-info-label {
+    font-weight: 700;
+    color: var(--ink2);
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.magic-info-label::after {
+    content: ':';
+}
+
+.magic-info-value {
+    color: var(--ink0);
+    font-size: 0.78rem;
+}
+
+/* ── Descrições ── */
+.magic-desc p,
+.magic-desc .magic-desc-efeito,
+.magic-desc .magic-desc-sucesso,
+.magic-desc .magic-desc-fracasso {
+    font-size: 0.82rem;
+    color: var(--ink1);
+    line-height: 1.5;
+    margin: 0 0 0.3rem 0;
+}
+
+.magic-desc p:last-child,
+.magic-desc .magic-desc-fracasso {
+    margin-bottom: 0;
+}
+
+.magic-desc--feromancia .magic-desc-sucesso strong,
+.magic-desc--feromancia .magic-desc-fracasso strong {
+    color: var(--ink0);
+    font-weight: 700;
+}
+
+.magic-desc--feromancia .magic-desc-sucesso strong {
+    color: var(--green0);
+}
+
+.magic-desc--feromancia .magic-desc-fracasso strong {
+    color: var(--blood1);
+}
+
+/* ── Aprimoramentos ── */
+.magic-aprimoramentos {
+    border-top: 1px solid var(--p2);
+    padding-top: 0.45rem;
+}
+
+.aprimoramentos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    counter-reset: apr-counter;
+}
+
+.apr-item {
+    font-size: 0.78rem;
+    color: var(--ink1);
+    line-height: 1.4;
+    counter-increment: apr-counter;
+    padding-left: 1.2em;
+    position: relative;
+}
+
+.apr-item::before {
+    content: counter(apr-counter) '.';
+    position: absolute;
+    left: 0;
+    font-weight: 700;
+    color: var(--ink3);
+    font-size: 0.7rem;
+}
+
+.apr-custo {
+    font-weight: 700;
+    color: var(--gold0);
+    margin-right: 0.3em;
+}
+
+.apr-desc {
+    color: var(--ink1);
+}
+
+.apr-req {
+    color: var(--ink3);
+    font-style: italic;
+    font-size: 0.73rem;
+    margin-left: 0.3em;
+}
+
+#tab-magias .total-pt {
+    background: linear-gradient(135deg, #001e2c 0%, #00154e 100%);
+    border: 1px solid #9eb0ff;
+}
+
+#tab-magias .total-pt h1 {
+    color: #fff;
+}
+
+#tab-magias .total-pt::before {
+    background: linear-gradient(90deg, transparent, #9eb0ff, #9eb0ff, #9eb0ff, transparent);
+}
+
+#tab-magias .total-pt input {
+    color: #99c8ff;
+}
+
+#tab-magias .total-pt input:focus {
+    outline: none;
+    color: #9eb0ff;
+}
+
+#tab-magias .total-pt input[data-field="pt-total"], #tab-magias .total-pt input[data-field="la-total"] {
+    color: #9eb0ff;
+}
+
+#tab-magias .total-pt .separator {
+    color: #9eb0ff;
+}
+
+#tab-magias .total-pt.pt-over-limit ,#tab-magias .total-pt.la-over-limit{
+    border-color: var(--blood1);
+    background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
+    color: var(--blood2);
+}
+
+#tab-magias .total-pt.pt-over-limit::before ,#tab-magias .total-pt.la-over-limit::before{
+    background: linear-gradient(90deg, transparent, var(--blood1), var(--blood2), var(--blood1), transparent);
+    color: var(--blood2);
+}
+
+/* Botão Adicionar */
+.btn-add-magic{
+    background: linear-gradient(135deg, #001e2c 0%, #00154e 100%);
+    border: 1px solid #9eb0ff;
+    color: #9eb0ff;
+}
+
+.btn-add-magic:hover{
+    background: linear-gradient(135deg, #003147 0%, #001d6d 100%);
+    border: 1px solid #9eb0ff;
+    color: #9eb0ff;
+    box-shadow: 0 0 8px rgba(158,176,255,0.25);
+}
+
+.la-excedido {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--blood1);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    animation: la-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes la-pulse {
+    from { opacity: 0.7; }
+    to   { opacity: 1;   }
+}
+
+/* ── Autocomplete dropdown ── */
+.autocomplete-magias-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--p0);
+    border: 1px solid var(--p3);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 200;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.autocomplete-item-magia {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    border-bottom: 1px solid var(--p1);
+    transition: background 0.1s;
+}
+
+.autocomplete-item-magia:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item-magia:hover,
+.autocomplete-item-magia--active {
+    background: var(--p1);
+}
+
+.autocomplete-magia-la {
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 0.05rem 0.35rem;
+    color: var(--mana1);
+    min-width: 22px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.autocomplete-magia-nome {
+    flex: 1;
+    color: var(--ink0);
+    font-weight: 600;
+}
+
+.autocomplete-magia-tipo {
+    font-size: 0.7rem;
+    color: var(--ink3);
+    font-style: italic;
+    flex-shrink: 0;
+}
+
+/* ── Editor flutuante (overlay) ── */
+.magic-editor-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(18, 13, 4, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.magic-editor {
+    background: var(--sheet-bg);
+    border: 1px solid var(--p3);
+    border-radius: 8px;
+    width: min(680px, 95vw);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.magic-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: var(--p2);
+    border-bottom: 1px solid var(--p3);
+    flex-shrink: 0;
+}
+
+.magic-editor-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink0);
+}
+
+.btn-editor-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink2);
+    display: flex;
+    align-items: center;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.btn-editor-close:hover {
+    color: var(--blood2);
+}
+
+.btn-editor-close .material-symbols-outlined {
+    font-size: 20px;
+}
+
+.magic-editor-body {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.magic-editor-body label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink2);
+}
+
+.magic-editor-body input[type="text"],
+.magic-editor-body input[type="number"],
+.magic-editor-body textarea,
+.magic-editor-body select {
+    width: 100%;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    background: var(--p0);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    color: var(--ink0);
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.magic-editor-body input[type="text"]:focus,
+.magic-editor-body input[type="number"]:focus,
+.magic-editor-body textarea:focus,
+.magic-editor-body select:focus {
+    outline: none;
+    border-color: var(--ink2);
+}
+
+.magic-editor-body textarea {
+    min-height: 72px;
+    resize: vertical;
+    line-height: 1.45;
+}
+
+/* Linha de dois/três campos */
+.edit-row-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.6rem;
+}
+
+/* Grid de infos técnicas */
+.edit-infos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.edit-required {
+    color: var(--blood2);
+    font-style: normal;
+    margin-left: 0.2em;
+}
+
+/* Seção de aprimoramentos no editor */
+.edit-aprimoramentos-section {
+    border-top: 1px solid var(--p2);
+    padding-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.edit-aprimoramentos-section h4 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink2);
+    margin: 0;
+}
+
+.edit-aprs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.apr-edit-row {
+    display: grid;
+    grid-template-columns: 90px 1fr 130px 28px;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.apr-edit-row input {
+    padding: 0.28rem 0.4rem;
+    font-size: 0.8rem;
+    background: var(--p0);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    color: var(--ink0);
+    font-family: inherit;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.apr-edit-row input:focus {
+    outline: none;
+    border-color: var(--ink2);
+}
+
+.btn-apr-remove-edit {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.btn-apr-remove-edit:hover {
+    background: #ffe0e0;
+    color: var(--blood2);
+}
+
+.btn-apr-remove-edit .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.btn-apr-add-edit {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: var(--p1);
+    border: 1px dashed var(--p3);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--ink2);
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+}
+
+.btn-apr-add-edit:hover {
+    background: var(--p2);
+    color: var(--ink0);
+}
+
+.btn-apr-add-edit .material-symbols-outlined {
+    font-size: 15px;
+}
+
+/* Footer do editor */
+.magic-editor-footer {
+    padding: 0.65rem 1rem;
+    background: var(--p1);
+    border-top: 1px solid var(--p2);
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.btn-editor-save {
+    padding: 0.45rem 1.2rem;
+    background: var(--p4);
+    border: none;
+    border-radius: 5px;
+    color: var(--p0);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+}
+
+.btn-editor-save:hover {
+    background: var(--ink2);
+}
+
+/* ── container-big-infos: busca + LA lado a lado ── */
+.container-big-infos {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+}
+
+.container-big-infos .magic-container-searcher {
+    flex: 1;
+}

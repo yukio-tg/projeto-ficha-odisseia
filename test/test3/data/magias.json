@@ -1,0 +1,472 @@
+{
+  "magias": [
+    {
+      "id": "arc_bussola",
+      "tipo": "arcanismo",
+      "nome": "Bússola",
+      "la": 1,
+      "custo": "-2 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser/objeto/você",
+      "duracao": "instantânea",
+      "resistencia": "Poder anula",
+      "descricao": "A magia abstrai o ambiente em um mapa palpável...",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Ao usar a função de busca da magia, ela indica a distância que o ser/objeto está.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Você pode usar isso para marcar quantos aliados quiser à alcance curto...", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A magia revela criaturas hostis num raio de alcance longo...", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você marca um ser até alcance curto com essa magia...", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_endurecer",
+      "tipo": "feromancia",
+      "nome": "Endurecer",
+      "la": 1,
+      "execucao": "protagonista",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você enrijece o tecido da sua pele, assemelhando-a a uma carapaça natural.",
+      "descricao_sucesso": "Te concede +3 RD a dano e Defesa.",
+      "descricao_fracasso": "Te deixa vulnerável a danos de impacto por uma rodada.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você pode conjurar essa magia num ser adjacente.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Em Sucesso, o bônus de Defesa e RD aumenta para +7.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_aspecto_flamejante",
+      "tipo": "teurgia",
+      "nome": "Aspecto Flamejante",
+      "fe": 1,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "alvo": "1 arma",
+      "duracao": "cena",
+      "descricao": "Ao ser invocada a bênção de Agni sobre uma arma, ela se tornará incandescente...",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumentará os dados de dano em +2.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Reduzirá a margem de crítico em 1 e o multiplicador de crítico em 0.5.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "O dano passará a usar d10 como dado base.", "requisito": "Requer Grau 2." },
+        { "custo": "+6 PM", "descricao": "Aumentará o alcance para curto e alternará o alvo para armas à sua escolha.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_ilusao",
+      "tipo": "arcanismo",
+      "nome": "Ilusão",
+      "la": 1,
+      "custo": "2 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "seres à sua escolha",
+      "duracao": "cena",
+      "resistencia": "Perspicácia desacredita",
+      "descricao": "Você projeta uma ilusão visual (uma pessoa, uma parede...) ou sonora (um grito de socorro, um uivo assustador...). A magia projeta apenas imagens ou sons simples, com volume equivalente à voz de uma pessoa. Não é possível criar cheiros, texturas ou temperaturas, nem sons complexos, como uma música ou diálogo. Seres e objetos atravessam uma ilusão sem sofrer dano, mas a magia pode, por exemplo, esconder uma armadilha ou emboscada. A ilusão é dissipada se você sair do alcance.",
+      "aprimoramentos": [
+        { "custo": "0 PM", "descricao": "A ilusão é simplificada ao máximo sendo utilizada para criar imagens borradas ou pouco nítidas que surgem e desaparecem em instantes, esse efeito pode ser usado para causar paranóia ou sobrepor rapidamente um texto ou imagem.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A magia é realizada para tornar um ser mais poderoso e ameaçador, aumentando em +3 todos os testes de Carisma realizado contra inimigos que estejam à mais de 3m de você.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda o efeito para até 12m e a duração para sustentada. Você pode criar ilusões de imagem e sons combinados, e pode criar sons complexos, odores e sensações térmicas. Também pode criar sensações táteis, como texturas; objetos ainda atravessam a ilusão, mas seres não conseguem atravessá-la sem passar em um teste de Vontade. A cada rodada, você pode usar uma ação livre para mover a imagem ou alterar o som, como aumentar o volume ou fazer com que pareça se afastar ou se aproximar, ainda dentro dos limites do efeito. Você pode, por exemplo, criar a ilusão de um fantasma que anda pela sala, controlando seus movimentos. A ilusão ainda é incapaz de causar ou sofrer dano. Quando você para de sustentar a magia, a imagem ou som persistem por mais uma rodada antes da magia se dissipar.", "requisito": "Requer 2º Grau." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_magia_de_bolso",
+      "tipo": "arcanismo",
+      "nome": "Magia de Bolso",
+      "la": 1,
+      "custo": "2 PM",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "instantânea",
+      "resistencia": null,
+      "descricao": "Você abstrai um item em um feitiço que desmaterializa objetos, eles ainda existem ligados à você e sua alma, mas não podem ser sacados por qualquer outro que não seja você. Você pode armazenar até um total de 5 de peso, e para manter o espaço armazenado você deve gastar 1 PM todo começo de cena. Caso você não o fizer ou morrer os itens simplesmente surgem ao seu redor.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você aumenta os espaços em +5.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_raio_magico",
+      "tipo": "arcanismo",
+      "nome": "Raio Mágico",
+      "la": 1,
+      "custo": "2 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": "linha",
+      "alvo": "seres",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos reduz à metade",
+      "descricao": "Você dispara um feixe mágico que perfura tudo em seu caminho. Seres que estiverem na área sofrem 2d6 pontos de dano Mágico.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "O alcance aumenta para médio.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O dano aumenta em +2d6.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "O efeito se altera para parar ao acertar o primeiro inimigo na linha. Além disso, para cada dado de dano que a magia é capaz de desferir, você pode reparti-lo entre alvos diferentes. Por exemplo, se a magia estiver desferindo 4d6 pontos de dano de mágico, você pode escolher atacar dois alvos diferentes dentro do alcance, cada um sofrendo apenas 2d6 pontos de dano mágico. Nessa lógica, você é capaz de repartir um feixe poderoso, em vários feixes fracos.", "requisito": "Requer Grau 2." },
+        { "custo": "+3 PM", "descricao": "A magia demora 2 turnos para ser conjurada, no segundo turno ela custa uma ação complexa que desfere 10d8 pontos de dano Mágico em seu alvo.", "requisito": "Requer Grau 2." },
+        { "custo": "+1 PM", "descricao": "O dano aumenta em +2d6.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_corte",
+      "tipo": "arcanismo",
+      "nome": "Corte",
+      "la": 1,
+      "custo": "4 PM",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos reduz à metade",
+      "descricao": "Você desfere um corte de magia que avança em linha reta. A magia desfere 2d6 pontos de dano de Corte contra o primeiro alvo que for atingido. Caso o ser esteja a alcance curto o dano aumenta para 2d10.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o dano em +6.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Aumenta o dano em +1d.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda a área para Linha Reta e o corte alcança todos os seres ali dentro, não parando no primeiro alvo.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda o alcance para pessoal, agora a magia afeta todos os seres dentro de uma esfera (raio 3m). Todos no alcance sofrem 3d10 pontos de dano de Corte e a resistência muda para Esforço.", "requisito": "Requer Grau 2." },
+        { "custo": "+6 PM", "descricao": "Aumenta o dano em +2d+6.", "requisito": "Requer Grau 2." },
+        { "custo": "+6 PM", "descricao": "Muda a execução para Complexa, te permitindo escolher aumentar o dado base de dano (longo) para d8 e (curto) para d12 ou aumentar o alcance da magia para longo.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_negar_condicao",
+      "tipo": "arcanismo",
+      "nome": "Negar Condição",
+      "la": 1,
+      "custo": "4 PM",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": null,
+      "descricao": "Você toca em um ser adjacente e cancela uma condição através de uma leve magia de reversão desde que temporária entre: Em Chamas, Sangrando, Ofuscado, Abalado, Confuso, Enjoado, Petrificado, Inconsciente, Alquebrado, Fraco, Fatigado, Debilitado, Esmorecido, Exausto, Enredado, Envenenado, Lento ou Paralisado. Caso a condição seja constante ou permanente, a magia nega a condição apenas durante 2 rodadas.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "O alcance aumenta para curto.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A duração da magia torna-se Sustentada 1 PM, mantendo um alvo livre da condição salva desde que a concentração se mantenha.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_projetil_de_mana",
+      "tipo": "arcanismo",
+      "nome": "Projétil de Mana",
+      "la": 1,
+      "custo": "4 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Veja o texto",
+      "descricao": "Você dispara um projétil de mana da ponta de seus dedos. Faça um teste de ataque utilizando Magia como Perícia, caso o teste sobreponha a Defesa do alvo, o ataque acerta e causa 2d6 pontos de dano Mágico. O disparo crita em 20/x1.5.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o dano do disparo em +1d6.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta o dano do disparo em um valor equivalente à sua Sabedoria.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você recebe um bônus no teste de ataque em um valor equivalente à sua Sabedoria.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_protecao",
+      "tipo": "arcanismo",
+      "nome": "Proteção",
+      "la": 1,
+      "custo": "4 PM",
+      "execucao": "reação simples",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "Ao usar a Reação Complexa Proteção Mágica, você pode ativar essa magia. Isso troca o bônus de RD para Pontos de Vida Temporários.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "A Proteção Mágica pode ser restaurada com uma ação de coesão, recuperando metade dos PVs que faltem para sua completude.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O Proteção Mágica agora lhe oferece 6 PV para cada 1 PM entregue.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A proteção se expande ao seu redor, protegendo seres adjacentes a você, se o quiser.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você atribui uma RD 10 a todos os danos que a Proteção Mágica sofrer.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você conjura o feitiço de proteção como Reação Simples.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_raio_degenerador",
+      "tipo": "arcanismo",
+      "nome": "Raio Degenerador",
+      "la": 1,
+      "custo": "4 PM",
+      "execucao": "protagonista",
+      "alcance": "Curto",
+      "area": null,
+      "alvo": "1 Ser",
+      "duracao": "Sustentada",
+      "resistencia": "Poder ignora condição",
+      "descricao": "Você conjura um raio negro de seu cetro que se liga ao inimigo. Enquanto o inimigo se manter presente dentro do alcance da magia, ele deve fazer um teste de Poder todo começo de seu turno, se falhar sofre desvantagem em todos os testes de perícia que realizar por uma rodada. Caso o ser ter sucesso em dois testes de Poder consecutivos a magia é anulada.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "O raio afeta até 2 seres.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O raio imputa 8 pontos de dano mágico por turno.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "O raio deixa seu alvo Desprevenido.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_ataque_psiquico",
+      "tipo": "arcanismo",
+      "nome": "Ataque Psíquico",
+      "la": 1,
+      "custo": "6 PM",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "area": null,
+      "alvo": "1 pessoa",
+      "duracao": "instantânea",
+      "resistencia": "Poder reduz à metade e ignora condição",
+      "descricao": "Você acomete seu alvo com energias negativas, forçando a reentrada de pensamentos obsessivos e negativos internos dele, prejudicando diretamente o senso dele de si. O alvo sofre 2d8 pontos de dano mental e fica Abalado por uma rodada.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o dano em +1d8.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Muda alvo para até 3 seres.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A condição se mantém até o fim da cena.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_azarar",
+      "tipo": "arcanismo",
+      "nome": "Azarar",
+      "la": 1,
+      "custo": "6 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "resistencia": "Magia anula",
+      "descricao": "O alvo têm -2 em todos os testes de perícia que realizar.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o malefício para -3.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta o malefício para -5.", "requisito": "Requer Grau 2." },
+        { "custo": "+3 PM", "descricao": "Aumenta o número de alvos para seres à sua escolha.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_fortuna",
+      "tipo": "arcanismo",
+      "nome": "Fortuna",
+      "la": 1,
+      "custo": "6 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "O alvo têm +2 em todos os testes de perícia que realizar.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o bônus para +3.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta o bônus para +5.", "requisito": "Requer Grau 2." },
+        { "custo": "+3 PM", "descricao": "Aumenta o número de alvos para seres à sua escolha.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "arc_aura",
+      "tipo": "arcanismo",
+      "nome": "Aura",
+      "la": 3,
+      "custo": "6 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "seres à sua escolha",
+      "duracao": "cena",
+      "resistencia": "Perspicácia anula",
+      "descricao": "Você expande a sua própria mana para causar impressões nos seres ao seu redor, este efeito lhe provém +5 em todos os testes de Carisma, te provêm +2 em testes de resistência e +5 na DT de seus efeitos contra seres em alcance curto.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta o alcance para médio.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Aumenta o bônus de Carisma para +10 e +5 em testes de resistência.", "requisito": "Requer Grau 3" }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_comunicacao",
+      "tipo": "arcanismo",
+      "nome": "Comunicação",
+      "la": 3,
+      "custo": "6 PM",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "area": null,
+      "alvo": "2 seres",
+      "duracao": "instantânea",
+      "resistencia": null,
+      "descricao": "Você cria um canal de conexão, que permite com que você se comunique com um aliado independente da distância. O efeito permeia essa conexão mental de modo que não são todos os pensamentos que são transmitidos, apenas aqueles que querem ser expressos, como uma segunda fala. Você pode utilizar isso para conectar 2 seres que não são você. Alguém pode negar e se livrar da magia como uma ação livre sem dificuldades.",
+      "aprimoramentos": [
+        { "custo": "0 PM", "descricao": "Você se torna capaz de perfurar uma conexão que já exista, podendo escutar todas as mensagens que passam ali dentro, desde que esteja próximo de um dos integrantes ou entre um dos integrantes.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Você cria um selo rúnico mágico que você é capaz de contatar através dessa magia, esse objeto replica a sua voz, mas não permite que mensagens sejam passadas de volta. Isso só funciona para objetos estáticos, se o objeto for movido de ambiente, ele deixa de ser contactável. Você pode utilizar isso para se conectar à selos já pré-estabelecidos.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A rede de conexão aumenta para até 6 integrantes.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_bola_de_elemento",
+      "tipo": "arcanismo",
+      "nome": "Bola de (Elemento)",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "reflexos reduz à metade e evita condição",
+      "descricao": "Você imbui mana elemental à um constructo de sua feitoria. Ao escolher essa magia, defina dentre um dos 4 elementos naturais, qual você aprendeu a imbuir nesse feitiço. A magia cria uma bola de (elemento) que avança em linha reta e desfere 4d6+4 pontos de dano de (elemento). Dependendo do elemento, ela ainda causa uma condição. Fogo: deixa o alvo Em Chamas; Água: deixa o alvo Lento; Terra: deixa o alvo Fraco; Ar: deixa o alvo Desprevenido. A condição dura no máximo 2 rodadas.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Você aumenta o alcance para longo.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você aumenta o dano em +2d6+2.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você imbui a magia com outro efeito natural, que não, a sua.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_criar_objeto",
+      "tipo": "arcanismo",
+      "nome": "Criar Objeto",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "area": null,
+      "alvo": "pessoal",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "Você condensa mana através desse feitiço para criar objetos de até raridade Banal e peso 5. Eles se mantêm presentes com você durante uma cena. Esses objetos soam instáveis, por isso podem ser percebidos como falsos se quem o analisa for treinado em Magia.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A magia é conjurada como coesão.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Você conjura objetos que compreendam até 10 espaços.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Você conjura um objeto de até raridade Comum.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Você conjura um objeto de até raridade Incomum.", "requisito": "Requer Grau 3." },
+        { "custo": "+8 PM", "descricao": "Você conjura um objeto de até raridade Rara.", "requisito": "Requer Grau 4." },
+        { "custo": "+16 PM", "descricao": "Você conjura um objeto de até raridade Épica.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_cura",
+      "tipo": "arcanismo",
+      "nome": "Cura",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": null,
+      "descricao": "A magia costura carne, acalma a pele, estanca sangramentos e além de todos os efeitos essenciais para uma recuperação, ela regenera o corpo através de cicatrização acelerada. Você recupera 2d8+3 PV.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Aumenta a recuperação em +1d8+3.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta o alcance para curto.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A magia muda sua duração para cena, e passa a recuperar 1d8 PV por rodada. Dessa maneira, a magia só pode recuperar um máximo de 19 PV.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A execução muda para coesão.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "O alvo muda para seres à sua escolha.", "requisito": "Requer Grau 3" }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_lacos",
+      "tipo": "arcanismo",
+      "nome": "Laços",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "reflexos anula",
+      "descricao": "Você conjura três laços de mana que amarram um ser em alcance curto deixando-o agarrado. O alvo pode tentar se livrar, gastando uma ação protagonista para fazer um teste de Trabalho (DT da magia). Se passar destrói um laço, mais um laço adicional para cada 5 pontos que superou a DT. Os laços também podem ser atacados e destruídos: cada um tem Defesa 10, 10 PV, RD 5. Se todos os laços forem destruídos, a magia é dissipada.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "O alcance aumenta para médio.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Alvo muda para seres à sua escolha desde que adjacentes um do outro. Neste caso haverá 2 laços para cada.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você aumenta o número de laços em +3.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Os laços desfere 2d8 pontos de mágico contra um ser amarrado toda a rodada.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_substituicao",
+      "tipo": "arcanismo",
+      "nome": "Substituição",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Poder anula",
+      "descricao": "Você troca a posição com um alvo que possa enxergar em alcance curto. Caso a troca seja indesejada o ser têm direito à um teste de Poder, se passar a magia falha.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Alcance torna-se médio.", "requisito": null },
+        { "custo": "+1 PM", "descricao": "Execução passa a ser Coesão.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Execução passa a ser Reação Complexa.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Alvo torna-se objeto. Um ser que empunha o objeto faz o teste de Poder como normal para negar o efeito em seu item.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_voo",
+      "tipo": "arcanismo",
+      "nome": "Voo",
+      "la": 4,
+      "custo": "8 PM",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "sustentada",
+      "resistencia": null,
+      "descricao": "Você pode voar, para fins práticos possui deslocamento de voo igual ao seu deslocamento normal, e deve gastar 1 PM extra para cada 2 espaços ocupados em seu inventário. Você gasta 1 PM por rodada para se manter no ar, podendo voar até 10m acima do chão.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Você faz um aliado adjacente flutuar, ele controla sua própria capacidade voo, e você mantém o efeito dele sustentado.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Você gasta 2 PM por turno para manter-se no ar, mas pode voar a até 25m.", "requisito": "Requer Grau 3." },
+        { "custo": "+3 PM", "descricao": "Você aumenta seu deslocamento de voo em até 4m.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você faz um inimigo adjacente flutuar, subindo descontroladamente até o limite de voo. Ao alcançar este ponto você pode manter o efeito sustentado, para mantê-lo no ar e controlá-lo lá ou dissipar a magia para fazê-lo cair. Este ser têm direito à um teste de Poder por rodada para negar a magia.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "arc_canhao_magico",
+      "tipo": "arcanismo",
+      "nome": "Canhão Mágico",
+      "la": 5,
+      "custo": "10 PM",
+      "execucao": "ação complexa",
+      "alcance": "toque",
+      "area": null,
+      "alvo": "você",
+      "duracao": "cena",
+      "resistencia": "reflexos reduz à metade",
+      "descricao": "Você cria um constructo de magia que funciona como um canhão que pode ser operado por qualquer um. Após construído, qualquer um adjacente pode imputar 10 PM para fazer um disparo que desfere 8d4 pontos de dano mágico com uma área de 1.5m de raio de efeito. Fazer um disparo é uma ação complexa pois requer muito de quem o utiliza. O canhão não pode ser movido e pode ser atacado, tendo 10 de defesa, 20 PV e RD 20 a dano.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A capacidade do canhão aumenta, podendo suportar até 15 PM para aumentar para 6d8+2 pontos de dano mágico.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você aumenta os PV do canhão para 60.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você torna o canhão automático, não pode mais suportar tiros de mana, então ele desfere um ataque todo final de turno. O dano do canhão neste caso é 2d8.", "requisito": null }
+      ],
+      "grau": 2
+    }
+  ]
+}

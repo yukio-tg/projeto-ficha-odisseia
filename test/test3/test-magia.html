@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Sistema de Magias - Grimório Arcano (JSON externo)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0f0f1a;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
+            color: #ecedf2;
+            padding: 2rem 1.5rem;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* top bar */
+        .top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: #1a1b2a;
+            padding: 1rem 1.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .search-area {
+            flex: 2;
+            min-width: 200px;
+        }
+
+        .search-area input {
+            width: 100%;
+            padding: 0.8rem 1.2rem;
+            background: #0b0b14;
+            border: 1px solid #2e2f44;
+            border-radius: 3rem;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-area input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+        }
+
+        .limite-arcano-panel {
+            background: #0e0e18;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-weight: 600;
+        }
+
+        .limite-atual {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+        }
+
+        .limite-atual span {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #c084fc;
+        }
+
+        .limite-max {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .limite-max label {
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .limite-max input {
+            width: 70px;
+            background: #0b0b14;
+            border: 1px solid #3f3f5e;
+            border-radius: 1rem;
+            padding: 0.4rem 0.6rem;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .warning-message {
+            font-size: 0.8rem;
+            color: #f87171;
+            background: #2c0f0f;
+            padding: 0.2rem 0.7rem;
+            border-radius: 1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .btn-add, .btn-import {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            border: none;
+            color: white;
+            padding: 0.7rem 1.4rem;
+            border-radius: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-import {
+            background: linear-gradient(135deg, #3b82f6, #1e40af);
+        }
+
+        .btn-add:hover, .btn-import:hover {
+            transform: scale(1.02);
+            filter: brightness(1.05);
+        }
+
+        /* abas principais */
+        .tabs-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #2d2d44;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0.6rem 1.6rem;
+            border-radius: 2rem;
+            color: #a1a1b9;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #2a2a3c;
+            color: #e0d6ff;
+            box-shadow: inset 0 -1px 0 #a78bfa;
+        }
+
+        .levels-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .level-group {
+            background: #13141f;
+            border-radius: 1.5rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .level-header {
+            font-size: 1.8rem;
+            font-weight: 800;
+            border-left: 6px solid #8b5cf6;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+            color: #e2ddf5;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.8rem;
+        }
+
+        /* CARD */
+        .spell-card {
+            background: #1c1d2b;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            transition: transform 0.1s ease, box-shadow 0.2s;
+            border: 1px solid #2e2f48;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .spell-card:hover {
+            transform: translateY(-3px);
+            border-color: #5b4c9e;
+        }
+
+        .card-header {
+            background: #26273b;
+            padding: 1rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-bottom: 1px solid #3a3b58;
+        }
+
+        .spell-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #f0eefb;
+        }
+
+        .meta-tags {
+            display: flex;
+            gap: 0.8rem;
+            align-items: baseline;
+            font-size: 0.8rem;
+        }
+
+        .limite-card {
+            background: #0b0b16;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            color: #cba6ff;
+            font-weight: bold;
+        }
+
+        .custo-card {
+            background: #2f2a44;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .card-actions button {
+            background: #2e2e48;
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.1s;
+        }
+
+        .infos-section {
+            padding: 0.8rem 1.2rem;
+            background: #151624;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem 1.5rem;
+            border-bottom: 1px solid #2a2b42;
+            font-size: 0.8rem;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 0.3rem;
+            color: #b9badb;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #9d9ece;
+        }
+
+        .desc-section {
+            padding: 1rem 1.2rem;
+            background: #11121e;
+            border-bottom: 1px solid #2a2b42;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .fero-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .fero-sub {
+            border-left: 3px solid #a78bfa;
+            padding-left: 0.7rem;
+            background: #191b28;
+            border-radius: 0.6rem;
+            padding: 0.5rem;
+        }
+
+        .aprimoramentos {
+            padding: 0.8rem 1.2rem;
+            background: #0e0f1a;
+        }
+
+        .aprimoramentos h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #b79eff;
+            margin-bottom: 0.5rem;
+        }
+
+        .aprimoramento-item {
+            background: #1c1d2f;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 0.8rem;
+            font-size: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .aprimoramento-item span {
+            background: #2b2c44;
+            padding: 0.1rem 0.4rem;
+            border-radius: 0.5rem;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: #7f7fa3;
+            font-style: italic;
+        }
+
+        /* modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1b1c2c;
+            max-width: 750px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            border: 1px solid #454565;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #bbbae3;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+        input, select, textarea {
+            background: #0c0d18;
+            border: 1px solid #34355a;
+            padding: 0.5rem;
+            border-radius: 0.8rem;
+            color: white;
+            width: 100%;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .aprimoramentos-list {
+            background: #11121f;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            margin-top: 0.5rem;
+        }
+        .aprim-row {
+            background: #1e1f34;
+            margin-bottom: 0.8rem;
+            padding: 0.6rem;
+            border-radius: 0.8rem;
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn-primary {
+            background: #7c3aed;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            color: white;
+            cursor: pointer;
+        }
+        .json-status {
+            font-size: 0.7rem;
+            background: #1e1f2e;
+            padding: 0.2rem 0.7rem;
+            border-radius: 1rem;
+            color: #a5b4fc;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="top-bar">
+        <div class="search-area">
+            <input type="text" id="searchInput" placeholder="🔍 Pesquisar magia por nome, efeito ou descrição...">
+        </div>
+        <div class="limite-arcano-panel" id="limitePanel">
+            <div class="limite-atual">📜 Limite Arcano: <span id="limiteAtualVal">0</span> / <span id="limiteMaxDisplay">—</span></div>
+            <div class="limite-max">
+                <label>Máx:</label>
+                <input type="number" id="limiteMaxInput" value="20" step="1" min="0">
+            </div>
+            <div id="warningOverflow" class="warning-message" style="display: none;">⚠️ Limite ultrapassado!</div>
+        </div>
+        <div class="btn-group">
+            <button class="btn-import" id="btnImportJSON">📂 Importar JSON externo</button>
+            <button class="btn-add" id="btnAdicionarMagia">✨ + Nova Magia</button>
+        </div>
+    </div>
+    <div class="tabs-container">
+        <button class="tab-btn active" data-tab="arcanismo">🔮 Arcanismo</button>
+        <button class="tab-btn" data-tab="feromancia">🌿 Feromancia</button>
+        <button class="tab-btn" data-tab="teurgia">✨ Teurgia</button>
+    </div>
+    <div id="spellsContainer" class="levels-wrapper"></div>
+    <div class="json-status" id="jsonStatusMsg">📀 Carregando dados iniciais...</div>
+</div>
+
+<!-- Modal genérico -->
+<div id="spellModal" class="modal">
+    <div class="modal-content" id="modalContentInner"></div>
+</div>
+
+<script>
+    // ----------------------------- MODELO E ESTADO GLOBAL -------------------------
+    let spells = [];           // array de magias normalizadas
+    let currentTab = "arcanismo";
+    let searchQuery = "";
+
+    // Função para normalizar magia vinda do JSON externo (ou qualquer fonte) para o formato interno robusto
+    function normalizeSpellFromExternal(raw) {
+        // raw pode vir com campos: id, tipo, nome, la, custo, execucao, alcance, area, alvo, duracao, resistencia,
+        // descricao (p/ arcanismo/teurgia) ou descricao_geral, descricao_sucesso, descricao_fracasso (p/ feromancia)
+        // aprimoramentos: array com {custo, descricao, requisito}
+        // grau, e campos extras como divindade, fe (teurgia)
+        const tipo = raw.tipo || "arcanismo";
+        const base = {
+            id: raw.id || `spell_${Date.now()}_${Math.random()}`,
+            type: tipo,
+            name: raw.nome || "Magia sem nome",
+            level: (raw.grau !== undefined && raw.grau !== null) ? String(raw.grau) : "1",
+            custoConjuracao: raw.custo || "—",
+            limiteArcano: (raw.la !== undefined && !isNaN(Number(raw.la))) ? Number(raw.la) : 0,
+            execucao: raw.execucao || "",
+            alcance: raw.alcance || "",
+            area: raw.area || null,
+            alvo: raw.alvo || "",
+            duracao: raw.duracao || "",
+            resistencia: raw.resistencia || "",
+            aprimoramentos: [],
+            // campos extras para manter (divindade, fe)
+            divindade: raw.divindade || "",
+            fe: (raw.fe !== undefined) ? raw.fe : null
+        };
+        // descrição
+        if (tipo === "feromancia") {
+            base.desc_geral = raw.descricao_geral || raw.descricao || "";
+            base.desc_sucesso = raw.descricao_sucesso || "";
+            base.desc_fracasso = raw.descricao_fracasso || "";
+        } else {
+            base.desc = raw.descricao || "";
+        }
+        // aprimoramentos
+        if (raw.aprimoramentos && Array.isArray(raw.aprimoramentos)) {
+            base.aprimoramentos = raw.aprimoramentos.map(ap => ({
+                custoExtra: ap.custo || "",
+                descricao: ap.descricao || "",
+                requisito: ap.requisito || null
+            }));
+        }
+        return base;
+    }
+
+    // Carregar JSON externo (magias.json) e substituir a lista atual
+    async function fetchExternalJSON() {
+        try {
+            const response = await fetch('./magias.json');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            if (data && data.magias && Array.isArray(data.magias)) {
+                const novasMagias = data.magias.map(raw => normalizeSpellFromExternal(raw));
+                if (novasMagias.length) {
+                    spells = novasMagias;
+                    saveToLocal();
+                    renderAll();
+                    document.getElementById("jsonStatusMsg").innerHTML = `✅ JSON externo carregado com sucesso! ${spells.length} magias importadas.`;
+                    setTimeout(() => {
+                        if(document.getElementById("jsonStatusMsg")) document.getElementById("jsonStatusMsg").innerHTML = `📀 Dados sincronizados (${spells.length} magias)`;
+                    }, 3000);
+                } else {
+                    throw new Error("Nenhuma magia válida no JSON");
+                }
+            } else {
+                throw new Error("Formato inválido: esperado { magias: [...] }");
+            }
+        } catch (err) {
+            console.error("Erro ao carregar JSON externo:", err);
+            document.getElementById("jsonStatusMsg").innerHTML = `⚠️ Falha ao carregar magias.json: ${err.message}. Usando dados de fallback.`;
+            // Se falhar e não houver magias, carregar exemplos internos
+            if(spells.length === 0) loadFallbackSpells();
+            renderAll();
+        }
+    }
+
+    // Dados de fallback (baseados no exemplo do prompt)
+    function loadFallbackSpells() {
+        const exemploJSON = {
+            "magias": [
+                { "id": "arc_exemplo", "tipo": "arcanismo", "nome": "Bola de Fogo", "la": 4, "custo": "3 PM", "execucao": "Ação padrão", "alcance": "30m", "area": "Esfera 6m", "alvo": null, "duracao": "Instantânea", "resistencia": "Reflexos reduz metade", "descricao": "Explosão flamejante que causa 6d6 de fogo.", "aprimoramentos": [{ "custo": "+2 PM", "descricao": "Aumenta dano para 8d6", "requisito": "Nível 5" }], "grau": 2 },
+                { "id": "fer_exemplo", "tipo": "feromancia", "nome": "Pele de Carapaça", "la": 1, "custo": "2 PM", "execucao": "protagonista", "alcance": null, "area": null, "alvo": "você", "duracao": "cena", "resistencia": "Nenhum", "descricao_geral": "Você enrijece o tecido da sua pele, assemelhando-a a uma carapaça natural.", "descricao_sucesso": "Te concede +3 RD a dano e Defesa.", "descricao_fracasso": "Te deixa vulnerável a danos de impacto por uma rodada.", "aprimoramentos": [{ "custo": "+2 PM", "descricao": "Pode conjurar num ser adjacente.", "requisito": null }], "grau": 1 },
+                { "id": "teu_exemplo", "tipo": "teurgia", "nome": "Bênção Incandescente", "la": 0, "custo": "2 PM", "execucao": "protagonista", "alcance": "toque", "area": null, "alvo": "1 arma", "duracao": "cena", "resistencia": "Nenhum", "descricao": "A arma se torna incandescente, causando +2d6 de fogo.", "aprimoramentos": [{ "custo": "+2 PM", "descricao": "Aumenta dados de dano em +2", "requisito": null }], "grau": 1, "divindade": "Agni", "fe": 1 }
+            ]
+        };
+        spells = exemploJSON.magias.map(raw => normalizeSpellFromExternal(raw));
+        saveToLocal();
+    }
+
+    // Salvar no localStorage
+    function saveToLocal() {
+        localStorage.setItem("grimorio_magias", JSON.stringify(spells));
+    }
+
+    // Carregar do localStorage ou fallback
+    function loadInitialData() {
+        const stored = localStorage.getItem("grimorio_magias");
+        if(stored) {
+            try {
+                spells = JSON.parse(stored);
+                // garantir campos obrigatórios p/ versões antigas (pequena migração)
+                spells.forEach(sp => {
+                    if(sp.aprimoramentos === undefined) sp.aprimoramentos = [];
+                    if(sp.type === "feromancia" && sp.desc === undefined && sp.desc_geral === undefined) sp.desc_geral = "";
+                    if(sp.type !== "feromancia" && sp.desc === undefined) sp.desc = "";
+                });
+                renderAll();
+                document.getElementById("jsonStatusMsg").innerHTML = `📀 Dados carregados do armazenamento local (${spells.length} magias)`;
+            } catch(e) { loadFallbackSpells(); renderAll(); }
+        } else {
+            fetchExternalJSON(); // tenta carregar JSON externo primeiro
+        }
+    }
+
+    // limite arcano (soma de arcanismo + feromancia)
+    function calcLimiteAtual() {
+        return spells.filter(sp => sp.type === "arcanismo" || sp.type === "feromancia")
+                     .reduce((sum, sp) => sum + (Number(sp.limiteArcano) || 0), 0);
+    }
+
+    function updateLimiteDisplay() {
+        const atual = calcLimiteAtual();
+        const maxVal = parseInt(document.getElementById("limiteMaxInput").value) || 0;
+        document.getElementById("limiteAtualVal").innerText = atual;
+        document.getElementById("limiteMaxDisplay").innerText = maxVal;
+        const warningDiv = document.getElementById("warningOverflow");
+        if(atual > maxVal) {
+            warningDiv.style.display = "inline-block";
+            document.getElementById("limiteAtualVal").style.color = "#f87171";
+        } else {
+            warningDiv.style.display = "none";
+            document.getElementById("limiteAtualVal").style.color = "#c084fc";
+        }
+    }
+
+    // renderização completa com filtros e grupos por nível
+    function renderAll() {
+        updateLimiteDisplay();
+        const container = document.getElementById("spellsContainer");
+        if(!container) return;
+        let filtered = spells.filter(sp => {
+            if(sp.type !== currentTab) return false;
+            if(searchQuery.trim() === "") return true;
+            const lowerQuery = searchQuery.toLowerCase();
+            let descToSearch = (sp.type === "feromancia") ? (sp.desc_geral || "") : (sp.desc || "");
+            if(sp.type === "feromancia") descToSearch += ` ${sp.desc_sucesso || ""} ${sp.desc_fracasso || ""}`;
+            return sp.name.toLowerCase().includes(lowerQuery) || descToSearch.toLowerCase().includes(lowerQuery);
+        });
+        const levelsOrder = ["1","2","3","4","S"];
+        container.innerHTML = "";
+        for(let lvl of levelsOrder) {
+            const spellsInLevel = filtered.filter(sp => sp.level === lvl);
+            if(spellsInLevel.length === 0) continue;
+            const levelDiv = document.createElement("div");
+            levelDiv.className = "level-group";
+            levelDiv.innerHTML = `<div class="level-header">Grau ${lvl}</div><div class="cards-grid" id="grid-${lvl}"></div>`;
+            const gridDiv = levelDiv.querySelector(`.cards-grid`);
+            spellsInLevel.forEach(spell => {
+                gridDiv.appendChild(createSpellCard(spell));
+            });
+            container.appendChild(levelDiv);
+        }
+        if(filtered.length === 0) {
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "empty-message";
+            emptyMsg.innerText = "✨ Nenhuma magia encontrada para esta categoria e filtro.";
+            container.appendChild(emptyMsg);
+        }
+    }
+
+    function createSpellCard(spell) {
+        const card = document.createElement("div");
+        card.className = "spell-card";
+        // Header
+        const headerDiv = document.createElement("div");
+        headerDiv.className = "card-header";
+        headerDiv.innerHTML = `
+            <div class="spell-name">${escapeHtml(spell.name)}</div>
+            <div class="meta-tags">
+                <span class="limite-card">LA: ${spell.limiteArcano}</span>
+                <span class="custo-card">⚡ ${spell.custoConjuracao || "—"}</span>
+            </div>
+            <div class="card-actions">
+                <button class="summarize-btn" data-id="${spell.id}">📄</button>
+                <button class="edit-btn" data-id="${spell.id}">✏️</button>
+                <button class="remove-btn" data-id="${spell.id}">🗑️</button>
+            </div>
+        `;
+        // Infos (ordem fixa + campos extras se divindade existir)
+        const infoOrder = ["execucao","alcance","area","alvo","duracao","resistencia"];
+        const infoLabels = { execucao:"Execução", alcance:"Alcance", area:"Área", alvo:"Alvo", duracao:"Duração", resistencia:"Resistência" };
+        const infosDiv = document.createElement("div");
+        infosDiv.className = "infos-section";
+        for(let key of infoOrder) {
+            let val = spell[key];
+            if(val && val.toString().trim() !== "" && val !== null && val !== "null") {
+                const itemSpan = document.createElement("div");
+                itemSpan.className = "info-item";
+                itemSpan.innerHTML = `<span class="info-label">${infoLabels[key]}:</span> <span>${escapeHtml(val)}</span>`;
+                infosDiv.appendChild(itemSpan);
+            }
+        }
+        // Exibir divindade/fe se existir para teurgia
+        if(spell.type === "teurgia" && spell.divindade) {
+            const divItem = document.createElement("div");
+            divItem.className = "info-item";
+            divItem.innerHTML = `<span class="info-label">Divindade:</span> <span>${escapeHtml(spell.divindade)}</span>`;
+            infosDiv.appendChild(divItem);
+        }
+        if(spell.type === "teurgia" && spell.fe !== undefined && spell.fe !== null) {
+            const feItem = document.createElement("div");
+            feItem.className = "info-item";
+            feItem.innerHTML = `<span class="info-label">Fé:</span> <span>${spell.fe}</span>`;
+            infosDiv.appendChild(feItem);
+        }
+
+        // Descrição
+        const descDiv = document.createElement("div");
+        descDiv.className = "desc-section";
+        if(spell.type === "feromancia") {
+            const feroBlock = document.createElement("div");
+            feroBlock.className = "fero-blocks";
+            if(spell.desc_geral) feroBlock.innerHTML += `<div class="fero-sub"><strong>📖 Geral:</strong> ${escapeHtml(spell.desc_geral)}</div>`;
+            if(spell.desc_sucesso) feroBlock.innerHTML += `<div class="fero-sub"><strong>✅ Em Sucesso:</strong> ${escapeHtml(spell.desc_sucesso)}</div>`;
+            if(spell.desc_fracasso) feroBlock.innerHTML += `<div class="fero-sub"><strong>❌ Em Fracasso:</strong> ${escapeHtml(spell.desc_fracasso)}</div>`;
+            descDiv.appendChild(feroBlock);
+        } else {
+            const p = document.createElement("div");
+            p.className = "desc-text";
+            p.innerText = spell.desc || "Sem descrição detalhada.";
+            descDiv.appendChild(p);
+        }
+        // Aprimoramentos
+        const aprDiv = document.createElement("div");
+        aprDiv.className = "aprimoramentos";
+        aprDiv.innerHTML = `<h4>🔧 Aprimoramentos</h4>`;
+        if(spell.aprimoramentos && spell.aprimoramentos.length > 0) {
+            spell.aprimoramentos.forEach(ap => {
+                const apItem = document.createElement("div");
+                apItem.className = "aprimoramento-item";
+                apItem.innerHTML = `
+                    <span>💰 ${escapeHtml(ap.custoExtra || "—")}</span>
+                    <span>✨ ${escapeHtml(ap.descricao || "")}</span>
+                    ${ap.requisito ? `<span>📌 Req: ${escapeHtml(ap.requisito)}</span>` : ''}
+                `;
+                aprDiv.appendChild(apItem);
+            });
+        } else {
+            aprDiv.innerHTML += `<div style="font-size:0.7rem; color:#7c7ca3;">Nenhum aprimoramento</div>`;
+        }
+        card.appendChild(headerDiv);
+        card.appendChild(infosDiv);
+        card.appendChild(descDiv);
+        card.appendChild(aprDiv);
+
+        // Eventos
+        card.querySelector(".summarize-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            summarizeSpell(spell);
+        });
+        card.querySelector(".edit-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            openSpellModal(spell.id);
+        });
+        card.querySelector(".remove-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            if(confirm(`Remover a magia "${spell.name}"?`)) {
+                spells = spells.filter(s => s.id !== spell.id);
+                saveToLocal();
+                renderAll();
+            }
+        });
+        return card;
+    }
+
+    function summarizeSpell(spell) {
+        let msg = `📜 ${spell.name} (${spell.type.toUpperCase()}) | LA:${spell.limiteArcano} | Custo:${spell.custoConjuracao}\n`;
+        if(spell.type === "feromancia") {
+            msg += `Geral: ${spell.desc_geral || "—"}\n✅ Sucesso: ${spell.desc_sucesso || "—"}\n❌ Fracasso: ${spell.desc_fracasso || "—"}`;
+        } else {
+            msg += `Efeito: ${spell.desc || "—"}`;
+        }
+        alert(msg);
+    }
+
+    // Modal edição/criação mantendo campos extras (divindade, fe)
+    function openSpellModal(editId = null) {
+        const modal = document.getElementById("spellModal");
+        const modalInner = document.getElementById("modalContentInner");
+        const spellToEdit = editId ? spells.find(s => s.id === editId) : null;
+        const isEditing = !!spellToEdit;
+
+        let typeValue = spellToEdit?.type || "arcanismo";
+        let html = `<h2>${isEditing ? "✏️ Editar Magia" : "✨ Nova Magia"}</h2>
+        <div class="form-grid">
+            <div><label>Nome*</label><input id="modalName" value="${escapeHtml(spellToEdit?.name || "")}"></div>
+            <div><label>Tipo*</label><select id="modalType"><option value="arcanismo" ${typeValue === "arcanismo" ? "selected" : ""}>Arcanismo</option><option value="feromancia" ${typeValue === "feromancia" ? "selected" : ""}>Feromancia</option><option value="teurgia" ${typeValue === "teurgia" ? "selected" : ""}>Teurgia</option></select></div>
+            <div><label>Grau (1,2,3,4,S)</label><input id="modalLevel" value="${spellToEdit?.level || "1"}"></div>
+            <div><label>Custo Conjuração</label><input id="modalCusto" value="${escapeHtml(spellToEdit?.custoConjuracao || "")}"></div>
+            <div><label>Limite Arcano</label><input type="number" id="modalLimite" value="${spellToEdit?.limiteArcano || 0}"></div>
+        </div>
+        <div class="form-grid">
+            <div><label>Execução</label><input id="modalExecucao" value="${escapeHtml(spellToEdit?.execucao || "")}"></div>
+            <div><label>Alcance</label><input id="modalAlcance" value="${escapeHtml(spellToEdit?.alcance || "")}"></div>
+            <div><label>Área</label><input id="modalArea" value="${escapeHtml(spellToEdit?.area || "")}"></div>
+            <div><label>Alvo</label><input id="modalAlvo" value="${escapeHtml(spellToEdit?.alvo || "")}"></div>
+            <div><label>Duração</label><input id="modalDuracao" value="${escapeHtml(spellToEdit?.duracao || "")}"></div>
+            <div><label>Resistência</label><input id="modalResistencia" value="${escapeHtml(spellToEdit?.resistencia || "")}"></div>
+        </div>
+        <div id="extraTeurgiaFields" class="full-width" style="display:${typeValue==='teurgia'?'flex':'none'}; gap:0.5rem;">
+            <div><label>Divindade</label><input id="modalDivindade" value="${escapeHtml(spellToEdit?.divindade || "")}"></div>
+            <div><label>Fé (valor numérico)</label><input id="modalFe" value="${spellToEdit?.fe !== undefined ? spellToEdit.fe : ''}"></div>
+        </div>
+        <div id="descDynamicArea" class="full-width"></div>
+        <div class="full-width"><label>Aprimoramentos</label><div id="aprimoramentosModalList" class="aprimoramentos-list"></div><button type="button" id="addAprimoramentoBtn" style="margin-top:5px;">+ Adicionar Aprimoramento</button></div>
+        <div class="modal-actions"><button type="button" id="cancelModalBtn">Cancelar</button><button type="button" id="saveModalBtn" class="btn-primary">Salvar</button></div>`;
+        modalInner.innerHTML = html;
+        modal.style.display = "flex";
+
+        let enhancementsArray = spellToEdit?.aprimoramentos ? [...spellToEdit.aprimoramentos] : [];
+        function refreshAprimoramentosUI() { /* igual anterior */ 
+            const container = document.getElementById("aprimoramentosModalList");
+            if(!container) return;
+            container.innerHTML = "";
+            enhancementsArray.forEach((ap, idx) => {
+                const row = document.createElement("div");
+                row.className = "aprim-row";
+                row.innerHTML = `<input type="text" placeholder="Custo extra ex: +2 PM" value="${escapeHtml(ap.custoExtra || '')}" class="ap-custo" data-idx="${idx}"><input type="text" placeholder="Descrição do efeito" value="${escapeHtml(ap.descricao || '')}" class="ap-desc" data-idx="${idx}"><input type="text" placeholder="Requisito" value="${escapeHtml(ap.requisito || '')}" class="ap-req" data-idx="${idx}"><button type="button" class="remove-aprimoramento" data-idx="${idx}">✖</button>`;
+                container.appendChild(row);
+            });
+            document.querySelectorAll(".remove-aprimoramento").forEach(btn => btn.addEventListener("click", (e) => { const idx=parseInt(btn.dataset.idx); enhancementsArray.splice(idx,1); refreshAprimoramentosUI(); }));
+            attachApEvents();
+        }
+        function attachApEvents() {
+            document.querySelectorAll(".ap-custo").forEach(inp => inp.addEventListener("change", function() { const idx=this.dataset.idx; enhancementsArray[idx].custoExtra = this.value; }));
+            document.querySelectorAll(".ap-desc").forEach(inp => inp.addEventListener("change", function() { const idx=this.dataset.idx; enhancementsArray[idx].descricao = this.value; }));
+            document.querySelectorAll(".ap-req").forEach(inp => inp.addEventListener("change", function() { const idx=this.dataset.idx; enhancementsArray[idx].requisito = this.value; }));
+        }
+        refreshAprimoramentosUI();
+        document.getElementById("addAprimoramentoBtn")?.addEventListener("click", () => { enhancementsArray.push({ custoExtra: "", descricao: "", requisito: "" }); refreshAprimoramentosUI(); });
+
+        function updateDescArea() {
+            const type = document.getElementById("modalType").value;
+            const areaDesc = document.getElementById("descDynamicArea");
+            if(type === "feromancia") {
+                areaDesc.innerHTML = `<label>Descrição Geral</label><textarea id="descGeral">${escapeHtml(spellToEdit?.desc_geral || "")}</textarea><label>Em Sucesso</label><textarea id="descSucesso">${escapeHtml(spellToEdit?.desc_sucesso || "")}</textarea><label>Em Fracasso</label><textarea id="descFracasso">${escapeHtml(spellToEdit?.desc_fracasso || "")}</textarea>`;
+            } else {
+                areaDesc.innerHTML = `<label>Descrição da Magia</label><textarea id="descTexto">${escapeHtml(spellToEdit?.desc || "")}</textarea>`;
+            }
+            document.getElementById("extraTeurgiaFields").style.display = type === "teurgia" ? "flex" : "none";
+        }
+        updateDescArea();
+        document.getElementById("modalType").addEventListener("change", updateDescArea);
+        document.getElementById("saveModalBtn").addEventListener("click", () => {
+            const name = document.getElementById("modalName").value.trim();
+            if(!name) { alert("Nome obrigatório"); return; }
+            const type = document.getElementById("modalType").value;
+            const newSpell = {
+                id: isEditing ? spellToEdit.id : Date.now().toString(),
+                name, type, level: document.getElementById("modalLevel").value.trim() || "1",
+                custoConjuracao: document.getElementById("modalCusto").value,
+                limiteArcano: parseInt(document.getElementById("modalLimite").value) || 0,
+                execucao: document.getElementById("modalExecucao").value,
+                alcance: document.getElementById("modalAlcance").value,
+                area: document.getElementById("modalArea").value,
+                alvo: document.getElementById("modalAlvo").value,
+                duracao: document.getElementById("modalDuracao").value,
+                resistencia: document.getElementById("modalResistencia").value,
+                aprimoramentos: enhancementsArray.filter(a => a.descricao?.trim() || a.custoExtra?.trim()),
+                divindade: document.getElementById("modalDivindade")?.value || "",
+                fe: document.getElementById("modalFe")?.value ? Number(document.getElementById("modalFe").value) : null
+            };
+            if(type === "feromancia") {
+                newSpell.desc_geral = document.getElementById("descGeral")?.value || "";
+                newSpell.desc_sucesso = document.getElementById("descSucesso")?.value || "";
+                newSpell.desc_fracasso = document.getElementById("descFracasso")?.value || "";
+            } else {
+                newSpell.desc = document.getElementById("descTexto")?.value || "";
+            }
+            if(isEditing) {
+                const idx = spells.findIndex(s => s.id === spellToEdit.id);
+                if(idx !== -1) spells[idx] = newSpell;
+            } else spells.push(newSpell);
+            saveToLocal();
+            renderAll();
+            modal.style.display = "none";
+        });
+        document.getElementById("cancelModalBtn").addEventListener("click", () => modal.style.display = "none");
+    }
+
+    function escapeHtml(str) { if(!str) return ""; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // Eventos globais
+    document.getElementById("searchInput").addEventListener("input", (e) => { searchQuery = e.target.value; renderAll(); });
+    document.getElementById("limiteMaxInput").addEventListener("input", () => { updateLimiteDisplay(); renderAll(); });
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentTab = btn.dataset.tab;
+        renderAll();
+    }));
+    document.getElementById("btnAdicionarMagia").addEventListener("click", () => openSpellModal(null));
+    document.getElementById("btnImportJSON").addEventListener("click", async () => {
+        if(confirm("Isso irá substituir todas as magias atuais pelos dados do arquivo magias.json. Deseja continuar?")) {
+            await fetchExternalJSON();
+        }
+    });
+    loadInitialData();
+</script>
+</body>
+</html>
