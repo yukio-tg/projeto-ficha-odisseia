@@ -750,91 +750,38 @@
 
                 <!-- INVENTÁRIO -->
                 <div class="page" id="tab-inventario">
-                    <div class="gs">
-                        <div class="gst">
-                            <div class="gsv" style="color:var(--blood1)">68 lb</div>
-                            <div class="gsl">Carga Atual</div>
+                    <div class="sh">Inventário</div>
+                    <div class="container-big-infos">
+                        <div class="item-container-searcher">
+                            <span class="material-symbols-outlined">search</span>
+                            <span class="item-searchbox"><input type="text" placeholder="Buscar itens..."></span>
+                            <span class="item-category"></span>
+                            <button id="btn-add-item" class="btn-add-item" type="button"><span
+                                    class="material-symbols-outlined" style="font-size:15px;"
+                                    aria-hidden="true">add</span></button>
                         </div>
-                        <div class="gst">
-                            <div class="gsv" style="color:var(--ink2)">240 lb</div>
-                            <div class="gsl">Capacidade</div>
+
+                        <div class="total-inv">
+                            <h1>Inventário</h1>
+                            <div>
+                                <input type="number" data-field="inv-atual" value="0" min="0">
+                                <span class="separator">/</span>
+                                <input type="number" data-field="inv-total" value="0" min="0">
+                            </div>
                         </div>
-                        <div class="gst">
-                            <div class="gsv" style="color:var(--gold1)">347 po</div>
-                            <div class="gsl">Ouro</div>
-                        </div>
-                        <div class="gst">
-                            <div class="gsv" style="color:var(--ink3)">120 pp</div>
-                            <div class="gsl">Prata</div>
+
+                        <div class="money">
+                            <h1>Dinheiro</h1>
+                            <div class="money-inputs">
+                                <div class="money-type">
+                                    <span class="material-symbols-outlined" style="font-size:14px;line-height:1;">A$</span>
+                                    <input type="number" data-field="money-gp" value="0" min="0" aria-label="Quantidade de A$">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="sh">Equipamentos</div>
-                    <table class="itbl">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th style="text-align:center;width:50px">Qtd.</th>
-                                <th style="text-align:center;width:60px">Peso</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Espada Longa +1</td>
-                                <td class="num">1</td>
-                                <td class="num">3 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Cota de Malha</td>
-                                <td class="num">1</td>
-                                <td class="num">35 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Arco Longo</td>
-                                <td class="num">1</td>
-                                <td class="num">2 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Aljava com 20 Flechas</td>
-                                <td class="num">1</td>
-                                <td class="num">5 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Adaga Rúnica</td>
-                                <td class="num">2</td>
-                                <td class="num">2 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Poção de Cura</td>
-                                <td class="num">3</td>
-                                <td class="num">1.5 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Grimório Arcano</td>
-                                <td class="num">1</td>
-                                <td class="num">3 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Rações (7 dias)</td>
-                                <td class="num">7</td>
-                                <td class="num">2 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Corda de Seda (50 pés)</td>
-                                <td class="num">1</td>
-                                <td class="num">5 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Tocha</td>
-                                <td class="num">5</td>
-                                <td class="num">0.5 lb</td>
-                            </tr>
-                            <tr>
-                                <td>Kit de Escrita</td>
-                                <td class="num">1</td>
-                                <td class="num">2 lb</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="items-container">
+                    </div>
                 </div>
 
                 <!-- BESTA -->
