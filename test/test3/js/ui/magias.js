@@ -1,48 +1,12 @@
 // ui/magias.js
 'use strict';
 
+import { normalizar as normalizarMagia, escapeHtml } from '../core/utils.js';
+import { createDataLoader } from '../core/data-loader.js';
+
 // ========== Configuração ==========
-const MAGIAS_JSON_PATH = '/data/magias.json';
-
-// Estado
-let magiasDB = [];
-let magiasDataLoading = true;
-let magiasDataError = false;
+const magiasLoader = createDataLoader('/data/magias.json', 'Magias', 'magias');
 let cardMagiaCounter = 0;
-
-// ========== Utilitários ==========
-function normalizarMagia(str) {
-    return (str || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, m => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[m]);
-}
-
-// ========== Carga do JSON ==========
-async function carregarMagias() {
-    try {
-        const response = await fetch(MAGIAS_JSON_PATH);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        magiasDB = Array.isArray(data.magias) ? data.magias : data;
-        magiasDataError = false;
-        console.log(`[Magias] Carregadas ${magiasDB.length} magias`);
-    } catch (err) {
-        console.error('[Magias] Erro ao carregar magias.json:', err);
-        magiasDB = [];
-        magiasDataError = true;
-    } finally {
-        magiasDataLoading = false;
-    }
-}
 
 // ========== Limite Arcano ==========
 function atualizarLaAtual() {
@@ -631,13 +595,13 @@ function mostrarAutocompleteMagias(inputEl, query) {
         fecharAutocompleteMagias();
         return;
     }
-    if (magiasDataLoading || magiasDataError) {
+    if (magiasLoader.isLoading() || magiasLoader.hasError()) {
         fecharAutocompleteMagias();
         return;
     }
 
     const qNorm = normalizarMagia(query);
-    const resultados = magiasDB.filter(m => normalizarMagia(m.nome).includes(qNorm)).slice(0, 10);
+    const resultados = magiasLoader.getData().filter(m => normalizarMagia(m.nome).includes(qNorm)).slice(0, 10);
 
     if (resultados.length === 0) {
         fecharAutocompleteMagias();
@@ -722,8 +686,8 @@ function adicionarMagia(inputEl) {
 
     // Busca no JSON
     const magiaNorm = normalizarMagia(nome);
-    const magiaBD = (!magiasDataError && !magiasDataLoading && nome !== '')
-        ? magiasDB.find(m => normalizarMagia(m.nome) === magiaNorm)
+    const magiaBD = (!magiasLoader.hasError() && !magiasLoader.isLoading() && nome !== '')
+        ? magiasLoader.getData().find(m => normalizarMagia(m.nome) === magiaNorm)
         : null;
 
     if (magiaBD) {
@@ -788,7 +752,7 @@ function adicionarMagia(inputEl) {
 
 // ========== Inicialização ==========
 export async function initMagias() {
-    await carregarMagias();
+    await magiasLoader.load();
 
     const inputBusca = document.querySelector('.magic-searchbox input');
     if (!inputBusca) return console.error('[Magias] .magic-searchbox input não encontrado');

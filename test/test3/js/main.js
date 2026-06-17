@@ -14,6 +14,7 @@ import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
 import { initMagias } from './ui/magias.js';
+import { initInventory } from './ui/inventory.js'
 
 document.addEventListener('DOMContentLoaded', () => {
     initRadar('secao-radar');
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initHerancaToggle();
     initPowers();
     initMagias();
-
+    initInventory();
     // Botão autocalc
     const autocalcBtn = document.getElementById('autocalc-switch');
     if (autocalcBtn) {

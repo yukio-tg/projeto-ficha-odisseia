@@ -1,0 +1,34 @@
+{
+  "itens": [
+    {
+      "nome": "Poção de Cura",
+      "categoria": "equipamento",
+      "peso": 1,
+      "raridade": "comum",
+      "descricao": "Recupera 2d8+3 PV. Ação protagonista.",
+      "valor1": "2d8+3"
+    },
+    {
+      "nome": "Espada Longa",
+      "categoria": "arma",
+      "peso": 2,
+      "raridade": "incomum",
+      "descricao": "Arma típica de soldados e guerreiros, esta espada de dois gumes tem lâmina reta medindo entre 80cm e 1m. É adaptável, por isso por de ser empunhada com apenas uma mão, passando a causar 1d8 de dano nesses casos.",
+      "alcance": "Corpo-a-corpo"
+    },
+    {
+      "nome": "Armadura Média",
+      "categoria": "proteção",
+      "peso": 5,
+      "raridade": "comum",
+      "descricao": "Uma armadura de placas, couraça e malha que preza pela proteção das partes vitais do usuário. É usada por lutadores que prezam por um combate rápido e decisivo nas linhas de frente, oferecendo ótimo custo benefício, ainda que reduza o deslocamento de seu usuário em ¼."
+    },
+    {
+      "nome": "a",
+      "categoria": "equipamento",
+      "peso": 1,
+      "raridade": "raro",
+      "descricao": "d"
+    }
+  ]
+}

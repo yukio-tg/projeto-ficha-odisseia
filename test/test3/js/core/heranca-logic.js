@@ -4,10 +4,23 @@ import { autoCalcEnabled } from './state.js';
 
 export let herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
 
-const checkFortuna = document.querySelector('[data-field="aumentoDeFortuna"]');
-const checkAprendizado = document.querySelector('[data-field="aprendizadoDaVida"]');
-const checkHabilidade = document.querySelector('[data-field="habilidadeAdquirida"]');
-const checkboxes = [checkFortuna, checkAprendizado, checkHabilidade];
+// Lazy DOM references — queried on first use, not at module load time
+let _checkFortuna = null;
+let _checkAprendizado = null;
+let _checkHabilidade = null;
+let _checkboxesCached = false;
+
+function getCheckFortuna()    { if (!_checkboxesCached) cacheCheckboxes(); return _checkFortuna; }
+function getCheckAprendizado() { if (!_checkboxesCached) cacheCheckboxes(); return _checkAprendizado; }
+function getCheckHabilidade()  { if (!_checkboxesCached) cacheCheckboxes(); return _checkHabilidade; }
+function getCheckboxes()       { if (!_checkboxesCached) cacheCheckboxes(); return [_checkFortuna, _checkAprendizado, _checkHabilidade]; }
+
+function cacheCheckboxes() {
+    _checkFortuna = document.querySelector('[data-field="aumentoDeFortuna"]');
+    _checkAprendizado = document.querySelector('[data-field="aprendizadoDaVida"]');
+    _checkHabilidade = document.querySelector('[data-field="habilidadeAdquirida"]');
+    _checkboxesCached = true;
+}
 
 let currentChoiceValue = null;
 
@@ -44,7 +57,7 @@ function inicializarSelectEscolha(data) {
 
     container.style.display = '';
     nota.textContent = 'Escolha o atributo para receber +1 (Aprendizado da Vida):';
-    
+
     if (select.options.length === 0 || select.options[0]?.value !== data.bonus.choices[0]) {
         select.innerHTML = '';
         data.bonus.choices.forEach(attr => {
@@ -54,7 +67,7 @@ function inicializarSelectEscolha(data) {
             select.appendChild(opt);
         });
     }
-    
+
     if (!select._listenerAdded) {
         select.addEventListener('change', () => {
             if (!autoCalcEnabled) return;
@@ -67,7 +80,7 @@ function inicializarSelectEscolha(data) {
         });
         select._listenerAdded = true;
     }
-    
+
     return select;
 }
 
@@ -85,8 +98,9 @@ export function aplicarNovoBonus() {
     const herancaNome = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
     const chave = herancaNome.toLowerCase();
     const data = HERANCA_DATA[chave];
+    const checkAprendizado = getCheckAprendizado();
     const aprendizadoAtivo = checkAprendizado && checkAprendizado.checked;
-    
+
     if (!data || !aprendizadoAtivo) {
         const container = document.getElementById('aprendizado-escolha-container');
         if (container) container.style.display = 'none';
@@ -103,11 +117,11 @@ export function aplicarNovoBonus() {
         if (container) container.style.display = 'none';
         return true;
     }
-    
+
     if (data.bonus.type === 'choice') {
         const select = inicializarSelectEscolha(data);
         if (!select) return false;
-        
+
         if (!currentChoiceValue && select.options.length) {
             currentChoiceValue = select.options[0].value;
             select.value = currentChoiceValue;
@@ -119,6 +133,10 @@ export function aplicarNovoBonus() {
 
 export function limitarCheckboxes() {
     const nivel = getNivel();
+    const checkboxes = getCheckboxes();
+    const checkFortuna = getCheckFortuna();
+    const checkAprendizado = getCheckAprendizado();
+    const checkHabilidade = getCheckHabilidade();
     if (nivel >= 12) {
         checkboxes.forEach(cb => { if (cb) { cb.checked = true; cb.disabled = true; } });
     } else {
@@ -145,6 +163,7 @@ export function atualizarFortuna() {
     if (nivel >= 5) aumento++;
     if (nivel >= 13) aumento++;
     if (nivel >= 19) aumento++;
+    const checkFortuna = getCheckFortuna();
     if (checkFortuna && checkFortuna.checked) aumento++;
 
     const indiceFinal = Math.min(indiceBase + aumento, HIERARQUIA_ORDEM.length - 1);
@@ -152,6 +171,13 @@ export function atualizarFortuna() {
     if (hierarquiaSelect) hierarquiaSelect.value = HIERARQUIA_ORDEM[indiceFinal];
     const dinheiroInput = document.querySelector('[data-field="dinheiro"]');
     if (dinheiroInput) dinheiroInput.value = data.dinheiro;
+
+    // Dispara evento para notificar que a hierarquia/dinheiro mudaram
+    document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
+    const dinheiroInputs = document.querySelectorAll('[data-field="dinheiro"]');
+    dinheiroInputs.forEach(input => {
+        if (input) input.value = data.dinheiro;
+    });
 }
 
 export function atualizarHeranca() {

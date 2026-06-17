@@ -2,6 +2,8 @@ import { getRadarAttrWrap, getAtributoBase } from '../core/radar-service.js';
 import { periciasEstado, getTotalPericia } from './skills.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
+import { uid } from '../core/utils.js';
+import { setupAccordion } from '../core/dom-helpers.js';
 
 function normalizePresetClass(nome) {
     if (!nome) return '';
@@ -354,16 +356,6 @@ function upgradeCardToPreset(card, nome) {
 // ============================================================
 // UTILITIES
 // ============================================================
-
-/** Generates a compact stable UUID for persistence keys. */
-function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-/** Evaluates a dice expression string and returns it formatted for display. */
-function formatDiceExpr(expr) {
-    return expr.trim() || '—';
-}
 
 /** Reads the character level from the radar input. */
 function getNivelAtual() {
@@ -1215,9 +1207,6 @@ function criarCardBonus(id) {
                 aria-label="Descrição do bônus ou ônus"></textarea>
         </div>`;
 
-    const header = card.querySelector('.combat-card__header');
-    const body = card.querySelector('.combat-card__body');
-    const chevron = card.querySelector('.combat-card__chevron');
     const tipoSel = card.querySelector('.bonus-tipo-select');
 
     function syncTipoStyle() {
@@ -1226,24 +1215,7 @@ function criarCardBonus(id) {
     tipoSel.addEventListener('change', syncTipoStyle);
     syncTipoStyle();
 
-    function toggleAccordion() {
-        const isOpen = body.hidden;
-        body.hidden = !isOpen;
-        header.setAttribute('aria-expanded', String(isOpen));
-        chevron.textContent = isOpen ? 'expand_less' : 'expand_more';
-        card.classList.toggle('combat-card--open', isOpen);
-    }
-
-    header.addEventListener('click', (e) => {
-        if (e.target.closest('.combat-card__delete-btn') ||
-            e.target.closest('.combat-card__name-input') ||
-            e.target.closest('.bonus-tipo-select')) return;
-        toggleAccordion();
-    });
-    header.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
-    });
-    card.querySelector('.combat-card__name-input').addEventListener('click', e => e.stopPropagation());
+    setupAccordion(card);
 
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => card.remove(), atualizarEfeitoGlobal());
 

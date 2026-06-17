@@ -1,13 +1,11 @@
 // ui/powers.js
 'use strict';
 
-// ========== Configuração ==========
-const JSON_PATH = '/data/poderes.json'; // Ajuste para o caminho real do seu JSON
+import { normalizar, escapeHtml } from '../core/utils.js';
+import { createDataLoader } from '../core/data-loader.js';
 
-// Estado dos dados
-let poderesDB = [];
-let dataLoading = true;
-let dataError = false;
+// ========== Configuração ==========
+const poderesLoader = createDataLoader('/data/poderes.json', 'Powers');
 
 const ordemCores = [
     "Vermelho",
@@ -40,33 +38,7 @@ let currentSelectedColor = null;
 let colorDropdownGlobal = null;
 let cardCounter = 0;
 
-// ---------- Carregar dados do JSON ----------
-async function carregarPoderes() {
-    try {
-        const response = await fetch(JSON_PATH);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        if (!Array.isArray(data)) throw new Error('JSON não é um array');
-        poderesDB = data;
-        dataError = false;
-        console.log(`[Powers] Carregados ${poderesDB.length} poderes do JSON`);
-    } catch (err) {
-        console.error('[Powers] Erro ao carregar poderes.json:', err);
-        poderesDB = [];
-        dataError = true;
-    } finally {
-        dataLoading = false;
-    }
-}
-
 // ---------- Funções auxiliares ----------
-function normalizar(str) {
-    return (str || '')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-}
 
 function atualizarTotalPt() {
     if (!ptAtualInput) return;
@@ -79,16 +51,6 @@ function atualizarTotalPt() {
     ptAtualInput.value = soma;
     // Força o calculation.js a verificar overflow
     ptAtualInput.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function (m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-    });
 }
 
 function indiceCor(cor) {
@@ -294,9 +256,9 @@ function adicionarPoderDoBusca() {
         containerCards.appendChild(novoCard);
     } else {
         let poderEncontrado = null;
-        if (!dataError && !dataLoading) {
+        if (!poderesLoader.hasError() && !poderesLoader.isLoading()) {
             const nomeNorm = normalizar(nomeDigitado);
-            poderEncontrado = poderesDB.find(p => normalizar(p.nome) === nomeNorm);
+            poderEncontrado = poderesLoader.getData().find(p => normalizar(p.nome) === nomeNorm);
         }
         const novoCard = criarCardPower(poderEncontrado || null, nomeDigitado, corParaCard);
         containerCards.appendChild(novoCard);
@@ -331,13 +293,7 @@ function fecharAutocomplete() {
 function mostrarAutocomplete(query) {
     const dropdown = criarAutocomplete();
     
-    // Caso ainda carregando
-    if (dataLoading) {
-        return;
-    }
-    
-    // Caso erro no JSON
-    if (dataError) {
+    if (poderesLoader.isLoading() || poderesLoader.hasError()) {
         return;
     }
     
@@ -348,7 +304,7 @@ function mostrarAutocomplete(query) {
     }
     
     const qNorm = normalizar(query);
-    const resultados = poderesDB.filter(p => normalizar(p.nome).includes(qNorm)).slice(0, 8);
+    const resultados = poderesLoader.getData().filter(p => normalizar(p.nome).includes(qNorm)).slice(0, 8);
     if (resultados.length === 0) {
         return;
     }
@@ -422,8 +378,7 @@ function setupAutocompleteKeyboard() {
 
 // ---------- Inicialização (assíncrona) ----------
 export async function initPowers() {
-    // Carrega os dados primeiro
-    await carregarPoderes();
+    await poderesLoader.load();
     
     containerCards = document.querySelector('.powers-container');
     if (!containerCards) return console.error('[Powers] .powers-container não encontrado');

@@ -136,7 +136,6 @@ export function calcStats() {
     let pvMax = Math.floor(formulas.pv.base + con + nivel * (formulas.pv.per + con / 2));
     let pmBase = Math.floor(formulas.pm.base + car + nivel * (formulas.pm.per + car / 2));
     let ptMax = Math.floor(formulas.pt.base + int + nivel * (formulas.pt.per + int / 2));
-    let invMax = Math.floor(formulas.inv(forc));
     let laMax;
     if (typeof formulas.la === 'function') {
         const baseLa = formulas.la(sab, nivel);
@@ -145,6 +144,29 @@ export function calcStats() {
     } else {
         laMax = Math.floor(formulas.la + nivel * (formulas.laPer || 0));
     }
+    let invMax = 0;
+    const forca = getAtributoTotal('FOR');
+    const classeInv = getClasseNormalizada();
+
+    if (classeInv === 'coração' || classeInv === 'engenhoso') {
+        invMax = 7 + forca;
+    } else if (classeInv === 'terrível' || classeInv === 'teurgista' || classeInv === 'feromântico') {
+        invMax = 5 + forca;
+    } else if (classeInv === 'treinador' || classeInv === 'arcanista' || classeInv === 'certeiro') {
+        invMax = 2 + forca;
+    } else {
+        // fallback (caso classe não reconhecida) – usa o antigo ou 5+FOR
+        invMax = 5 + forca;
+    }
+
+    // Atualiza o campo total na interface e dispara evento
+    const invTotalInput = document.querySelector('[data-field="inv-total"]');
+    if (invTotalInput) {
+        invTotalInput.value = invMax;
+        invTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    // Exporta o limite para outros módulos (ex: inventory.js)
+    calculatedLimits.inv = invMax;
 
     const alinhamento = document.querySelector('[data-field="alinhamento-nome"]')?.value.trim().toLowerCase() || 'nenhum';
     const feAtivo = alinhamento !== 'nenhum';
