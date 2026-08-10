@@ -1,0 +1,459 @@
+/* Estilos para os novos controles de perícia */
+.pericia-grau {
+    width: 55px;
+    background: var(--p1);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+}
+
+.pericia-mod-extra {
+    width: 70px;
+    background: rgba(255, 255, 240, 0.6);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-family: 'IM Fell English', serif;
+    text-align: center;
+}
+
+.pericia-mod-extra:focus {
+    outline: none;
+    border-color: var(--blood1);
+}
+
+.stbl td {
+    vertical-align: middle;
+    padding: 6px 4px;
+}
+
+/* Blocos de atributos */
+.atributos-resumo {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+}
+
+.atributo-card {
+    background: linear-gradient(160deg, var(--p1) 0%, var(--p0) 100%);
+    border: 1px solid var(--attr-color, var(--p3));
+    border-radius: 6px;
+    padding: 6px 6px 5px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Top accent bar in attr color */
+.atributo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--attr-color, var(--gold1));
+    border-radius: 6px 6px 0 0;
+}
+
+.atributo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--attr-color, var(--p3));
+}
+
+/* Per-attribute color vars on the elements */
+.atributo-card[data-attr="FOR"] {
+    --attr-color: var(--attr-for);
+}
+
+.atributo-card[data-attr="DES"] {
+    --attr-color: var(--attr-des);
+}
+
+.atributo-card[data-attr="CON"] {
+    --attr-color: var(--attr-con);
+}
+
+.atributo-card[data-attr="INT"] {
+    --attr-color: var(--attr-int);
+}
+
+.atributo-card[data-attr="SAB"] {
+    --attr-color: var(--attr-sab);
+}
+
+.atributo-card[data-attr="CAR"] {
+    --attr-color: var(--attr-car);
+}
+
+.atributo-nome {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    color: var(--attr-color, var(--ink3));
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    margin-top: 1px;
+    font-weight: 700;
+}
+
+.atributo-valores-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+}
+
+.atributo-valor {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--ink0);
+    font-size: 17px;
+    line-height: 1;
+}
+
+.atributo-mod {
+    font-family: 'Cinzel', serif;
+    color: var(--attr-color, var(--blood1));
+    font-size: 9px;
+    line-height: 1;
+    font-weight: 600;
+}
+
+.atributo-total {
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--attr-color, var(--gold0));
+    font-size: 13px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: 3px;
+    padding-top: 3px;
+    line-height: 1;
+    opacity: 0.9;
+}
+
+.atributo-card small {
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    color: var(--ink3);
+    display: block;
+}
+
+.pericia-proficiencia {
+    width: 55px;
+    background: var(--p1);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+}
+
+.pericia-bonus {
+    width: 70px;
+    background: rgba(255, 255, 240, 0.6);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-family: 'IM Fell English', serif;
+    text-align: center;
+}
+
+.pericia-bonus:focus {
+    outline: none;
+    border-color: var(--blood1);
+}
+
+/* ── Proficiência pip selector ── */
+.prof-pips {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    justify-content: center;
+}
+
+.prof-pip {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--p3);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.prof-pip:hover {
+    border-color: var(--gold1);
+    transform: scale(1.15);
+}
+
+.prof-pip.active {
+    background: var(--blood1);
+    border-color: var(--blood0);
+    box-shadow: 0 0 4px rgba(138, 24, 16, 0.4);
+}
+
+.prof-pip[data-level="0"] {
+    border-style: dashed;
+    opacity: 0.5;
+}
+
+.prof-pip[data-level="1"].active {
+    background: #7a7a6a;
+    border-color: #555;
+    box-shadow: none;
+}
+
+.prof-pip[data-level="2"].active {
+    background: var(--gold0);
+    border-color: var(--gold1);
+    box-shadow: 0 0 3px rgba(196, 137, 42, 0.4);
+}
+
+.prof-pip[data-level="3"].active {
+    background: var(--blood1);
+    border-color: var(--blood0);
+}
+
+.prof-pip[data-level="4"].active {
+    background: var(--mana1);
+    border-color: var(--mana0);
+    box-shadow: 0 0 4px rgba(35, 24, 181, 0.4);
+}
+
+.prof-pip[data-level="5"].active {
+    background: var(--tunic1);
+    border-color: var(--tunic0);
+    box-shadow: 0 0 5px rgba(112, 24, 133, 0.5);
+}
+
+.prof-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    min-width: 30px;
+}
+
+/* ── Contador de proficiência — centered ── */
+.proficiencia-counter {
+    background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
+    border: 1px solid var(--leath3);
+    border-radius: 8px;
+    padding: 8px 20px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(196, 137, 42, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.proficiencia-counter::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+}
+
+.counter-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--gold1);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    opacity: 0.85;
+}
+
+.counter-fraction {
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.counter-value {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--gold3);
+    text-shadow: 0 0 12px rgba(245, 216, 120, 0.4);
+}
+
+.counter-sep {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    color: var(--leath4);
+}
+
+.counter-max {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--leath4);
+}
+
+.counter-warning {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--blood2);
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.counter-pips-preview {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    margin-left: 4px;
+}
+
+.counter-pip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--leath4);
+    opacity: 0.4;
+    transition: background 0.2s, opacity 0.2s;
+}
+
+.counter-pip-dot.used {
+    background: var(--gold2);
+    opacity: 1;
+}
+
+/* ── Arrow info button ── */
+.pericia-info-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--ink3);
+    font-size: 16px;
+    line-height: 1;
+    transition: color 0.15s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.45;
+    vertical-align: middle;
+    margin-right: 2px;
+}
+
+.pericia-info-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.pericia-info-btn.open {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* ── Pericia row attr color accent ── */
+.stbl tbody tr[data-attr-color] td:first-child {
+    border-left: 2px solid var(--row-attr-color, transparent);
+}
+
+/* ── Pericia description row ── */
+.pericia-desc-row td {
+    padding: 0 !important;
+    border-bottom: none !important;
+}
+
+.pericia-desc-content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pericia-desc-content.open {
+    max-height: 200px;
+}
+
+.pericia-desc-inner {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 12.5px;
+    color: var(--ink1);
+    line-height: 1.65;
+    padding: 5px 12px 9px 20px;
+    border-left: 3px solid var(--row-attr-color, var(--gold1));
+    margin: 0 0 0 0;
+    background: rgba(255, 255, 240, 0.35);
+    border-bottom: 1px dotted rgba(100, 70, 20, 0.18);
+    text-align: left;
+}
+
+/* Opacidade para perícias não treinadas (grau 0) */
+.pericia-row-grau0 {
+    opacity: 0.55;
+    transition: opacity 0.2s;
+}
+
+.pericia-row-grau0:hover {
+    opacity: 0.85;
+}
+
+/* Fix table column widths for alignment */
+.stbl .col-nome {
+    width: auto;
+}
+
+.stbl .col-attr {
+    width: 52px;
+}
+
+.stbl .col-base {
+    width: 44px;
+    text-align: center;
+}
+
+.stbl .col-prof {
+    width: 110px;
+    text-align: center;
+}
+
+.stbl .col-bonus {
+    width: 70px;
+    text-align: center;
+}
+
+.stbl .col-total {
+    width: 70px;
+    text-align: center;
+}
+
+/* ── Perícias: esconde colunas Atrib. e Base em telas pequenas ── */
+@media (max-width: 600px) {
+    .stbl .col-attr,
+    .stbl thead th:nth-child(2) {
+        display: none;
+    }
+    .stbl .col-base,
+    .stbl thead th:nth-child(3) {
+        display: none;
+    }
+    /* Ajusta largura dos pips para caber melhor */
+    .stbl .col-prof {
+        width: auto;
+    }
+    /* Aumenta área de toque dos pips */
+    .prof-pip {
+        width: 20px;
+        height: 20px;
+    }
+}
+

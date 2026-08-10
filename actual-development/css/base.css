@@ -1,0 +1,23 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    min-height: 100%;
+    background: var(--leath0);
+    font-family: 'IM Fell English', Georgia, serif;
+    color: var(--ink0);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 10% 20%, #2e1200 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 90% 80%, #180800 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, #120900 0%, transparent 70%);
+}

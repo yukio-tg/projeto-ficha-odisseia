@@ -1,0 +1,1840 @@
+/* Geral */
+.info-container,
+.base-container {
+    display: flex;
+    width: 100%;
+    gap: 20px;
+    justify-content: space-evenly;
+}
+
+/* RETRATO AMPLIADO (450x400) */
+.info-img {
+    width: 400px;
+    height: 320px;
+    max-width: 400px;
+    max-height: 320px;
+    border: 1px solid var(--leath0);
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #120d04e0;
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.info-img .centralize-y {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+#retrato-inputs {
+    margin: 0;
+    text-align: center;
+}
+
+#retrato-inputs input {
+    font-family: 'IM Fell English';
+    border: 1px solid var(--gold2);
+    border-radius: 5px;
+    background: var(--ink0);
+    padding: 5px;
+    box-shadow: 0 0 4px #6a3c1a;
+}
+
+#retrato-inputs input:active {
+    border-color: var(--gold3);
+    box-shadow: 0 0 4px var(--gold2);
+}
+
+#retrato-inputs input::placeholder {
+    color: var(--gold0);
+    text-align: center;
+}
+
+#retrato-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+#limpar-retrato {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    border: none;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    padding: 0;
+    line-height: 1;
+    background: none;
+}
+
+#limpar-retrato span {
+    border-radius: 50%;
+    background-color: #5c0e074b;
+    color: var(--blood1);
+    border: 1px solid var(--blood1);
+    width: auto;
+    height: auto;
+    align-items: center;
+}
+
+#limpar-retrato span:hover {
+    background-color: var(--blood2);
+    border-color: var(--p0);
+    color: var(--p0);
+}
+
+.info-form {
+    display: flex;
+    flex-direction: column;
+}
+
+fieldset {
+    border: 1px solid var(--ink2);
+    padding: 0 5px;
+    border-radius: 5px;
+    background-color: var(--p0);
+}
+
+legend {
+    font-size: 0.6em;
+    color: var(--ink2);
+}
+
+fieldset:focus-within {
+    border-color: var(--blood2);
+    background-color: var(--p1);
+}
+
+fieldset:focus-within legend {
+    color: var(--blood2);
+}
+
+input {
+    background: none;
+    border: none;
+    color: var(--ink0);
+    font-size: 1.1em;
+    font-family: 'Times New Roman', Times, serif;
+    width: 100%;
+}
+
+input:focus {
+    outline: none;
+}
+
+input[data-field="dinheiro"] {
+    margin-left: 5px;
+    max-width: 110px;
+}
+
+select {
+    border: none;
+    background: none;
+}
+
+select:focus-within {
+    outline: none;
+}
+
+select,
+::picker(select) {
+    appearance: base-select;
+}
+
+option {
+    padding: 1px 10px 1px 4px;
+    background-color: var(--p0);
+    font-size: 1em;
+}
+
+option:hover {
+    background-color: var(--blood2);
+    color: var(--p0);
+}
+/* SECTION HEADING */
+.sh {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--blood1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 14px;
+}
+
+.sh:first-child {
+    margin-top: 0;
+}
+
+.sh::before,
+.sh::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blood0), transparent);
+    opacity: 0.6;
+}
+
+/* Small diamond ornament after section headings */
+.sh>span {
+    position: relative;
+}
+
+.orn {
+    text-align: center;
+    color: var(--gold1);
+    font-size: 13px;
+    letter-spacing: 12px;
+    margin: 18px 0;
+    opacity: 0.6;
+}
+
+/* STAT GRID */
+.sg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sb {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    text-align: center;
+    padding: 8px 4px 6px;
+    position: relative;
+    transition: border-color 0.15s;
+}
+
+.sb:hover {
+    border-color: var(--gold1);
+}
+
+.sb::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: var(--gold1);
+    border-radius: 0 0 2px 2px;
+    opacity: 0.5;
+}
+
+.sl {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.sv {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 28.8px;
+    color: var(--ink0);
+    line-height: 1;
+}
+
+.sm {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13.2px;
+    color: var(--ink3);
+    margin-top: 1px;
+}
+
+/* INFO FIELDS */
+.ig {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px 16px;
+    margin-bottom: 4px;
+}
+
+.if {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.il {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.iv {
+    font-family: 'IM Fell English', serif;
+    font-size: 16.2px;
+    color: var(--ink0);
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--p3);
+    min-height: 22px;
+}
+
+/* VITALS ROW */
+.vr {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.vb {
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    padding: 10px;
+    text-align: center;
+}
+
+.vb.hp {
+    border-color: rgba(138, 24, 16, 0.4);
+}
+
+.vl {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 4px;
+}
+
+.vn {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--ink0);
+}
+
+.vb.hp .vn {
+    color: var(--blood1);
+}
+
+.vs {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--ink3);
+    margin-top: 2px;
+}
+
+/* TRAITS */
+.tr-list {
+    margin-bottom: 4px;
+}
+
+.tr {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dotted rgba(100, 70, 20, 0.3);
+    align-items: baseline;
+}
+
+.tr-k {
+    font-family: 'Cinzel', serif;
+    font-size: 10.2px;
+    letter-spacing: 0.06em;
+    color: var(--ink2);
+    font-weight: 700;
+    text-transform: uppercase;
+    min-width: 86px;
+    flex-shrink: 0;
+}
+
+.tr-v {
+    font-family: 'IM Fell English', serif;
+    font-size: 15.6px;
+    color: var(--ink1);
+    font-style: italic;
+}
+
+/* SKILL TABLE */
+.stbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.stbl th {
+    font-family: 'Cinzel', serif;
+    font-size: 9.6px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding: 0 6px 8px 0;
+    text-align: left;
+    border-bottom: 1.5px solid var(--p3);
+}
+
+.stbl td {
+    padding: 5px 6px 5px 0;
+    border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+    font-family: 'IM Fell English', serif;
+    color: var(--ink1);
+    font-size: 15.6px;
+}
+
+.stbl td:last-child {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 14.4px;
+    color: var(--blood1);
+    text-align: center;
+    width: 44px;
+}
+
+/* WEAPON CARDS */
+.wg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.wc {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 10px 12px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.wc::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+}
+
+.wn {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blood1);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ws {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.wsl {
+    font-family: 'Cinzel', serif;
+    font-size: 8.4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    display: block;
+    margin-bottom: 1px;
+}
+
+.wsv {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16.8px;
+    color: var(--ink0);
+}
+
+/* ABILITY CARDS */
+.ac {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 10px 14px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+
+.ac::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gold1);
+}
+
+.ac:hover {
+    border-color: var(--gold1);
+}
+
+.an {
+    font-family: 'Cinzel', serif;
+    font-size: 13.2px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--ink0);
+}
+
+.at {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 12.6px;
+    color: var(--gold0);
+    margin-left: 10px;
+}
+
+.ab {
+    font-size: 15px;
+    color: var(--ink2);
+    line-height: 1.6;
+    margin-top: 5px;
+    font-family: 'IM Fell English', serif;
+}
+
+/* NOTES */
+.np {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 14px 16px;
+    font-family: 'IM Fell English', serif;
+    font-size: 15.6px;
+    color: var(--ink1);
+    line-height: 1.85;
+    background: var(--p1);
+    background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.12) 28px);
+}
+
+.np p+p {
+    margin-top: 20px;
+}
+
+/* BEAST */
+.bt {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 14px;
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    margin-bottom: 16px;
+}
+
+.bi {
+    width: 62px;
+    height: 62px;
+    border: 2px solid var(--gold1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 33.6px;
+    background: radial-gradient(circle, var(--p1) 0%, var(--p2) 100%);
+    box-shadow: 0 0 0 2px var(--p0), 0 0 0 3px var(--p4);
+    flex-shrink: 0;
+}
+
+.bn {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 20.4px;
+    color: var(--ink0);
+}
+
+.bk {
+    font-size: 14.4px;
+    font-style: italic;
+    color: var(--ink3);
+    margin-top: 2px;
+}
+
+.bm {
+    font-size: 13.2px;
+    font-style: italic;
+    color: var(--p4);
+    margin-top: 6px;
+}
+
+/* ======== NOVOS ESTILOS PARA BARRAS DE COMPLETUDE ======== */
+.vital-bar-container {
+    margin-bottom: 12px;
+}
+
+.vital-bar {
+    position: relative;
+    width: 100%;
+    height: 34px;
+    background: var(--ink0);
+    border: 1px solid var(--ink0);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.vital-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--blood1), var(--blood2));
+    transition: width 0.2s ease;
+    width: 0%;
+}
+
+.vital-bar-fill.mana {
+    height: 100%;
+    background: linear-gradient(to right, var(--mana1), var(--mana2));
+    transition: width 0.2s ease;
+    width: 0%;
+}
+
+.vital-bar-fill.fe {
+    height: 100%;
+    background: linear-gradient(to right, var(--tunic1), var(--tunic2));
+    transition: width 0.2s ease;
+    width: 0%;
+}
+
+.vital-bar-inputs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    pointer-events: none;
+}
+
+.vital-bar-inputs input {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16px;
+    width: 55px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    pointer-events: auto;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+    -moz-appearance: textfield;
+}
+
+.vital-bar-inputs input::-webkit-outer-spin-button,
+.vital-bar-inputs input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.vital-bar-inputs .separator {
+    color: #ffffff;
+    font-size: 18px;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+/* ══════════════════════════════════════
+           NEW GERAL TAB STYLES
+           ══════════════════════════════════════ */
+
+/* Top grid: portrait + identity */
+.geral-top-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+    align-items: stretch;
+}
+
+/* Portrait column stretches to match identity column height */
+.portrait-column {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.info-img {
+    width: 100%;
+    max-width: 220px;
+    flex: 1;
+    border: 1px solid var(--leath3);
+    border-radius: 4px;
+    overflow: hidden;
+    background: linear-gradient(160deg, #1a0d02 0%, #0e0700 100%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+/* Decorative corner brackets */
+.portrait-corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.portrait-corner::before,
+.portrait-corner::after {
+    content: '';
+    position: absolute;
+    background: var(--gold1);
+}
+
+.portrait-corner::before {
+    width: 100%;
+    height: 2px;
+}
+
+.portrait-corner::after {
+    width: 2px;
+    height: 100%;
+}
+
+.portrait-corner-tl {
+    top: -2px;
+    left: -2px;
+}
+
+.portrait-corner-tl::before {
+    top: 0;
+    left: 0;
+}
+
+.portrait-corner-tl::after {
+    top: 0;
+    left: 0;
+}
+
+.portrait-corner-tr {
+    top: -2px;
+    right: -2px;
+}
+
+.portrait-corner-tr::before {
+    top: 0;
+    right: 0;
+    left: auto;
+}
+
+.portrait-corner-tr::after {
+    top: 0;
+    right: 0;
+    left: auto;
+}
+
+.portrait-corner-bl {
+    bottom: -2px;
+    left: -2px;
+}
+
+.portrait-corner-bl::before {
+    bottom: 0;
+    top: auto;
+    left: 0;
+}
+
+.portrait-corner-bl::after {
+    bottom: 0;
+    top: auto;
+    left: 0;
+}
+
+.portrait-corner-br {
+    bottom: -2px;
+    right: -2px;
+}
+
+.portrait-corner-br::before {
+    bottom: 0;
+    top: auto;
+    right: 0;
+    left: auto;
+}
+
+.portrait-corner-br::after {
+    bottom: 0;
+    top: auto;
+    right: 0;
+    left: auto;
+}
+
+.info-img .centralize-y {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    flex: 1;
+}
+
+#retrato-inputs {
+    text-align: center;
+    padding: 32px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.portrait-placeholder-icon {
+    font-size: 48px;
+    color: var(--gold0);
+    opacity: 0.4;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.portrait-placeholder-text {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--leath4);
+    opacity: 0.7;
+    margin-bottom: 12px;
+}
+
+#retrato-inputs input {
+    font-family: 'IM Fell English';
+    border: 1px solid var(--gold0);
+    border-radius: 4px;
+    background: rgba(30, 15, 4, 0.6);
+    color: var(--gold2);
+    padding: 6px 8px;
+    font-size: 12px;
+    width: 100%;
+}
+
+#retrato-inputs input::placeholder {
+    color: var(--leath4);
+    text-align: center;
+}
+
+#retrato-inputs input:focus {
+    outline: none;
+    border-color: var(--gold2);
+}
+
+#retrato-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+#limpar-retrato {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    border: none;
+    display: inline-flex;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    padding: 0;
+    line-height: 1;
+    background: none;
+}
+
+#limpar-retrato span {
+    border-radius: 50%;
+    background-color: rgba(92, 14, 7, 0.5);
+    color: var(--blood1);
+    border: 1px solid var(--blood1);
+    font-size: 18px;
+}
+
+#limpar-retrato span:hover {
+    background-color: var(--blood2);
+    border-color: var(--p0);
+    color: var(--p0);
+}
+
+/* Identity column */
+.identity-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.identity-name-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ifl {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    display: block;
+    margin-bottom: 3px;
+}
+
+.ifinput-name {
+    font-family: 'Cinzel Decorative', serif !important;
+    font-size: 20px !important;
+    color: var(--ink0) !important;
+    border: none !important;
+    border-bottom: 2px solid var(--p3) !important;
+    background: transparent !important;
+    padding: 2px 0 4px !important;
+    width: 100%;
+    letter-spacing: 0.04em;
+    transition: border-color 0.2s;
+}
+
+.ifinput-name:focus {
+    outline: none;
+    border-bottom-color: var(--blood1) !important;
+}
+
+.ifinput-name::placeholder {
+    color: var(--p3);
+}
+
+.ifinput-title {
+    font-family: 'IM Fell English', serif !important;
+    font-style: italic !important;
+    font-size: 15px !important;
+    color: var(--ink2) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--p2) !important;
+    background: transparent !important;
+    padding: 2px 0 3px !important;
+    width: 100%;
+    transition: border-color 0.2s;
+}
+
+.ifinput-title:focus {
+    outline: none;
+    border-bottom-color: var(--blood1) !important;
+}
+
+.ifinput-title::placeholder {
+    color: var(--p3);
+}
+
+.identity-divider {
+    text-align: center;
+    color: var(--gold1);
+    font-size: 14px;
+    opacity: 0.5;
+    letter-spacing: 0.2em;
+    margin: 2px 0;
+}
+
+.identity-fields-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+
+.identity-tamanho-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+fieldset {
+    border: 1px solid var(--p2);
+    padding: 2px 8px 5px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+legend {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding: 0 4px;
+}
+
+fieldset:focus-within {
+    border-color: var(--blood1);
+    background: rgba(255, 245, 225, 0.5);
+}
+
+fieldset:focus-within legend {
+    color: var(--blood1);
+}
+
+input {
+    background: none;
+    border: none;
+    color: var(--ink0);
+    font-size: 1em;
+    font-family: 'IM Fell English', Georgia, serif;
+    width: 100%;
+}
+
+input:focus {
+    outline: none;
+}
+
+
+.fortune-block {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.fortune-fieldset {
+    flex: 1;
+    min-width: 0;
+}
+
+.monstro-check-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.monstro-check-label input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.monstro-check-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border: 1px solid var(--p3);
+    border-radius: 20px;
+    color: var(--ink3);
+    background: transparent;
+    transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s;
+    white-space: nowrap;
+}
+
+.monstro-check-label:hover .monstro-check-badge {
+    border-color: var(--blood1);
+    color: var(--blood1);
+}
+
+.monstro-check-label input:checked ~ .monstro-check-badge {
+    background: linear-gradient(135deg, var(--blood1), var(--blood0));
+    border-color: var(--blood0);
+    color: var(--p0);
+    box-shadow: 0 1px 6px rgba(92, 14, 7, 0.45);
+}
+
+.money-label {
+    font-family: 'Cinzel', serif;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+input[data-field="dinheiro"] {
+    max-width: 90px;
+    width: 90px;
+    font-size: 1.5em;
+}
+
+select {
+    border: none;
+    background: none;
+    font-family: 'IM Fell English', serif;
+    font-size: 1em;
+    color: var(--ink0);
+    cursor: pointer;
+    width: 100%;
+}
+
+select:focus {
+    outline: none;
+}
+
+select,
+::picker(select) {
+    appearance: base-select;
+}
+
+option {
+    padding: 2px 10px 2px 4px;
+    background-color: var(--p0);
+    font-size: 1em;
+}
+
+option:hover {
+    background-color: var(--blood2);
+    color: var(--p0);
+}
+
+/* ══ VITALS & ATTRS ══ */
+.vitals-attrs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.vitals-column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Vital cards */
+.vital-card {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--p2);
+    background: linear-gradient(135deg, var(--p1) 0%, var(--p0) 100%);
+}
+
+.vital-card-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 6px 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vital-card-icon {
+    font-size: 11px;
+    letter-spacing: 0;
+}
+
+.vital-card-hp {
+    border-color: rgba(138, 24, 16, 0.3);
+}
+
+.vital-card-hp .vital-card-label {
+    color: var(--blood1);
+}
+
+.vital-card-mana {
+    border-color: rgba(35, 24, 181, 0.25);
+}
+
+.vital-card-mana .vital-card-label {
+    color: var(--mana1);
+}
+
+.vital-card-fe {
+    border-color: rgba(112, 24, 133, 0.25);
+}
+
+.vital-card-fe .vital-card-label {
+    color: var(--tunic1);
+}
+
+.vital-bar {
+    position: relative;
+    width: calc(100% - 20px);
+    height: 36px;
+    margin: 6px 10px 8px;
+    background: rgba(18, 13, 4, 0.85);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.vital-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--blood0), var(--blood2));
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+}
+
+.vital-bar-fill.mana {
+    background: linear-gradient(to right, var(--mana0), var(--mana2));
+}
+
+.vital-bar-fill.fe {
+    background: linear-gradient(to right, var(--tunic0), var(--tunic2));
+}
+
+.vital-bar-inputs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    pointer-events: none;
+}
+
+.vital-bar-inputs input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 17px;
+    width: 52px;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    pointer-events: auto;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.8);
+    -moz-appearance: textfield;
+}
+
+.vital-bar-inputs input::-webkit-outer-spin-button,
+.vital-bar-inputs input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.vital-bar-inputs .separator {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 16px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+/* Small stats row */
+.small-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+}
+
+.small-stat-block {
+    border: 1px solid var(--p2);
+    border-radius: 5px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    padding: 7px 8px 8px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.small-stat-block::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: var(--gold1);
+    opacity: 0.4;
+    border-radius: 0 0 2px 2px;
+}
+
+.small-stat-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 4px;
+}
+
+.small-stat-input {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+}
+
+.small-stat-input input {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 22px;
+    color: var(--ink0);
+    text-align: center;
+    width: 52px;
+    line-height: 1;
+}
+
+.small-stat-unit {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--ink3);
+}
+
+/* Radar column */
+.radar-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(26, 13, 2, 0.07) 0%, transparent 70%),
+        linear-gradient(160deg, var(--p1) 0%, var(--p0) 60%, var(--p1) 100%);
+    border: 1px solid var(--p3);
+    border-radius: 8px;
+    padding: 18px 12px 10px;
+    position: relative;
+    box-shadow:
+        inset 0 1px 0 rgba(245, 216, 120, 0.18),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+        0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.radar-column::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+    opacity: 0.65;
+}
+
+/* Section title inside radar column */
+.radar-column-title {
+    font-family: 'IM Fell English', serif;
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--ink0);
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+/* Vital bar container (legacy, keep for other tabs) */
+.vital-bar-container {
+    margin-bottom: 10px;
+}
+
+/* ══ STAT GRID (other tabs) ══ */
+.sg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(82px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.sb {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    text-align: center;
+    padding: 8px 4px 6px;
+    position: relative;
+    transition: border-color 0.15s;
+}
+
+.sb:hover {
+    border-color: var(--gold1);
+}
+
+.sb::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: var(--gold1);
+    border-radius: 0 0 2px 2px;
+    opacity: 0.5;
+}
+
+.sl {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.sv {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 28.8px;
+    color: var(--ink0);
+    line-height: 1;
+}
+
+.sm {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 13.2px;
+    color: var(--ink3);
+    margin-top: 1px;
+}
+
+/* VITALS ROW (other tabs) */
+.vr {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.vb {
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    padding: 10px;
+    text-align: center;
+}
+
+.vb.hp {
+    border-color: rgba(138, 24, 16, 0.4);
+}
+
+.vl {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 4px;
+}
+
+.vn {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 36px;
+    line-height: 1;
+    color: var(--ink0);
+}
+
+.vb.hp .vn {
+    color: var(--blood1);
+}
+
+.vs {
+    font-size: 12px;
+    font-style: italic;
+    color: var(--ink3);
+    margin-top: 2px;
+}
+
+/* INFO FIELDS (other tabs) */
+.ig {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px 16px;
+    margin-bottom: 4px;
+}
+
+.if {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.il {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.iv {
+    font-family: 'IM Fell English', serif;
+    font-size: 16.2px;
+    color: var(--ink0);
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--p3);
+    min-height: 22px;
+}
+
+/* TRAITS */
+.tr-list {
+    margin-bottom: 4px;
+}
+
+.tr {
+    display: flex;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px dotted rgba(100, 70, 20, 0.3);
+    align-items: baseline;
+}
+
+.tr-k {
+    font-family: 'Cinzel', serif;
+    font-size: 10.2px;
+    letter-spacing: 0.06em;
+    color: var(--ink2);
+    font-weight: 700;
+    text-transform: uppercase;
+    min-width: 86px;
+    flex-shrink: 0;
+}
+
+.tr-v {
+    font-family: 'IM Fell English', serif;
+    font-size: 15.6px;
+    color: var(--ink1);
+    font-style: italic;
+}
+
+/* SKILL TABLE */
+.stbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.stbl th {
+    font-family: 'Cinzel', serif;
+    font-size: 9.6px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding: 0 6px 8px 0;
+    text-align: left;
+    border-bottom: 1.5px solid var(--p3);
+}
+
+.stbl td {
+    padding: 5px 6px 5px 0;
+    border-bottom: 1px dotted rgba(100, 70, 20, 0.2);
+    font-family: 'IM Fell English', serif;
+    color: var(--ink1);
+    font-size: 15.6px;
+}
+
+.stbl td:last-child {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 14.4px;
+    color: var(--blood1);
+    text-align: center;
+    width: 44px;
+}
+
+/* WEAPON CARDS */
+.wg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.wc {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 10px 12px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.wc::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+}
+
+.wn {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--blood1);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ws {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.wsl {
+    font-family: 'Cinzel', serif;
+    font-size: 8.4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    display: block;
+    margin-bottom: 1px;
+}
+
+.wsv {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16.8px;
+    color: var(--ink0);
+}
+
+/* ABILITY CARDS */
+.ac {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 10px 14px;
+    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+
+.ac::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gold1);
+}
+
+.ac:hover {
+    border-color: var(--gold1);
+}
+
+.an {
+    font-family: 'Cinzel', serif;
+    font-size: 13.2px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--ink0);
+}
+
+.at {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 12.6px;
+    color: var(--gold0);
+    margin-left: 10px;
+}
+
+.ab {
+    font-size: 15px;
+    color: var(--ink2);
+    line-height: 1.6;
+    margin-top: 5px;
+    font-family: 'IM Fell English', serif;
+}
+
+/* SPELL GRID */
+.spg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.spc {
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    padding: 10px;
+    background: linear-gradient(150deg, var(--p1) 0%, var(--p0) 100%);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s;
+}
+
+.spc::after {
+    content: '✦';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 8px;
+    color: var(--p4);
+    opacity: 0.5;
+}
+
+.spc:hover {
+    border-color: var(--gold1);
+}
+
+.spn {
+    font-family: 'Cinzel', serif;
+    font-size: 12.6px;
+    font-weight: 700;
+    color: var(--blood0);
+    letter-spacing: 0.06em;
+    margin-bottom: 3px;
+}
+
+.spm {
+    font-size: 11.4px;
+    font-style: italic;
+    color: var(--ink3);
+    margin-bottom: 5px;
+}
+
+.spd {
+    font-family: 'IM Fell English', serif;
+    font-size: 13.8px;
+    color: var(--ink2);
+    line-height: 1.5;
+}
+
+.notes-and-keeps {
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 rgba(245, 216, 120, 0.2), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.notes-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px 7px 12px;
+    background: linear-gradient(90deg, var(--leath1) 0%, var(--leath2) 60%, var(--leath1) 100%);
+    border-bottom: 1px solid var(--leath3);
+}
+
+.notes-quill {
+    font-size: 14px;
+    color: var(--gold2);
+    text-shadow: 0 0 8px rgba(232, 184, 74, 0.5);
+    flex-shrink: 0;
+}
+
+.notes-title {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    flex: 1;
+}
+
+.notes-body {
+    padding: 0;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 110px;
+    max-height: 220px;
+    resize: vertical;
+    background: transparent;
+    border: none;
+    padding: 10px 14px;
+    font-family: 'IM Fell English', serif;
+    font-size: 14.5px;
+    color: var(--ink1);
+    line-height: 28px;
+    outline: none;
+    display: block;
+}
+
+.notes-textarea::placeholder {
+    color: var(--p3);
+    font-style: italic;
+    font-size: 13px;
+}
+
+.notes-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 7px 12px;
+    border-top: 1px solid rgba(100, 70, 20, 0.15);
+    flex-wrap: wrap;
+}
+
+.notes-char-count {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    opacity: 0.6;
+    margin-right: auto;
+}
+
+.notes-pin-btn {
+    background: none;
+    border: 1px solid rgba(100, 70, 20, 0.25);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    color: var(--ink3);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.notes-pin-btn:hover {
+    background: rgba(100, 70, 20, 0.1);
+    border-color: var(--gold1);
+    color: var(--gold0);
+}
+
+.notes-keeps {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    flex: 1;
+}
+
+.keep-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, var(--leath1), var(--leath2));
+    border: 1px solid var(--leath3);
+    border-radius: 20px;
+    padding: 2px 8px 2px 6px;
+    max-width: 140px;
+}
+
+.keep-chip-text {
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    color: var(--gold2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+    font-style: italic;
+}
+
+.keep-chip-del {
+    background: none;
+    border: none;
+    color: var(--leath4);
+    font-size: 9px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.1s;
+}
+
+.keep-chip-del:hover {
+    color: var(--blood2);
+}
+

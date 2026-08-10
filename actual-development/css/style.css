@@ -2253,70 +2253,6 @@ option:hover {
 }
 
 
-
-/* NOTES */
-.np {
-    border: 1px solid var(--p3);
-    border-radius: 5px;
-    padding: 14px 16px;
-    font-family: 'IM Fell English', serif;
-    font-size: 15.6px;
-    color: var(--ink1);
-    line-height: 1.85;
-    background: var(--p1);
-    background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(100, 70, 20, 0.12) 28px);
-}
-
-.np p+p {
-    margin-top: 20px;
-}
-
-/* BEAST */
-.bt {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-    padding: 14px;
-    border: 1px solid var(--p3);
-    border-radius: 6px;
-    background: linear-gradient(155deg, var(--p1) 0%, var(--p0) 100%);
-    margin-bottom: 16px;
-}
-
-.bi {
-    width: 62px;
-    height: 62px;
-    border: 2px solid var(--gold1);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 33.6px;
-    background: radial-gradient(circle, var(--p1) 0%, var(--p2) 100%);
-    box-shadow: 0 0 0 2px var(--p0), 0 0 0 3px var(--p4);
-    flex-shrink: 0;
-}
-
-.bn {
-    font-family: 'Cinzel Decorative', serif;
-    font-size: 20.4px;
-    color: var(--ink0);
-}
-
-.bk {
-    font-size: 14.4px;
-    font-style: italic;
-    color: var(--ink3);
-    margin-top: 2px;
-}
-
-.bm {
-    font-size: 13.2px;
-    font-style: italic;
-    color: var(--p4);
-    margin-top: 6px;
-}
-
 /* ══════════════════════════════════════
            COMBAT STATS ROW (Defesa / RD / Desl.)
            ══════════════════════════════════════ */
@@ -3179,6 +3115,27 @@ option:hover {
 .stbl .col-total {
     width: 70px;
     text-align: center;
+}
+
+/* ── Perícias: esconde colunas Atrib. e Base em telas pequenas ── */
+@media (max-width: 600px) {
+    .stbl .col-attr,
+    .stbl thead th:nth-child(2) {
+        display: none;
+    }
+    .stbl .col-base,
+    .stbl thead th:nth-child(3) {
+        display: none;
+    }
+    /* Ajusta largura dos pips para caber melhor */
+    .stbl .col-prof {
+        width: auto;
+    }
+    /* Aumenta área de toque dos pips */
+    .prof-pip {
+        width: 20px;
+        height: 20px;
+    }
 }
 
 /* ══════════════════════════════════════

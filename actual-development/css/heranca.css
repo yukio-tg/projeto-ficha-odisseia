@@ -1,0 +1,104 @@
+.heranca-coisas {
+    display: flex;
+    align-items: center;
+}
+
+#heranca-options-btn {
+    background: none;
+    border: none;
+}
+
+#heranca-options-btn span:hover {
+    color: var(--gold2);
+    transition: all .2s;
+    cursor: pointer;
+}
+
+.grouped {
+    display: flex;
+    gap: 20px;
+}
+
+ol.heranca-options {
+    margin: 5px 0;
+    text-align: center;
+    list-style: none;
+    text-indent: 10px;
+    display: none;
+}
+
+ol.heranca-options label {
+    display: flex;
+    flex-direction: row;
+}
+
+ol.heranca-options label input {
+    width: 15px;
+    margin-left: 10px;
+}
+
+#heranca-nome {
+    border-bottom: 1px solid var(--ink0);
+    transform: translateY(1px);
+}
+
+.heranca-fieldset {
+    margin-top: 2px;
+}
+
+.heranca-coisas {
+    display: flex;
+    align-items: center;
+}
+
+#heranca-options-btn {
+    background: none;
+    border: none;
+    color: var(--ink3);
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+#heranca-options-btn span:hover {
+    color: var(--gold2);
+    transition: all .2s;
+}
+
+.grouped {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+ol.heranca-options {
+    margin: 6px 0 2px 20px;
+    list-style: none;
+    display: none;
+}
+
+ol.heranca-options li {
+    margin: 4px 0;
+}
+
+ol.heranca-options label {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IM Fell English', serif;
+    font-size: 13px;
+    color: var(--ink2);
+    cursor: pointer;
+}
+
+ol.heranca-options label input {
+    width: auto;
+    cursor: pointer;
+    accent-color: var(--blood1);
+}
+
+#heranca-nome {
+    border-bottom: 1px solid var(--p3);
+}

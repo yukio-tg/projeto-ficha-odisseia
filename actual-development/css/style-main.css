@@ -1,0 +1,11 @@
+/* style-main.css — Ponto de entrada do CSS da ficha.
+   Importa todos os modulos na ordem correta. */
+@import url('./tokens.css');
+@import url('./base.css');
+@import url('./layout.css');
+@import url('./geral.css');
+@import url('./pericias.css');
+@import url('./combate.css');
+@import url('./poderes.css');
+@import url('./heranca.css');
+@import url('./anotacoes.css');

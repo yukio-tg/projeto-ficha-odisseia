@@ -1,0 +1,848 @@
+/* ── PT over limit ───────────────────────────────────────────── */
+
+.total-pt.pt-over-limit input,.total-inv.inv-over-limit input {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+.total-pt.pt-over-limit ,.total-inv.inv-over-limit{
+    background-color: #ffeeee;
+    border-radius: 4px;
+}
+
+/* ── Layout geral ────────────────────────────────────────────── */
+
+.container-big-infos {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+/* ── Total PT ────────────────────────────────────────────────── */
+
+.total-pt ,.total-inv {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 0;
+    background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
+    border: 1px solid var(--gold0);
+    border-radius: 6px;
+    padding: 4px 12px;
+    box-shadow:
+        0 2px 8px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(245,216,120,0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.total-pt h1 ,.total-inv h1{
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold0);
+    margin: 0;
+}
+
+.total-pt::before,.total-inv::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+}
+
+.total-pt input,.total-inv input {
+    width: 60px;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold3);
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    text-shadow: 0 0 10px rgba(245,216,120,0.4);
+}
+
+.total-pt input:focus, .total-inv input:focus {
+    outline: none;
+    color: var(--gold2);
+}
+
+.total-pt input[data-field="pt-total"], .total-pt input[data-field="la-total"], .total-inv input[data-field="inv-total"], .total-inv input[data-field="inv-atual"] {
+    color: var(--gold1);
+    opacity: 0.7;
+}
+
+.total-pt .separator, .total-inv .separator {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    color: var(--gold0);
+    opacity: 0.6;
+    padding: 0 2px;
+    user-select: none;
+}
+
+.total-pt.pt-over-limit ,.total-pt.la-over-limit,.total-inv.inv-over-limit{
+    border-color: var(--blood1);
+    background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
+}
+
+.total-pt.pt-over-limit::before ,.total-pt.la-over-limit::before,.total-inv.inv-over-limit::before {
+    background: linear-gradient(90deg, transparent, var(--blood1), var(--blood2), var(--blood1), transparent);
+}
+
+.total-pt.pt-over-limit input[data-field="pt-atual"], .total-pt.la-over-limit input[data-field="la-atual"], .total-inv.inv-over-limit input[data-field="inv-atual"] {
+    color: var(--blood2);
+    text-shadow: 0 0 10px rgba(181,36,24,0.5);
+}
+
+
+/* ── Search bar ──────────────────────────────────────────────── */
+
+.power-container-searcher,.magic-container-searcher,.item-container-searcher{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--p1) 0%, var(--p0) 100%);
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    padding: 5px 10px;
+    flex: 1;
+    width: 100%;
+    height: 53px;
+    box-shadow:
+        0 1px 4px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+    position: relative;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.power-container-searcher:focus-within ,.magic-container-searcher:focus-within,.item-container-searcher:focus-within {
+    border-color: var(--gold1);
+    box-shadow: 0 0 0 2px rgba(196,137,42,0.15), 0 1px 4px rgba(0,0,0,0.15);
+}
+
+/* ícone de lupa */
+.power-container-searcher > .material-symbols-outlined,.magic-container-searcher > .material-symbols-outlined,.item-container-searcher > .material-symbols-outlined{
+    font-size: 18px;
+    color: var(--ink3);
+    opacity: 0.45;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+.power-searchbox,.magic-searchbox,.item-searchbox{
+    flex: 1;
+}
+
+.power-searchbox input,.magic-searchbox input{
+    width: 100%;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 16px;
+    color: var(--ink0);
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 1px 2px;
+    transition: border-color 0.15s;
+}
+
+.power-searchbox input:focus,.magic-searchbox input:focus,.item-searchbox input:focus{
+    outline: none;
+    border-bottom-color: var(--gold1);
+}
+
+.power-searchbox input::placeholder,.magic-searchbox input::placeholder,.item-searchbox input::placeholder{
+    color: var(--ink3);
+    font-style: italic;
+    opacity: 0.6;
+}
+
+/* Botão Adicionar */
+.btn-add-power,.btn-add-magic,.btn-add-item{
+    background: linear-gradient(135deg, var(--leath2) 0%, var(--leath3) 100%);
+    border: 1px solid var(--gold0);
+    border-radius: 8px;
+    color: var(--gold2);
+    padding: 3px 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+    flex-shrink: 0;
+    height: 36px;
+}
+
+.btn-add-power:hover,.btn-add-magic:hover,.btn-add-item:hover{
+    background: linear-gradient(135deg, var(--leath3) 0%, var(--leath4) 100%);
+    border-color: var(--gold2);
+    color: var(--gold3);
+    box-shadow: 0 0 8px rgba(196,137,42,0.25);
+}
+
+.btn-add-power:active,.btn-add-magic:active,.btn-add-item:active{
+    transform: translateY(1px);
+}
+
+
+/* ── Category color dot (searchbar) ─────────────────────────── */
+
+.power-category {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    user-select: none;
+}
+
+/* O círculo visual dentro do botão */
+.category-color-dot {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--p3);
+    border: 1.5px solid var(--gold0);
+    opacity: 0.55;
+    transition: background-color 0.18s, opacity 0.18s, transform 0.15s;
+    pointer-events: none;
+}
+
+.power-category:hover .category-color-dot {
+    opacity: 0.9;
+    transform: scale(1.12);
+}
+
+/* Quando uma cor está selecionada */
+.category-color-dot--active {
+    opacity: 1;
+    border-color: var(--gold2);
+    box-shadow: 0 0 0 2px rgba(196,137,42,0.25);
+}
+
+
+/* ── Color Dot Dropdown (shared) ─────────────────────────────── */
+
+.color-dot-dropdown {
+    position: absolute;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 160px;
+    background: linear-gradient(158deg, var(--p1) 0%, var(--p0) 100%);
+    border: 1px solid var(--gold0);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 1001;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+}
+
+.color-dot-dropdown--open {
+    display: flex;
+}
+
+/* Dot genérico (cores) */
+.color-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.13s, box-shadow 0.13s;
+    flex-shrink: 0;
+}
+
+.color-dot:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 2px rgba(196,137,42,0.45);
+}
+
+.color-dot--active {
+    box-shadow: 0 0 0 2.5px var(--gold2);
+    transform: scale(1.15);
+}
+
+/* Dot "nenhuma" — círculo vazio/neutro */
+.color-dot--none {
+    background: linear-gradient(135deg, var(--p2), var(--p3));
+    border: 1.5px dashed var(--gold0);
+    opacity: 0.6;
+}
+
+.color-dot--none:hover {
+    opacity: 1;
+}
+
+
+/* ── Autocomplete dropdown ───────────────────────────────────── */
+
+.autocomplete-powers-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+    background: linear-gradient(158deg, var(--p1) 0%, var(--p0) 100%);
+    border: 1px solid var(--gold0);
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+.autocomplete-item-power {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 13px;
+    color: var(--ink1);
+    padding: 7px 12px;
+    border-bottom: 1px solid rgba(200,170,100,0.25);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.autocomplete-item-power:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item-power:hover,
+.autocomplete-item-power--active {
+    background: rgba(196,137,42,0.12);
+    color: var(--ink0);
+}
+
+.autocomplete-item-power strong {
+    color: var(--ink0);
+    flex: 1;
+}
+
+.autocomplete-item-power span:last-child {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--gold0);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+/* Bolinha colorida dentro do autocomplete */
+.autocomplete-cor-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.15);
+}
+
+
+/* ── Powers container grid ───────────────────────────────────── */
+
+.powers-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+
+/* ── Card de poder ───────────────────────────────────────────── */
+
+.card-power {
+    --card-color: #c0392b;
+    --card-color-faint: color-mix(in srgb, var(--card-color) 7%, var(--p1));
+    --card-color-whisper: color-mix(in srgb, var(--card-color) 4%, var(--p0));
+    border: 1px solid color-mix(in srgb, var(--card-color) 22%, var(--p2));
+    border-radius: 6px;
+    background: linear-gradient(158deg, var(--card-color-faint) 0%, var(--card-color-whisper) 100%);
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+}
+
+/* Stripe colorida no topo — usa a cor do card */
+.card-power::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--card-color), color-mix(in srgb, var(--card-color) 30%, transparent));
+}
+
+.card-power:hover {
+    border-color: var(--gold1);
+    box-shadow: 0 2px 12px rgba(196,137,42,0.12);
+}
+
+
+/* ── Header do card ── */
+
+.header-power {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 10px 10px 7px;
+    border-bottom: 1px solid var(--gold1);
+}
+
+/* Botão summarize — seta rotacionada */
+.btn-summarize {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--ink3);
+    opacity: 0.5;
+    transition: opacity 0.15s, transform 0.2s;
+}
+
+.btn-summarize::before {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.2s;
+}
+
+.btn-summarize:hover {
+    opacity: 1;
+}
+
+/* Estado colapsado: seta aponta para a direita */
+.btn-summarize.collapsed::before {
+    transform: rotate(-45deg) translateX(-2px);
+}
+
+
+/* Badge PT */
+
+.pt-cost-input {
+    width: 2.2em;
+    flex-shrink: 0;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green1);
+    background: linear-gradient(135deg, rgba(61, 138, 16, 0.08) 0%, rgba(44, 138, 16, 0.04) 100%);
+    border: 1px solid var(--green2);
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 4px;
+    padding: 2px 0;
+    text-shadow: 0 0 6px var(--green2);
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.pt-cost-input:focus {
+    outline: none;
+    border-color: var(--gold2);
+    color: var(--gold0);
+    text-shadow: 0 0 6px var(--gold2);
+}
+
+.pt-cost-input::-webkit-outer-spin-button,
+.pt-cost-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* Nome do poder */
+
+.power-first-container {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.power-name-container {
+    display: inline-grid;
+    align-items: center;
+    min-width: 80px;
+}
+
+.power-name-container::after {
+    content: attr(data-value) " ";
+    visibility: hidden;
+    white-space: pre;
+    grid-area: 1 / 1;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 2px;
+}
+
+.power-name-input {
+    grid-area: 1 / 1;
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 1px 2px;
+    color: var(--ink0);
+    transition: border-color 0.15s;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.power-name-input:focus {
+    outline: none;
+    border-bottom-color: var(--gold1);
+}
+
+.power-name-input::placeholder {
+    font-style: italic;
+    font-weight: 400;
+    text-transform: none;
+    color: var(--ink3);
+    opacity: 0.55;
+    letter-spacing: 0;
+}
+
+
+/* Campo outros custos */
+
+.other-costs-input {
+    flex-shrink: 0;
+    width: 72px;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: var(--mana2);
+    opacity: 0.8;
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    padding: 1px 2px;
+    transition: border-bottom-color 0.15s;
+}
+
+.other-costs-input:focus {
+    outline: none;
+    border-bottom-color: var(--mana1);
+}
+
+.other-costs-input::placeholder {
+    
+    color: var(--ink1);
+    opacity: 0.25;
+}
+
+
+/* ── Card color dot (header do card) ─────────────────────────── */
+
+.card-color-dot-wrapper {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.18);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.13s, box-shadow 0.13s;
+}
+
+.card-color-dot:hover {
+    transform: scale(1.25);
+    box-shadow: 0 0 0 2px rgba(196,137,42,0.4);
+}
+
+
+/* Botão remover */
+
+.btn-remove-power {
+    flex-shrink: 0;
+    background: none;
+    color: var(--blood1);
+    border: none;
+    padding: 2px 3px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+    line-height: 1;
+}
+
+.btn-remove-power:hover {
+    color: var(--blood2);
+    text-shadow: 0 0 3px var(--blood2);
+}
+
+
+/* ── Body do card ── */
+
+.body-power {
+    padding: 8px 10px 10px;
+    background: transparent;
+}
+
+.power-desc-textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 54px;
+    max-height: 140px;
+    resize: vertical;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 16px;
+    color: var(--ink1);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 6px 8px;
+    line-height: 1.5;
+    transition: border-color 0.15s, background 0.15s;
+    display: block;
+    box-sizing: border-box;
+}
+
+.power-desc-textarea:focus {
+    outline: none;
+    border-color: var(--gold1);
+    background: rgba(247,236,212,0.7);
+}
+
+.power-desc-textarea::placeholder {
+    color: var(--ink3);
+    opacity: 0.5;
+}
+
+.power-desc-textarea::-webkit-scrollbar {
+    width: 5px;
+}
+
+.power-desc-textarea::-webkit-scrollbar-track {
+    background: var(--p1);
+}
+
+.power-desc-textarea::-webkit-scrollbar-thumb {
+    background: var(--p3);
+    border-radius: 3px;
+}
+
+
+/* ── Animação de entrada ─────────────────────────────────────── */
+
+@keyframes power-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.card-power {
+    animation: power-card-in 0.18s ease both;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    :root {
+        --tab-w: 0px;
+    }
+
+    .app {
+        flex-direction: column;
+    }
+
+    /* Hide the left sidebar entirely on mobile */
+    .sidebar {
+        display: none;
+    }
+
+    /* Show bottom nav bar on mobile */
+    .sidebar-mobile-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: linear-gradient(0deg, var(--leath0) 0%, var(--leath1) 100%);
+        border-top: 1px solid var(--leath3);
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar-mobile-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .sidebar-mobile-nav::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+    }
+
+    .sidebar-mobile-nav ul {
+        display: flex;
+        list-style: none;
+        width: 100%;
+        min-width: max-content;
+    }
+
+    .sidebar-mobile-nav ul li {
+        font-family: 'Cinzel', serif;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--leath4);
+        padding: 10px 14px 12px;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        border-top: 2px solid transparent;
+        transition: color 0.2s, border-color 0.2s, background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .sidebar-mobile-nav ul li:hover {
+        color: var(--gold2);
+        background: rgba(98, 52, 20, 0.3);
+    }
+
+    .sidebar-mobile-nav ul li.active {
+        color: var(--gold3);
+        border-top-color: var(--blood1);
+        background: rgba(18, 13, 4, 0.4);
+        font-weight: 700;
+    }
+
+    /* Main sheet fills full width */
+    .sheet {
+        min-height: calc(100vh - 48px);
+    }
+
+    /* Add padding so content doesn't hide behind bottom nav */
+    .page-wrap {
+        padding-bottom: 52px;
+    }
+
+    .header-body {
+        padding: 10px 14px 12px;
+    }
+
+    .page {
+        padding: 14px 14px 36px;
+    }
+
+    .sg {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .vr {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .wg {
+        grid-template-columns: 1fr;
+    }
+
+    .vitals-attrs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .combat-stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .cstat-desl {
+        grid-column: 1 / -1;
+    }
+
+    .geral-top-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portrait-column {
+        display: flex;
+        justify-content: center;
+    }
+
+    .info-img {
+        max-width: 100%;
+        min-height: 220px;
+        height: 220px;
+    }
+
+    .combat-cards-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .powers-container {
+        grid-template-columns: 1fr;
+    }
+ 
+    .container-big-infos {
+        flex-direction: column;
+        align-items: stretch;
+    }
+ 
+    .power-container-searcher {
+        max-width: 100%;
+    }
+ 
+    .total-pt {
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 380px) {
+    .sidebar-mobile-nav ul li {
+        font-size: 8px;
+        padding: 10px 10px 12px;
+    }
+}
