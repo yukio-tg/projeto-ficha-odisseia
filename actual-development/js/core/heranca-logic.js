@@ -167,17 +167,25 @@ export function atualizarFortuna() {
     if (checkFortuna && checkFortuna.checked) aumento++;
 
     const indiceFinal = Math.min(indiceBase + aumento, HIERARQUIA_ORDEM.length - 1);
-    const hierarquiaSelect = document.querySelector('[data-field="hierarquia"]');
-    if (hierarquiaSelect) hierarquiaSelect.value = HIERARQUIA_ORDEM[indiceFinal];
-    const dinheiroInput = document.querySelector('[data-field="dinheiro"]');
-    if (dinheiroInput) dinheiroInput.value = data.dinheiro;
+    const novaHierarquia = HIERARQUIA_ORDEM[indiceFinal];
 
-    // Dispara evento para notificar que a hierarquia/dinheiro mudaram
-    document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
-    const dinheiroInputs = document.querySelectorAll('[data-field="dinheiro"]');
-    dinheiroInputs.forEach(input => {
-        if (input) input.value = data.dinheiro;
+    // Update ALL hierarquia elements (tab-geral + tab-inventário)
+    document.querySelectorAll('[data-field="hierarquia"]').forEach(el => {
+        if (el.value !== novaHierarquia) {
+            el.value = novaHierarquia;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
     });
+
+    // Update ALL dinheiro elements
+    document.querySelectorAll('[data-field="dinheiro"]').forEach(el => {
+        if (el.value !== String(data.dinheiro)) {
+            el.value = data.dinheiro;
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+
+    document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
 }
 
 export function atualizarHeranca() {

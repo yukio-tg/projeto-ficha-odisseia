@@ -5,6 +5,7 @@ import { normalizar, escapeHtml, capitalize } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { verificarOverflow, syncFieldToDisplay } from '../core/dom-helpers.js';
+import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged } from '../core/item-effects.js';
 
 // ========== Configuração ==========
 const itensLoader = createDataLoader('/data/itens.json', 'Inventário', 'itens');
@@ -33,7 +34,7 @@ const LIMITES_POR_HIERARQUIA = {
 };
 
 // Categorias possíveis
-const CATEGORIAS = ['arma', 'proteção', 'vestimenta', 'fonte', 'equipamento'];
+const CATEGORIAS = ['arma', 'proteção', 'fonte', 'básico'];
 
 // Estado do item
 const ESTADOS = {
@@ -46,9 +47,8 @@ const ESTADOS = {
 const CAT_ICON = {
     'arma':       'swords',
     'proteção':   'shield',
-    'vestimenta': 'apparel',
     'fonte':      'auto_awesome',
-    'equipamento':'backpack'
+    'básico':'backpack'
 };
 
 // Mapeamento de estado → ícone Material Symbol
@@ -166,30 +166,35 @@ function verificarInvOverflow() {
     verificarOverflow('.total-inv', '[data-field="inv-atual"]', '[data-field="inv-total"]', 'inv-over-limit');
 }
 
-// ========== Persistência local ==========
-function salvarInventarioLocal() {
+// ========== Persistência ==========
+function salvarInventarioLocal() { /* substituído por auto-save Firebase */ }
+
+let suppressEffects = false;
+
+export function getInventarioState() {
     const cardsData = [];
     document.querySelectorAll('.item-card').forEach(card => {
         const id = card.dataset.cardId;
         const nome = card.querySelector('.item-nome-input')?.value || '';
         const quantidade = parseInt(card.querySelector('.item-quantidade')?.value, 10) || 1;
         const pesoUnit = parseInt(card.querySelector('.item-peso-unit')?.value, 10) || 0;
-        const raridade = card.dataset.raridade || 'comum';
+        const raridade = card.dataset.raridade || 'banal';
         const estado = card.querySelector('.item-estado-select')?.value || ESTADOS.PADRAO.value;
         const categoria = card.querySelector('.item-categoria-select')?.value || '';
         const descricao = card.querySelector('.item-desc-textarea')?.value || '';
         const valor1 = card.querySelector('.item-valor1')?.value || '';
         const valor2 = card.querySelector('.item-valor2')?.value || '';
-        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2 });
+        const itemSource = card.dataset.itemSource || '';
+        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource });
     });
-    localStorage.setItem('ficha_inventario', JSON.stringify(cardsData));
+    return cardsData;
 }
 
-function carregarInventarioLocal() {
-    const saved = localStorage.getItem('ficha_inventario');
-    if (!saved) return;
+export function setInventarioState(cardsData) {
+    if (!containerItems || !Array.isArray(cardsData)) return;
+    containerItems.innerHTML = '';
+    suppressEffects = true;
     try {
-        const cardsData = JSON.parse(saved);
         cardsData.forEach(data => {
             const card = criarCardItem(null, data.nome, data);
             containerItems.appendChild(card);
@@ -205,7 +210,8 @@ function carregarInventarioLocal() {
             const estadoSelect = card.querySelector('.item-estado-select');
             if (estadoSelect) {
                 estadoSelect.value = data.estado;
-                atualizarIconeEstado(card.querySelector('.item-estado-wrapper'));
+                const glyphEl = card.querySelector('.item-raridade-glyph');
+                if (glyphEl) glyphEl.dataset.estado = data.estado;
             }
             const catSelect = card.querySelector('.item-categoria-select');
             if (catSelect) {
@@ -220,11 +226,34 @@ function carregarInventarioLocal() {
             if (v1 && data.valor1) v1.value = data.valor1;
             const v2 = card.querySelector('.item-valor2');
             if (v2 && data.valor2) v2.value = data.valor2;
+            if (data.itemSource) card.dataset.itemSource = data.itemSource;
             card.dispatchEvent(new Event('item-loaded', { bubbles: true }));
         });
         atualizarPesoTotal();
         atualizarContadoresRaridade();
     } catch (e) { console.warn('Erro ao carregar inventário local', e); }
+    suppressEffects = false;
+}
+
+// ========== Reordenação automática ==========
+function reordenarItems() {
+    if (!containerItems) return;
+    const cards = Array.from(containerItems.querySelectorAll('.item-card'));
+    cards.sort((a, b) => {
+        const raA = RARIDADES.findIndex(r => r.limiteChave === a.dataset.raridade);
+        const raB = RARIDADES.findIndex(r => r.limiteChave === b.dataset.raridade);
+        if (raA !== raB) return raB - raA;
+        const nomeA = (a.querySelector('.item-nome-input')?.value || '').toLowerCase();
+        const nomeB = (b.querySelector('.item-nome-input')?.value || '').toLowerCase();
+        return nomeA.localeCompare(nomeB, 'pt');
+    });
+    cards.forEach(c => containerItems.appendChild(c));
+}
+
+// ========== Glyph helper para raridade ==========
+function getRaridadeGlyph(raridade) {
+    const obj = RARIDADES.find(r => r.limiteChave === raridade) || RARIDADES[0];
+    return obj.nome.charAt(0);
 }
 
 // ========== Criação do card de item ==========
@@ -237,7 +266,7 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
     let nome = nomeForcado || '';
     let peso = 1;
     let raridade = 'banal';
-    let categoria = 'equipamento';
+    let categoria = 'básico';
     let descricao = '';
     let quantidade = 1;
     let estado = ESTADOS.PADRAO.value;
@@ -260,73 +289,75 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
     }
 
     card.dataset.raridade = raridade;
+    // Store full item source data for cross-tab effect hooks
+    if (itemData) card.dataset.itemSource = JSON.stringify(itemData);
     const raridadeObj = RARIDADES.find(r => r.nome.toLowerCase() === raridade.toLowerCase()) || RARIDADES[0];
     card.style.setProperty('--item-rarity-color', raridadeObj.cor);
 
     let valor1 = '';
     let valor2 = '';
-    if (itemData) {
-        valor1 = itemData.valor1 || '';
-    }
-    if (savedData) {
-        valor1 = savedData.valor1 || valor1;
-        valor2 = savedData.valor2 || '';
-    }
+    if (itemData) { valor1 = itemData.valor1 || ''; }
+    if (savedData) { valor1 = savedData.valor1 || valor1; valor2 = savedData.valor2 || ''; }
+
+    const glyph = getRaridadeGlyph(raridade);
 
     card.innerHTML = `
         <div class="item-card-header">
             <button class="btn-item-minimize" type="button" title="Minimizar">
                 <span class="material-symbols-outlined">expand_less</span>
             </button>
+            <div class="item-peso-header" title="Peso">
+                <span class="item-peso-label">Peso</span>
+                <input type="number" class="item-peso-unit" value="${peso}" step="1" min="0">
+            </div>
             <input type="text" class="item-nome-input" value="${escapeHtml(nome)}" placeholder="Nome do item">
             <div class="item-quantidade-container">
-                <button class="btn-item-decrement" type="button" title="Reduzir quantidade">-</button>
+                <span class="item-qty-tag">Qtd</span>
+                <button class="btn-item-increment" type="button" title="Aumentar">+</button>
                 <input type="number" class="item-quantidade" value="${quantidade}" min="1" step="1" title="Quantidade">
+                <button class="btn-item-decrement" type="button" title="Reduzir">-</button>
             </div>
             <button class="btn-item-remove" type="button" title="Remover item">
                 <span class="material-symbols-outlined">delete</span>
             </button>
         </div>
         <div class="item-card-body">
-            <div class="item-meta-row">
+            <div class="item-body-left">
+                <div class="item-raridade-glyph" data-estado="${estado}" title="Raridade: ${raridadeObj.nome} \u00b7 Estado: ${capitalize(estado)}">
+                    <span class="glyph-letter">${glyph}</span>
+                    <span class="glyph-overlay"></span>
+                    <select class="item-raridade-select">
+                        ${RARIDADES.map(r => `<option value="${r.limiteChave}" ${r.limiteChave === raridade ? 'selected' : ''}>${r.nome}</option>`).join('')}
+                    </select>
+                    <select class="item-estado-select">
+                        <option value="${ESTADOS.PADRAO.value}" ${estado === ESTADOS.PADRAO.value ? 'selected' : ''}>${ESTADOS.PADRAO.label}</option>
+                        <option value="${ESTADOS.ANULAR.value}" ${estado === ESTADOS.ANULAR.value ? 'selected' : ''}>${ESTADOS.ANULAR.label}</option>
+                        <option value="${ESTADOS.COMPRADO.value}" ${estado === ESTADOS.COMPRADO.value ? 'selected' : ''}>${ESTADOS.COMPRADO.label}</option>
+                    </select>
+                    <div class="glyph-hover-zone glyph-hover-zone--top"></div>
+                    <div class="glyph-hover-zone glyph-hover-zone--bottom"></div>
+                </div>
+            </div>
+            <textarea class="item-desc-textarea" placeholder="Descri\u00e7\u00e3o do item...">${escapeHtml(descricao)}</textarea>
+            <div class="item-body-right">
                 <div class="item-cat-wrapper" title="Categoria">
                     <span class="material-symbols-outlined item-cat-icon" style="font-variation-settings: 'FILL' 1;">${CAT_ICON[categoria] || 'backpack'}</span>
-                    <span class="item-cat-label">${capitalize(categoria || 'equipamento')}</span>
+                    <span class="item-cat-label">${capitalize(categoria || 'básico').toUpperCase()}</span>
                     <select class="item-categoria-select">
                         ${CATEGORIAS.map(c => `<option value="${c}" ${c === categoria ? 'selected' : ''}>${capitalize(c)}</option>`).join('')}
                     </select>
                 </div>
-                <div class="item-peso-container" title="Peso unitário">
-                    <span class="material-symbols-outlined item-peso-icon">stat_1</span>
-                    <input type="number" class="item-peso-unit" value="${peso}" step="1" min="0">
+                <div class="item-valor-field">
+                    <input type="text" class="item-valor-input item-valor1" value="${escapeHtml(valor1)}" placeholder="Valor 1">
                 </div>
-                <div class="item-valores-row">
-                    <div class="item-valor-field" title="Valor primário (ex: dano, defesa, bônus)">
-                        <input type="text" class="item-valor-input item-valor1" value="${escapeHtml(valor1)}" placeholder="Valor 1">
-                    </div>
-                    <div class="item-valor-field" title="Valor secundário (ex: ônus, alcance, efeito)">
-                        <input type="text" class="item-valor-input item-valor2" value="${escapeHtml(valor2)}" placeholder="Valor 2">
-                    </div>
-                </div>
-                <div class="item-raridade-estado-group">
-                    <div class="item-estado-wrapper" data-estado="${estado}" title="Estado">
-                        <span class="material-symbols-outlined item-estado-icon" style="${ESTADO_ICON[estado] ? '' : 'display:none'}">${ESTADO_ICON[estado] || ''}</span>
-                        <select class="item-estado-select">
-                            <option value="${ESTADOS.PADRAO.value}" ${estado === ESTADOS.PADRAO.value ? 'selected' : ''}>${ESTADOS.PADRAO.label}</option>
-                            <option value="${ESTADOS.ANULAR.value}" ${estado === ESTADOS.ANULAR.value ? 'selected' : ''}>${ESTADOS.ANULAR.label}</option>
-                            <option value="${ESTADOS.COMPRADO.value}" ${estado === ESTADOS.COMPRADO.value ? 'selected' : ''}>${ESTADOS.COMPRADO.label}</option>
-                        </select>
-                    </div>
-                    <select class="item-raridade-select" title="Raridade">
-                        ${RARIDADES.map(r => `<option value="${r.nome.toLowerCase()}" ${r.nome.toLowerCase() === raridade ? 'selected' : ''}>${r.nome}</option>`).join('')}
-                    </select>
+                <div class="item-valor-field">
+                    <input type="text" class="item-valor-input item-valor2" value="${escapeHtml(valor2)}" placeholder="Valor 2">
                 </div>
             </div>
-            <textarea class="item-desc-textarea" placeholder="Descrição do item...">${escapeHtml(descricao)}</textarea>
         </div>
     `;
 
-    // Minimizar
+    // === Event bindings ===
     let minimizado = false;
     const btnMin = card.querySelector('.btn-item-minimize');
     const body = card.querySelector('.item-card-body');
@@ -336,61 +367,73 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
         btnMin.querySelector('.material-symbols-outlined').textContent = minimizado ? 'expand_more' : 'expand_less';
     });
 
-    // Decrementar quantidade
     const qtdInput = card.querySelector('.item-quantidade');
     const btnDec = card.querySelector('.btn-item-decrement');
+    const btnInc = card.querySelector('.btn-item-increment');
     btnDec.addEventListener('click', () => {
         let qtd = parseInt(qtdInput.value, 10) || 1;
-        if (qtd > 1) {
-            qtdInput.value = qtd - 1;
-            qtdInput.dispatchEvent(new Event('input', { bubbles: true }));
-        } else {
+        if (qtd > 1) { qtdInput.value = qtd - 1; qtdInput.dispatchEvent(new Event('input', { bubbles: true })); }
+        else {
+            const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
+            onItemRemoved(cardId, cat, getCardItemData(card));
             card.remove();
             atualizarPesoTotal();
             atualizarContadoresRaridade();
             salvarInventarioLocal();
         }
     });
+    btnInc.addEventListener('click', () => {
+        qtdInput.value = (parseInt(qtdInput.value, 10) || 1) + 1;
+        qtdInput.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    qtdInput.addEventListener('input', () => { atualizarPesoTotal(); salvarInventarioLocal(); });
 
-    // Eventos
-    qtdInput.addEventListener('input', () => {
-        atualizarPesoTotal();
-        salvarInventarioLocal();
-    });
     const pesoInput = card.querySelector('.item-peso-unit');
-    pesoInput.addEventListener('input', () => {
-        atualizarPesoTotal();
-        salvarInventarioLocal();
-    });
+    pesoInput.addEventListener('input', () => { atualizarPesoTotal(); salvarInventarioLocal(); });
+
+    // Raridade + Estado glyph
+    const glyphEl = card.querySelector('.item-raridade-glyph');
     const raridadeSelect = card.querySelector('.item-raridade-select');
-    raridadeSelect.addEventListener('change', () => {
-        const novaRaridade = raridadeSelect.value;
-        card.dataset.raridade = novaRaridade;
-        const novaCor = RARIDADES.find(r => r.nome.toLowerCase() === novaRaridade)?.cor || '#9e9e9e';
-        card.style.setProperty('--item-rarity-color', novaCor);
-        atualizarContadoresRaridade();
-        salvarInventarioLocal();
-    });
     const estadoSelect = card.querySelector('.item-estado-select');
-    const estadoWrapper = card.querySelector('.item-estado-wrapper');
-    estadoSelect.addEventListener('change', () => {
-        atualizarIconeEstado(estadoWrapper);
-        atualizarContadoresRaridade();
-        salvarInventarioLocal();
+    function updateGlyph() {
+        const r = raridadeSelect.value;
+        const e = estadoSelect.value;
+        const rObj = RARIDADES.find(x => x.limiteChave === r) || RARIDADES[0];
+        card.dataset.raridade = r;
+        card.style.setProperty('--item-rarity-color', rObj.cor);
+        glyphEl.querySelector('.glyph-letter').textContent = getRaridadeGlyph(r);
+        glyphEl.dataset.estado = e;
+        glyphEl.title = `Raridade: ${rObj.nome} \u00b7 Estado: ${capitalize(e)}`;
+    }
+    raridadeSelect.addEventListener('change', () => {
+        updateGlyph(); atualizarContadoresRaridade(); reordenarItems(); salvarInventarioLocal();
+        const currentCat = card.querySelector('.item-categoria-select')?.value || '';
+        if (currentCat === 'fonte') onFonteRaridadeChanged(cardId, raridadeSelect.value);
     });
+    estadoSelect.addEventListener('change', () => { updateGlyph(); atualizarContadoresRaridade(); salvarInventarioLocal(); });
+
     const categoriaSelect = card.querySelector('.item-categoria-select');
     const catWrapper = card.querySelector('.item-cat-wrapper');
+    let prevCategoria = categoria;
     categoriaSelect.addEventListener('change', () => {
         atualizarIconeCategoria(catWrapper);
-        // Update label text
         const label = catWrapper.querySelector('.item-cat-label');
-        if (label) label.textContent = categoriaSelect.options[categoriaSelect.selectedIndex].text;
+        if (label) label.textContent = categoriaSelect.options[categoriaSelect.selectedIndex].text.toUpperCase();
+        const newCat = categoriaSelect.value;
+        onItemCategoryChanged(cardId, prevCategoria, newCat, getCardItemData(card));
+        prevCategoria = newCat;
         salvarInventarioLocal();
     });
+
     const descTextarea = card.querySelector('.item-desc-textarea');
     descTextarea.addEventListener('input', salvarInventarioLocal);
     const nomeInput = card.querySelector('.item-nome-input');
-    nomeInput.addEventListener('input', salvarInventarioLocal);
+    let reorderTimeout = null;
+    nomeInput.addEventListener('input', () => {
+        salvarInventarioLocal();
+        clearTimeout(reorderTimeout);
+        reorderTimeout = setTimeout(reordenarItems, 800);
+    });
     const valor1Input = card.querySelector('.item-valor1');
     const valor2Input = card.querySelector('.item-valor2');
     if (valor1Input) valor1Input.addEventListener('input', salvarInventarioLocal);
@@ -398,18 +441,39 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
 
     const btnRemove = card.querySelector('.btn-item-remove');
     btnRemove.addEventListener('click', () => {
+        const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
+        onItemRemoved(cardId, cat, getCardItemData(card));
         card.remove();
         atualizarPesoTotal();
         atualizarContadoresRaridade();
         salvarInventarioLocal();
     });
 
+    // Trigger cross-tab effects for non-básico categories
     setTimeout(() => {
         atualizarPesoTotal();
         atualizarContadoresRaridade();
+        if (!suppressEffects && categoria !== 'básico') {
+            onItemAdded(cardId, categoria, getCardItemData(card));
+        }
     }, 0);
-
     return card;
+}
+
+function getCardItemData(card) {
+    // Merge stored JSON source with current card values
+    let source = {};
+    try { source = JSON.parse(card.dataset.itemSource || '{}'); } catch (e) { /* noop */ }
+    return {
+        ...source,
+        nome: card.querySelector('.item-nome-input')?.value || source.nome || '',
+        categoria: card.querySelector('.item-categoria-select')?.value || source.categoria || 'básico',
+        raridade: card.dataset.raridade || source.raridade || 'banal',
+        peso: parseInt(card.querySelector('.item-peso-unit')?.value, 10) || source.peso || 0,
+        descricao: card.querySelector('.item-desc-textarea')?.value || source.descricao || '',
+        valor1: card.querySelector('.item-valor1')?.value || source.valor1 || '',
+        valor2: card.querySelector('.item-valor2')?.value || source.valor2 || '',
+    };
 }
 
 // ========== Autocomplete (via shared engine) ==========
@@ -419,21 +483,13 @@ let autocompleteInstance = null;
 function adicionarItemDoBusca() {
     const nomeDigitado = inputBusca.value.trim();
 
-    // Se não houver texto, cria item vazio (Banal, peso 1)
     if (nomeDigitado === '') {
-        const card = criarCardItem(null, '', {
-            raridade: 'banal',
-            pesoUnit: 1,
-            categoria: 'equipamento',
-            descricao: '',
-            quantidade: 1,
-            estado: ESTADOS.PADRAO.value
-        });
+        const card = criarCardItem(null, '');
         containerItems.appendChild(card);
+        reordenarItems();
         atualizarPesoTotal();
         atualizarContadoresRaridade();
         salvarInventarioLocal();
-        inputBusca.value = '';
         if (autocompleteInstance) autocompleteInstance.close();
         return;
     }
@@ -445,6 +501,7 @@ function adicionarItemDoBusca() {
     }
     const card = criarCardItem(itemEncontrado, nomeDigitado);
     containerItems.appendChild(card);
+    reordenarItems();
     atualizarPesoTotal();
     atualizarContadoresRaridade();
     salvarInventarioLocal();
@@ -482,7 +539,7 @@ export async function initInventory() {
         onEnter: adicionarItemDoBusca
     });
 
-    carregarInventarioLocal();
+    // Carregamento inicial é feito pelo sheet-serializer via setInventarioState()
 
     // Escuta eventos gerais de atualização da ficha
     document.addEventListener('reacoes:atualizar-stats', () => {
@@ -495,31 +552,52 @@ export async function initInventory() {
         atualizarContadoresRaridade();
     });
 
-    // Sincronizar exibição do dinheiro (via shared helper)
-    syncFieldToDisplay('[data-field="dinheiro"]', 'inventario-dinheiro', v => v || '0');
+    // Bidirectional sync: since both tab-geral and tab-inventario now use
+    // the same data-field attributes, we sync all elements sharing [data-field="dinheiro"]
+    // and [data-field="hierarquia"] bidirectionally.
+    setupBidirectionalSync('dinheiro');
+    setupBidirectionalSync('hierarquia');
 
-    // Sincronizar hierarquia + contadores de raridade
-    hierarquiaDisplay = document.getElementById('inventario-hierarquia');
-    const hierarquiaSelect = document.querySelector('[data-field="hierarquia"]');
-    if (hierarquiaSelect) {
-        const HIERARQUIA_LABELS = {
-            'pobre': 'Pobre', 'trabalhador': 'Trabalhador', 'vendedor': 'Vendedor',
-            'burgues': 'Burguês', 'barao': 'Barão', 'duque': 'Duque',
-            'herdeiro': 'Herdeiro', 'imperador': 'Imperador'
-        };
-        const updateHierarquia = () => {
-            const val = hierarquiaSelect.value;
-            if (hierarquiaDisplay) {
-                hierarquiaDisplay.textContent = HIERARQUIA_LABELS[val] || val;
-            }
-            atualizarContadoresRaridade();
-        };
-        hierarquiaSelect.addEventListener('change', updateHierarquia);
-        hierarquiaSelect.addEventListener('input', updateHierarquia);
-        const hierObs = new MutationObserver(updateHierarquia);
-        hierObs.observe(hierarquiaSelect, { attributes: true, attributeFilter: ['value'] });
-        updateHierarquia();
+    // Also listen for hierarquia changes to update raridade counters
+    document.querySelectorAll('[data-field="hierarquia"]').forEach(el => {
+        el.addEventListener('change', atualizarContadoresRaridade);
+        el.addEventListener('input', atualizarContadoresRaridade);
+    });
+    atualizarContadoresRaridade();
+
+    // Fix: manual edits on inv-total must trigger overflow check
+    if (invTotalInput) {
+        invTotalInput.addEventListener('input', verificarInvOverflow);
+        invTotalInput.addEventListener('change', verificarInvOverflow);
+    }
+    if (invAtualInput) {
+        invAtualInput.addEventListener('input', verificarInvOverflow);
+        invAtualInput.addEventListener('change', verificarInvOverflow);
     }
 
     console.log('[Inventário] Inicializado com sucesso');
+}
+
+// ========== Bidirectional Sync for shared data-fields ==========
+function setupBidirectionalSync(fieldName) {
+    const elements = document.querySelectorAll(`[data-field="${fieldName}"]`);
+    if (elements.length < 2) return;
+
+    let syncing = false;
+    elements.forEach(source => {
+        const handler = () => {
+            if (syncing) return;
+            syncing = true;
+            const val = source.value;
+            elements.forEach(target => {
+                if (target !== source && target.value !== val) {
+                    target.value = val;
+                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+            syncing = false;
+        };
+        source.addEventListener('input', handler);
+        source.addEventListener('change', handler);
+    });
 }

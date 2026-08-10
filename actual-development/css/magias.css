@@ -177,6 +177,7 @@
     border-radius: 4px;
     color: var(--mana1);
     flex-shrink: 0;
+    appearance: textfield;
     -moz-appearance: textfield;
 }
 
@@ -769,4 +770,221 @@
 
 .container-big-infos .magic-container-searcher {
     flex: 1;
+}
+
+/* ══════════════════════════════════════════════════
+   FONTE CAPACITY SECTION (Teurgia sub-tab)
+   ══════════════════════════════════════════════════ */
+
+.fonte-capacity-section {
+    margin-bottom: 1rem;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, var(--p0) 0%, var(--p1) 100%);
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+}
+
+.fonte-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gold0);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+}
+
+.fonte-empty {
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    color: var(--ink3);
+    font-style: italic;
+    margin: 0;
+}
+
+.fonte-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.fonte-item {
+    flex: 1 1 160px;
+    max-width: 220px;
+    padding: 6px 10px;
+    background: var(--p0);
+    border: 1px solid var(--p3);
+    border-radius: 4px;
+    transition: border-color 0.15s;
+}
+
+.fonte-item--over {
+    border-color: var(--blood2);
+    background: rgba(181, 36, 24, 0.04);
+}
+
+.fonte-item__name {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink1);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fonte-item__bar {
+    height: 4px;
+    background: var(--p2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 3px;
+}
+
+.fonte-item__bar-fill {
+    height: 100%;
+    background: var(--gold1);
+    border-radius: 2px;
+    transition: width 0.2s;
+}
+
+.fonte-item--over .fonte-item__bar-fill {
+    background: var(--blood2);
+}
+
+.fonte-item__label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--ink2);
+}
+
+.fonte-item__usage {
+    font-weight: 700;
+    color: var(--ink1);
+}
+
+.fonte-item__warn {
+    color: var(--blood2);
+    font-size: 11px;
+    margin-left: 3px;
+}
+
+.fonte-item__graus {
+    font-family: 'IM Fell English', serif;
+    font-size: 9px;
+    color: var(--ink3);
+    margin-top: 2px;
+}
+
+/* Fonte item top row */
+.fonte-item__top {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.fonte-item__top .fonte-item__name {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.fonte-item__deusa {
+    font-family: 'IM Fell English', serif;
+    font-size: 9px;
+    color: var(--gold1);
+    font-style: italic;
+}
+
+.fonte-item__grau-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    margin-left: 4px;
+}
+
+.fonte-item__edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.1s;
+}
+
+.fonte-item__edit-btn:hover {
+    color: var(--gold1);
+}
+
+/* Spell list inside fonte item */
+.fonte-spell-list {
+    margin-top: 4px;
+    font-family: 'IM Fell English', serif;
+}
+
+.fonte-spell-list summary {
+    font-size: 9px;
+    color: var(--ink3);
+    cursor: pointer;
+    user-select: none;
+}
+
+.fonte-spell-entry {
+    font-size: 9px;
+    color: var(--ink2);
+    padding: 1px 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.fonte-spell-fe {
+    color: var(--gold0);
+    font-size: 8px;
+}
+
+/* Fonte badge on teurgia magic card */
+.magic-fonte-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--gold0);
+    background: rgba(196, 137, 42, 0.08);
+    border: 1px solid rgba(196, 137, 42, 0.25);
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: auto;
+}
+
+/* Fonte selector in magic editor (for teurgia spells) */
+.fonte-select-field {
+    margin-top: 4px;
+}
+
+.fonte-select-field select {
+    width: 100%;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    padding: 3px 6px;
+    border: 1px solid var(--p3);
+    border-radius: 3px;
+    background: var(--p0);
+    color: var(--ink1);
+}
+
+.fonte-select-field .fonte-warn-badge {
+    display: inline-block;
+    font-size: 8px;
+    color: var(--blood2);
+    font-weight: 700;
+    margin-left: 4px;
 }

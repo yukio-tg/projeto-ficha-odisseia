@@ -337,6 +337,23 @@ export function getTotalPericia(nomePericia, attrOverride = null) {
     }
 }
 
+export function getSkillsState() {
+    return periciasEstado.map(p => ({ idx: p.idx, proficiencia: p.proficiencia, bonus: p.bonus }));
+}
+
+export function setSkillsState(data) {
+    if (!Array.isArray(data)) return;
+    data.forEach(s => {
+        const p = periciasEstado.find(x => x.idx === s.idx);
+        if (p) {
+            p.proficiencia = s.proficiencia || 0;
+            p.bonus = s.bonus || '';
+        }
+    });
+    renderizarTabelaPericias();
+    if (autoCalcEnabled) atualizarPericias(true);
+}
+
 export function initSkills() {
     renderizarTabelaPericias();
     const radarDiv = document.getElementById('secao-radar');

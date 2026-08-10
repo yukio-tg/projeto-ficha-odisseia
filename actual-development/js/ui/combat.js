@@ -462,7 +462,7 @@ export function atualizarAvisoReacoes() {
 // ATTACK CARDS — accordion, UUID-keyed, no inline styles
 // ============================================================
 
-function criarCardAtaque(id) {
+export function criarCardAtaque(id) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--ataque';
     card.dataset.ataqueId = id;
@@ -1319,4 +1319,93 @@ export function initCombat() {
     atualizarAtaquesAcerto(false);
 
     document.addEventListener('reacoes:atualizar-stats', atualizarTodasStatsBars);
+}
+
+function serializeCardFields(card) {
+    const fields = {};
+    card.querySelectorAll('[data-field]').forEach(el => {
+        const key = el.dataset.field;
+        fields[key] = el.tagName === 'SELECT' ? el.value : (el.value ?? '');
+    });
+    return fields;
+}
+
+export function getCombatState() {
+    const ataques = Array.from(document.querySelectorAll('#ataques-container .combat-card--ataque')).map(card => ({
+        id: card.dataset.ataqueId,
+        fields: serializeCardFields(card),
+    }));
+    const reacoes = Array.from(document.querySelectorAll('#reacoes-container .combat-card--reacao:not([data-oportunidade])')).map(card => ({
+        id: card.dataset.reacaoId,
+        preset: card.dataset.preset || null,
+        fields: serializeCardFields(card),
+    }));
+    const condicoes = Array.from(document.querySelectorAll('#condicoes-container .combat-card--condicao')).map(card => ({
+        id: card.dataset.condicaoId,
+        fields: serializeCardFields(card),
+    }));
+    const bonus = Array.from(document.querySelectorAll('#bonus-onus-container .combat-card--bonus')).map(card => ({
+        id: card.dataset.bonusId,
+        fields: serializeCardFields(card),
+    }));
+    return { ataques, reacoes, condicoes, bonus };
+}
+
+function restoreFields(card, fields) {
+    if (!fields) return;
+    Object.entries(fields).forEach(([key, val]) => {
+        const el = card.querySelector(`[data-field="${key}"]`);
+        if (el) el.value = val;
+    });
+}
+
+export function setCombatState(data) {
+    if (!data) return;
+    if (data.ataques) {
+        const c = document.getElementById('ataques-container');
+        if (c) {
+            c.innerHTML = '';
+            data.ataques.forEach(a => {
+                const card = criarCardAtaque(a.id);
+                restoreFields(card, a.fields);
+                c.appendChild(card);
+            });
+        }
+    }
+    if (data.reacoes && data.reacoes.length > 0) {
+        const c = document.getElementById('reacoes-container');
+        if (c) {
+            data.reacoes.forEach(r => {
+                const nome = (r.fields && r.fields[`reacao-nome-${r.id}`]) || '';
+                const desc = (r.fields && r.fields[`reacao-desc-${r.id}`]) || '';
+                const card = criarCardReacao(r.id, nome, desc);
+                restoreFields(card, r.fields);
+                c.appendChild(card);
+            });
+        }
+    }
+    if (data.condicoes) {
+        const c = document.getElementById('condicoes-container');
+        if (c) {
+            c.innerHTML = '';
+            data.condicoes.forEach(cd => {
+                const card = criarCardCondicao(cd.id);
+                restoreFields(card, cd.fields);
+                c.appendChild(card);
+            });
+        }
+    }
+    if (data.bonus) {
+        const c = document.getElementById('bonus-onus-container');
+        if (c) {
+            c.innerHTML = '';
+            data.bonus.forEach(b => {
+                const card = criarCardBonus(b.id);
+                restoreFields(card, b.fields);
+                c.appendChild(card);
+            });
+        }
+    }
+    atualizarAvisoReacoes();
+    atualizarAtaquesAcerto(false);
 }

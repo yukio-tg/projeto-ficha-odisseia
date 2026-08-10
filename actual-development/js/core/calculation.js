@@ -173,17 +173,34 @@ export function calcStats() {
     const feCard = document.querySelector('.vital-card-fe');
     if (feCard) feCard.style.display = feAtivo ? '' : 'none';
 
+    const isMonstro = document.querySelector('[data-field="monstro"]')?.checked ?? false;
+    const pvCard = document.querySelector('.vital-card-hp');
+    if (pvCard) pvCard.style.display = isMonstro ? 'none' : '';
+
     let pmMax, feMax;
-    if (feAtivo) {
-        pmMax = Math.floor(pmBase / 2);
-        feMax = pmBase - pmMax;
+    if (isMonstro) {
+        // Novo PM = PV_normal + floor(pmBase / 2)
+        // Se feAtivo, subtrai feMax (calculado normalmente) do resultado
+        if (feAtivo) {
+            feMax = pmBase - Math.floor(pmBase / 2);
+            pmMax = pvMax + Math.floor(pmBase / 2) - feMax;
+        } else {
+            pmMax = pvMax + Math.floor(pmBase / 2);
+            feMax = 0;
+        }
+        // Ainda atualiza PV nos campos (ocultos) para preservar o valor
+        atualizarVital('pv', pvMax);
     } else {
-        pmMax = pmBase;
-        feMax = 0;
+        if (feAtivo) {
+            pmMax = Math.floor(pmBase / 2);
+            feMax = pmBase - pmMax;
+        } else {
+            pmMax = pmBase;
+            feMax = 0;
+        }
+        atualizarVital('pv', pvMax);
     }
 
-    // PV e PM com comportamento normal (atual pode ser sobrescrito se condição bater)
-    atualizarVital('pv', pvMax);
     atualizarVital('mana', pmMax);
 
     // ===== TRATAMENTO ESPECIAL PARA PT =====

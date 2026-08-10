@@ -93,25 +93,14 @@
     min-height: 53px;
     min-width: 80px;
     background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
-    border: 1px solid var(--gold0);
+    border: 1px solid rgba(138,94,43,0.2);
     border-radius: 6px;
     padding: 4px 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(245,216,120,0.08);
     position: relative;
-    overflow: hidden;
     font-family: 'Cinzel', serif;
     cursor: default;
-    user-select: none;
     flex-shrink: 0;
     gap: 1px;
-}
-
-.hierarquia-display::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
 }
 
 .hierarquia-display::after {
@@ -124,15 +113,7 @@
     pointer-events: none;
     line-height: 1;
     order: -1;
-}
-
-.hierarquia-display > span {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--gold3);
-    text-shadow: 0 0 10px rgba(245,216,120,0.3);
-    line-height: 1;
-    letter-spacing: 0.04em;
+    opacity: 0.7;
 }
 
 /* ── Painel de raridades ──────────────────────────────────────── */
@@ -226,7 +207,7 @@
 /* ── Card ─────────────────────────────────────────────────────── */
 .item-card {
     --item-rarity-color: #8b5a2b;
-    border: 1px solid rgba(200,170,100,0.35);
+    border: 1px solid rgba(200,170,100,0.30);
     border-left: 3px solid var(--item-rarity-color);
     border-radius: 5px;
     background: linear-gradient(158deg, var(--p1) 0%, var(--p0) 100%);
@@ -248,12 +229,58 @@
 .item-card-header {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 6px;
+    gap: 6px;
+    padding: 4px 8px;
     background: rgba(0,0,0,0.04);
     border-bottom: 1px solid rgba(200,170,100,0.12);
-    min-height: 28px;
+    min-height: 30px;
     flex-wrap: nowrap;
+}
+
+/* peso no header */
+.item-peso-header {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    flex-shrink: 0;
+    border: 1px solid rgba(138,94,43,0.12);
+    border-radius: 3px;
+    padding: 1px 5px;
+}
+.item-peso-label {
+    font-family: 'Cinzel', serif;
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold0);
+    opacity: 0.8;
+}
+.btn-item-increment,
+.btn-item-decrement {
+    background: none;
+    border: 1px solid rgba(138,94,43,0.15);
+    border-radius: 2px;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    flex-shrink: 0;
+    opacity: 0.55;
+}
+.btn-item-increment:hover,
+.btn-item-decrement:hover {
+    background: var(--p2);
+    border-color: var(--gold0);
+    color: var(--ink1);
+    opacity: 1;
 }
 
 /* minimizar */
@@ -276,19 +303,19 @@
 .item-quantidade-container {
     display: flex;
     align-items: center;
-    gap: 1px;
-    background: var(--p2);
-    border: 1px solid rgba(138,94,43,0.18);
+    gap: 2px;
+    background: var(--p1);
+    border: 1px solid rgba(138,94,43,0.15);
     border-radius: 3px;
-    padding: 0 2px;
+    padding: 1px 4px;
     flex-shrink: 0;
 }
 
 .item-quantidade {
-    width: 24px;
+    width: 22px;
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     background: none;
     border: none;
@@ -298,27 +325,8 @@
 .item-quantidade:focus { outline: none; }
 .item-quantidade::-webkit-inner-spin-button,
 .item-quantidade::-webkit-outer-spin-button { -webkit-appearance: none; }
-.item-quantidade { -moz-appearance: textfield; }
+.item-quantidade { -moz-appearance: textfield; appearance: textfield; }
 
-.btn-item-decrement {
-    background: var(--p3);
-    border: none;
-    border-radius: 2px;
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--ink1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    padding: 0;
-    transition: background 0.12s;
-    flex-shrink: 0;
-}
-.btn-item-decrement:hover { background: var(--p4); }
 
 /* peso */
 .item-peso-container {
@@ -342,10 +350,11 @@
 }
 
 .item-peso-unit {
-    width: 24px;
+    width: 26px;
     text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 11px;
+    font-size: 13px;
+    font-weight: 700;
     background: none;
     border: none;
     color: var(--ink0);
@@ -354,7 +363,7 @@
 .item-peso-unit:focus { outline: none; }
 .item-peso-unit::-webkit-inner-spin-button,
 .item-peso-unit::-webkit-outer-spin-button { -webkit-appearance: none; }
-.item-peso-unit { -moz-appearance: textfield; }
+.item-peso-unit { -moz-appearance: textfield; appearance: textfield; }
 
 /* ── Raridade + Estado group ──────────────────────────────────── */
 .item-raridade-estado-group {
@@ -427,34 +436,211 @@
 .btn-item-remove:hover { opacity: 1; color: var(--blood2); }
 .btn-item-remove .material-symbols-outlined { font-size: 15px; }
 
-/* ── Corpo ────────────────────────────────────────────────────── */
+/* ── Corpo — 3 colunas: glyph | desc | cat+values ───────────── */
 .item-card-body {
-    padding: 5px 8px 7px;
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 6px 8px 8px;
+}
+
+.item-body-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    position: relative;
+}
+
+/* ── Raridade Glyph (black letter + estado overlay) ──────────── */
+.item-raridade-glyph {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--item-rarity-color);
+    background: radial-gradient(circle, rgba(255,255,240,0.5) 0%, rgba(245,216,120,0.05) 100%);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.item-raridade-glyph:hover {
+    box-shadow: 0 0 8px color-mix(in srgb, var(--item-rarity-color) 40%, transparent);
+}
+
+.glyph-letter {
+    font-family: 'UnifrakturCook', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--item-rarity-color);
+    line-height: 1;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.glyph-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* COMPRADO: $ symbol overlay */
+.item-raridade-glyph[data-estado="comprado"] .glyph-overlay::after {
+    content: '$';
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold1);
+    opacity: 0.85;
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    text-shadow: 0 0 4px rgba(196,137,42,0.5);
+}
+
+/* ANULAR: diagonal strike overlay */
+.item-raridade-glyph[data-estado="anular"] .glyph-overlay::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: var(--blood1);
+    transform: rotate(-45deg);
+    opacity: 0.8;
+    box-shadow: 0 0 3px rgba(181,36,24,0.4);
+}
+.item-raridade-glyph[data-estado="anular"] {
+    opacity: 0.6;
+}
+
+/* Hover zones — clipped by glyph's border-radius + overflow:hidden */
+.glyph-hover-zone {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    pointer-events: none;
+    transition: background 0.15s;
+    z-index: 2;
+}
+.glyph-hover-zone--top { top: 0; }
+.glyph-hover-zone--bottom { bottom: 0; }
+
+/* Selects hidden over glyph */
+.item-raridade-glyph select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 50%;
+    opacity: 0;
+    cursor: pointer;
+    font-size: 11px;
+    z-index: 3;
+}
+.item-raridade-glyph .item-raridade-select { top: 0; }
+.item-raridade-glyph .item-estado-select { top: 50%; }
+
+/* Highlight correct half when hovering/focusing the invisible select */
+.item-raridade-select:hover ~ .glyph-hover-zone--top,
+.item-raridade-select:focus ~ .glyph-hover-zone--top {
+    background: linear-gradient(to top, transparent, rgb(255, 0, 0,0.5));
+}
+.item-estado-select:hover ~ .glyph-hover-zone--bottom,
+.item-estado-select:focus ~ .glyph-hover-zone--bottom {
+    background: linear-gradient(transparent, rgba(0, 38, 255, 0.5));
+}
+
+/* Hover hint labels — appear to the right on hover */
+.item-raridade-glyph .item-raridade-select::after,
+.item-raridade-glyph .item-estado-select::after { display: none; }
+
+.item-body-left::before,
+.item-body-left::after {
+    position: absolute;
+    right: -4px;
+    font-family: 'Cinzel', serif;
+    font-size: 6.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+.item-body-left::before {
+    content: 'Rar.';
+    top: 0;
+}
+.item-body-left::after {
+    content: 'Est.';
+    bottom: 0;
+}
+.item-body-left:hover::before,
+.item-body-left:hover::after {
+    opacity: 0.55;
+}
+
+/* ── Textarea (center) ───────────────────────────────────────── */
+.item-desc-textarea {
+    flex: 1;
+    min-width: 0;
+    min-height: 50px;
+    max-height: 120px;
+    font-family: 'IM Fell English', serif;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--ink1);
+    background: rgba(255,255,240,0.3);
+    border: 1px solid var(--p2);
+    border-radius: 3px;
+    padding: 5px 7px;
+    resize: vertical;
+    transition: border-color 0.15s, background 0.15s;
+}
+.item-desc-textarea:focus {
+    outline: none;
+    border-color: var(--gold1);
+    background: rgba(247,236,212,0.6);
+}
+.item-desc-textarea::placeholder { font-style: italic; color: var(--ink3); opacity: 0.4; }
+.item-desc-textarea::-webkit-scrollbar { width: 3px; }
+.item-desc-textarea::-webkit-scrollbar-track { background: var(--p1); }
+.item-desc-textarea::-webkit-scrollbar-thumb { background: var(--p3); border-radius: 2px; }
+
+/* ── Right column (cat + values) ─────────────────────────────── */
+.item-body-right {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 70px;
+    max-width: 110px;
+    width: 20%;
+    align-items: stretch;
 }
 
-/* ── Meta row ─────────────────────────────────────────────────── */
-.item-meta-row {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* ── Wrapper de categoria (ícone + label + select overlay) ────── */
 .item-cat-wrapper {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 4px;
     height: 24px;
-    flex-shrink: 0;
     border: 1px solid var(--p3);
     border-radius: 3px;
     background: var(--p1);
-    padding: 0 6px 0 5px;
+    padding: 0 6px;
     transition: border-color 0.12s, background 0.12s;
     cursor: pointer;
 }
@@ -469,10 +655,11 @@
 
 .item-cat-label {
     font-family: 'Cinzel', serif;
-    font-size: 10px;
+    font-size: 8px;
+    font-weight: 600;
     color: var(--ink2);
     pointer-events: none;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.06em;
     white-space: nowrap;
 }
 
@@ -486,84 +673,24 @@
     font-size: 12px;
 }
 
-/* ── Wrapper de estado (integrado ao grupo raridade) ─────────── */
-.item-estado-wrapper {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-    border: 1px solid rgba(138,94,43,0.18);
-    border-radius: 50%;
-    background: transparent;
-    transition: border-color 0.12s, background 0.12s;
-    cursor: pointer;
-}
-.item-estado-wrapper:hover { border-color: var(--gold1); }
-
-.item-estado-wrapper .item-estado-icon {
-    font-size: 13px;
-    pointer-events: none;
-    font-variation-settings: 'FILL' 0, 'wght' 300;
-    line-height: 1;
-    color: var(--ink3);
-}
-
-/* anular — vermelho */
-.item-estado-wrapper[data-estado="anular"] {
-    border-color: var(--blood1);
-    background: rgba(138,24,16,0.08);
-}
-.item-estado-wrapper[data-estado="anular"] .item-estado-icon {
-    color: var(--blood1);
-}
-
-/* comprado — dourado */
-.item-estado-wrapper[data-estado="comprado"] {
-    border-color: var(--gold0);
-    background: rgba(138,94,16,0.09);
-}
-.item-estado-wrapper[data-estado="comprado"] .item-estado-icon {
-    color: var(--gold1);
-}
-
-.item-estado-wrapper .item-estado-select {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-    font-size: 12px;
-    border-radius: 50%;
-}
-
-/* ── Valores (dois inputs inline) ─────────────────────────────── */
-.item-valores-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
+/* Value inputs */
 .item-valor-field {
     display: flex;
     align-items: center;
 }
-
 .item-valor-input {
-    width: 60px;
+    width: 100%;
+    min-width: 0;
     font-family: 'Cinzel', serif;
     font-size: 10px;
     text-align: center;
-    background: var(--p1);
+    background: var(--p0);
     border: 1px solid var(--p3);
     border-radius: 3px;
-    padding: 2px 4px;
+    padding: 3px 4px;
     color: var(--ink1);
     transition: border-color 0.12s;
+    box-sizing: border-box;
 }
 .item-valor-input:focus { outline: none; border-color: var(--gold1); color: var(--gold1); }
 .item-valor-input::placeholder {
@@ -573,53 +700,65 @@
     font-size: 9px;
 }
 
-/* ── Textarea ─────────────────────────────────────────────────── */
-.item-desc-textarea {
-    width: 100%;
-    min-height: 36px;
-    max-height: 100px;
-    font-family: 'IM Fell English', serif;
-    font-size: 11.5px;
-    line-height: 1.45;
-    color: var(--ink1);
-    background: rgba(255,255,240,0.25);
-    border: 1px solid var(--p2);
-    border-radius: 3px;
-    padding: 4px 7px;
-    resize: vertical;
-    transition: border-color 0.15s, background 0.15s;
-}
-.item-desc-textarea:focus {
-    outline: none;
-    border-color: var(--gold1);
-    background: rgba(247,236,212,0.6);
-}
-.item-desc-textarea::placeholder { font-style: italic; color: var(--ink3); opacity: 0.4; }
-.item-desc-textarea::-webkit-scrollbar { width: 3px; }
-.item-desc-textarea::-webkit-scrollbar-track { background: var(--p1); }
-.item-desc-textarea::-webkit-scrollbar-thumb { background: var(--p3); border-radius: 2px; }
-
-/* ── Valor guia ───────────────────────────────────────────────── */
-.item-valor-guia-container {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    margin-left: auto;
-}
-.item-valor-guia {
-    width: 62px;
-    text-align: right;
+/* ── Editable money/hierarquia in container-big-infos ─────────── */
+.inv-dinheiro-input {
+    width: 56px;
+    text-align: center;
     font-family: 'Cinzel', serif;
-    font-size: 11px;
-    background: var(--p1);
-    border: 1px solid var(--p3);
-    border-radius: 4px;
-    padding: 2px 5px;
-    color: var(--gold0);
-    transition: border-color 0.12s;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gold3);
+    background: none;
+    border: none;
+    border-bottom: 1px solid transparent;
+    text-shadow: 0 0 10px rgba(245,216,120,0.4);
+    transition: border-color 0.15s;
+    padding: 0;
 }
-.item-valor-guia:focus { outline: none; border-color: var(--gold1); color: var(--gold1); }
-.item-valor-unit { font-size: 10px; color: var(--gold0); font-family: 'Cinzel', serif; opacity: 0.7; }
+.inv-dinheiro-input:focus {
+    outline: none;
+    border-bottom-color: var(--gold1);
+}
+.inv-dinheiro-input::-webkit-inner-spin-button,
+.inv-dinheiro-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.inv-dinheiro-input { -moz-appearance: textfield; appearance: textfield; }
+
+.inv-hierarquia-select {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    padding: 0 2px;
+}
+.inv-hierarquia-select:focus { outline: none; }
+.inv-hierarquia-select option {
+    background: var(--p0);
+    color: var(--ink0);
+    font-family: 'Cinzel', serif;
+    padding: 4px 8px;
+}
+.inv-hierarquia-select option:hover,
+.inv-hierarquia-select option:checked {
+    background: var(--p2);
+    color: var(--ink0);
+}
+
+/* ── Qtd tag label ────────────────────────────────────────────── */
+.item-qty-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink3);
+    opacity: 0.65;
+    padding: 0 1px;
+    pointer-events: none;
+    flex-shrink: 0;
+}
 
 /* ── Autocomplete ─────────────────────────────────────────────── */
 .autocomplete-itens-dropdown {
@@ -672,13 +811,66 @@
 .total-inv.inv-over-limit input { color: var(--blood2); }
 
 /* ── Responsive ───────────────────────────────────────────────── */
+
+/* Wide screens: let container-big-infos breathe */
+@media (min-width: 900px) {
+    .container-big-infos {
+        gap: 20px;
+    }
+    .money-display, .hierarquia-display {
+        min-width: 100px;
+        padding: 6px 20px;
+    }
+}
+
+/* Medium screens */
+@media (max-width: 768px) {
+    .container-big-infos {
+        gap: 10px;
+    }
+    .item-body-right {
+        min-width: 60px;
+        max-width: 90px;
+        width: 22%;
+    }
+}
+
+/* Small screens */
 @media (max-width: 600px) {
+    .container-big-infos {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .money-display, .hierarquia-display {
+        min-height: 40px;
+        min-width: auto;
+        padding: 4px 10px;
+        flex-direction: row;
+        gap: 6px;
+    }
+    .money-display::after, .hierarquia-display::after {
+        order: 0;
+    }
+    .item-card-body {
+        flex-direction: column;
+        gap: 6px;
+    }
+    .item-body-left {
+        width: auto;
+        justify-content: flex-start;
+    }
+    .item-body-right {
+        width: 100%;
+        max-width: none;
+        min-width: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .item-body-right .item-cat-wrapper { flex: 1; }
+    .item-body-right .item-valor-field { flex: 1; min-width: 60px; }
+    .item-card-header { gap: 4px; padding: 4px 5px; flex-wrap: wrap; }
+    .item-nome-input { min-width: 80px; }
     .raridade-counters-panel { gap: 6px; padding: 8px 10px; }
-    .item-card-header { gap: 3px; padding: 4px 5px; }
-    .item-meta-row { gap: 4px; }
-    .item-raridade-estado-group { margin-left: 0; }
-    .item-valores-row { width: 100%; }
-    .item-valor-input { flex: 1; width: auto; }
-    .money-display { min-height: 44px; padding: 4px 10px; min-width: 70px; }
-    .hierarquia-display { min-height: 44px; padding: 4px 10px; min-width: 70px; }
 }

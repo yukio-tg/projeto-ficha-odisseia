@@ -34,6 +34,12 @@ export function refreshAllBars() {
     });
 }
 
+export function updateBestaBar(curr, max, fillEl) {
+    if (!fillEl) return;
+    const pct = max > 0 ? Math.max(0, Math.min(1, curr / max)) * 100 : 0;
+    fillEl.style.width = (curr < 0 ? 0 : pct) + '%';
+}
+
 export function initBars() {
     refreshAllBars();
 

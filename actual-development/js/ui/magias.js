@@ -3,6 +3,7 @@
 
 import { normalizar as normalizarMagia, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
+import { getFontes, addSpellToFonte, removeSpellFromFonte, validateSpellForFonte, setFonteDeusa, transferSpellBetweenFontes } from '../core/item-effects.js';
 
 // ========== Configuração ==========
 const magiasLoader = createDataLoader('/data/magias.json', 'Magias', 'magias');
@@ -252,6 +253,10 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
 
     // Remover
     card.querySelector('.btn-magic-remove').addEventListener('click', () => {
+        // Release Fonte capacity if linked
+        if (card.dataset.fonteId && card.dataset.fonteFe) {
+            removeSpellFromFonte(card.dataset.fonteId, parseInt(card.dataset.fonteFe, 10) || 0, card);
+        }
         const sheetEl = card.closest('.magic-sheet');
         card.remove();
         atualizarLaAtual();
@@ -348,8 +353,17 @@ function abrirEditorMagia(card, tipo) {
                     </select>
                 </label>
             </div>
-            ${isTeurgia ? `<label>Deusa
+            ${isTeurgia ? `
+            <label>Deusa
                 <input type="text" class="edit-divindade" value="${escapeHtml(getInfoVal('divindade'))}">
+            </label>
+            <label>Fonte armazenada
+                <select class="edit-fonte">
+                    <option value="">— nenhuma —</option>
+                    ${getFontes().map(f =>
+                        `<option value="${escapeHtml(f.id)}" ${f.id === card.dataset.fonteId ? 'selected' : ''}>${escapeHtml(f.displayName)}${f.deusa ? ' · ' + escapeHtml(f.deusa) : ''} [${f.usedLa}/${f.laMax}]</option>`
+                    ).join('')}
+                </select>
             </label>` : ''}
             <div class="edit-infos-grid">
                 <label>Execução
@@ -469,13 +483,36 @@ function salvarEdicaoMagia(overlay, card, tipo) {
     const novoGrau = overlay.querySelector('.edit-grau')?.value || '1';
     const grauAntigo = card.dataset.grau;
 
-    // Teurgia: deusa
+    // Teurgia: deusa + fonte transfer
     if (isTeurgia) {
         const divindade = overlay.querySelector('.edit-divindade')?.value.trim() || '';
         const divEl = card.querySelector('[data-info-key="divindade"] .magic-info-value');
         const divField = card.querySelector('[data-info-key="divindade"]');
         if (divEl) divEl.textContent = divindade;
         if (divField) divField.style.display = divindade ? '' : 'none';
+
+        const novaFonteId = overlay.querySelector('.edit-fonte')?.value || '';
+        const velhaFonteId = card.dataset.fonteId || '';
+        const fe = parseInt(card.dataset.fonteFe, 10) || 1;
+        const spellNome = card.querySelector('.magic-nome')?.textContent || '';
+        const spellGrauAtual = card.dataset.grau || '1';
+
+        if (novaFonteId !== velhaFonteId) {
+            if (velhaFonteId && novaFonteId) {
+                transferSpellBetweenFontes(velhaFonteId, novaFonteId, fe, spellGrauAtual, spellNome, card);
+            } else if (velhaFonteId && !novaFonteId) {
+                removeSpellFromFonte(velhaFonteId, fe, card);
+            } else if (!velhaFonteId && novaFonteId) {
+                addSpellToFonte(novaFonteId, fe, spellGrauAtual, spellNome, card);
+            }
+            card.dataset.fonteId = novaFonteId;
+            if (novaFonteId) {
+                anexarFonteBadge(card, novaFonteId);
+                if (divindade) setFonteDeusa(novaFonteId, divindade);
+            } else {
+                card.querySelector('.magic-fonte-badge')?.remove();
+            }
+        }
     }
 
     // Info fields
@@ -680,6 +717,63 @@ function setupAutocompleteKeyboardMagias(inputEl) {
     });
 }
 
+// ========== Fonte Badge on Teurgia card ==========
+function anexarFonteBadge(card, fonteId) {
+    // Remove existing badge first
+    card.querySelector('.magic-fonte-badge')?.remove();
+    const fontes = getFontes();
+    const fonte = fontes.find(f => f.id === fonteId);
+    if (!fonte) return;
+    const badge = document.createElement('span');
+    badge.className = 'magic-fonte-badge';
+    badge.title = `Armazenada em: ${fonte.displayName}`;
+    badge.innerHTML = `<span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle;">auto_awesome</span> ${fonte.displayName}`;
+    const header = card.querySelector('.magic-card-header');
+    if (header) header.appendChild(badge);
+}
+
+// ========== Fonte Selection for Teurgia ==========
+function promptFonteSelection(spellGrau, spellFe, spellDeusa) {
+    const fontes = getFontes();
+    if (fontes.length === 0) {
+        alert('Nenhuma Fonte equipada no inventário!\nAdicione um item de categoria "Fonte" ao inventário antes de adicionar magias de Teurgia.');
+        return null;
+    }
+
+    // Build options text
+    const options = fontes.map((f, i) => {
+        const validation = validateSpellForFonte(f.id, spellGrau, spellDeusa);
+        const capacidadeRestante = f.laMax - f.usedLa;
+        let status = `[${f.usedLa}/${f.laMax}]`;
+        let warn = '';
+        if (!validation.valid) warn = ` ⚠ ${validation.reason}`;
+        else if (validation.overCapacity) warn = ' ⚠ EXCEDIDA';
+        else if (capacidadeRestante < spellFe) warn = ' ⚠ Ficará excedida';
+        const deusaTag = f.deusa ? ` · ${f.deusa}` : '';
+        return `${i + 1}) ${f.displayName}${deusaTag} ${status}${warn}`;
+    }).join('\n');
+
+    const choice = prompt(
+        `Selecione a Fonte para armazenar esta magia de Teurgia (FE: ${spellFe}, Grau: ${spellGrau}):\n\n${options}\n\nDigite o número da Fonte:`
+    );
+
+    if (choice === null) return null;
+    const idx = parseInt(choice, 10) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= fontes.length) {
+        alert('Seleção inválida.');
+        return null;
+    }
+
+    const selected = fontes[idx];
+    const validation = validateSpellForFonte(selected.id, spellGrau, spellDeusa);
+    if (!validation.valid) {
+        const proceed = confirm(`${validation.reason}\n\nDeseja adicionar mesmo assim?`);
+        if (!proceed) return null;
+    }
+
+    return selected.id;
+}
+
 // ========== Adição de Magia ==========
 function adicionarMagia(inputEl) {
     const nome = inputEl.value.trim();
@@ -701,6 +795,16 @@ function adicionarMagia(inputEl) {
         const grau = magiaBD.grau || 1;
         const grauKey = grauToKey(grau);
 
+        // Teurgia: require Fonte selection
+        if (tipo === 'teurgia') {
+            const spellDeusa = magiaBD.divindade || '';
+            const fonteId = promptFonteSelection(grau, magiaBD.fe || magiaBD.la || 1, spellDeusa);
+            if (fonteId === null) return; // user cancelled
+            magiaBD._selectedFonteId = fonteId;
+            // Set deusa on the fonte if not yet assigned
+            if (spellDeusa) setFonteDeusa(fonteId, spellDeusa);
+        }
+
         const sheet = document.querySelector(`[data-magic-sheet="${tipo}"]`);
         if (!sheet) {
             alert('Erro: sheet não encontrada para o tipo ' + tipo);
@@ -714,6 +818,17 @@ function adicionarMagia(inputEl) {
         }
 
         const card = criarCardMagia(magiaBD, tipo, String(grau));
+
+        // Track Fonte link on the card for removal
+        if (magiaBD._selectedFonteId) {
+            card.dataset.fonteId = magiaBD._selectedFonteId;
+            const fe = magiaBD.fe || magiaBD.la || 1;
+            card.dataset.fonteFe = fe;
+            const spellNome = magiaBD.nome || '';
+            addSpellToFonte(magiaBD._selectedFonteId, fe, grau, spellNome, card);
+            // Add Fonte badge to card header
+            anexarFonteBadge(card, magiaBD._selectedFonteId);
+        }
 
         // Coloca no container interno se existir (grau1 tem card-tipo dentro)
         const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
@@ -730,6 +845,28 @@ function adicionarMagia(inputEl) {
         const tabAtiva = getTabAtiva();
         const grau = '1';
         const grauKey = grauToKey(grau);
+
+        // Teurgia vazia também exige Fonte
+        if (tabAtiva === 'teurgia') {
+            const fonteId = promptFonteSelection(grau, 1, '');
+            if (fonteId === null) return;
+            const sheet = document.querySelector('[data-magic-sheet="teurgia"]');
+            if (!sheet) return;
+            const grauDiv = sheet.querySelector(`.${grauKey}`);
+            if (!grauDiv) return;
+            const card = criarCardMagia(null, 'teurgia', grau, nome);
+            card.dataset.fonteId = fonteId;
+            card.dataset.fonteFe = 1;
+            addSpellToFonte(fonteId, 1, grau, nome || 'Magia vazia', card);
+            anexarFonteBadge(card, fonteId);
+            (grauDiv.querySelector('.card-teurgia') || grauDiv).appendChild(card);
+            atualizarVisibilidadeGraus(sheet);
+            atualizarLaAtual();
+            ativarTab('teurgia');
+            inputEl.value = '';
+            fecharAutocompleteMagias();
+            return;
+        }
 
         const sheet = document.querySelector(`[data-magic-sheet="${tabAtiva}"]`);
         if (!sheet) return;
@@ -794,5 +931,88 @@ export async function initMagias() {
     // Garante grau 1 visível se tiver magias estáticas no HTML
     atualizarVisibilidadeTodosGraus();
 
+    // Recalc when Fonte cascade-removes spells
+    document.addEventListener('magias:recalc-la', () => {
+        atualizarLaAtual();
+        atualizarVisibilidadeTodosGraus();
+    });
+
     console.log('[Magias] Inicializado com sucesso');
+}
+
+export function getMagiasState() {
+    const result = {};
+    document.querySelectorAll('.magic-sheet').forEach(sheet => {
+        const tipo = sheet.dataset.magicSheet;
+        result[tipo] = [];
+        sheet.querySelectorAll('.magic-card').forEach(card => {
+            const grau = card.dataset.grau || '1';
+            const la = parseInt(card.querySelector('.magic-la-input')?.value, 10) || 1;
+            const nome = card.querySelector('.magic-nome')?.textContent || '';
+            const custo = card.querySelector('.magic-custo')?.textContent || '';
+            const getInfo = key => card.querySelector(`[data-info-key="${key}"] .magic-info-value`)?.textContent || '';
+            const descFerom = card.querySelector('.magic-desc--feromancia');
+            let descricao = '', descricao_sucesso = '', descricao_fracasso = '';
+            if (descFerom) {
+                descricao = descFerom.querySelector('.magic-desc-efeito')?.textContent || '';
+                descricao_sucesso = descFerom.querySelector('.magic-desc-sucesso')?.textContent.replace(/^Sucesso:\s*/i, '') || '';
+                descricao_fracasso = descFerom.querySelector('.magic-desc-fracasso')?.textContent.replace(/^Fracasso:\s*/i, '') || '';
+            } else {
+                descricao = card.querySelector('.magic-desc p')?.textContent || '';
+            }
+            const aprs = [];
+            card.querySelectorAll('.apr-item').forEach(item => {
+                aprs.push({
+                    custo: item.querySelector('.apr-custo')?.textContent || '',
+                    descricao: item.querySelector('.apr-desc')?.textContent || '',
+                    requisito: item.querySelector('.apr-req')?.textContent || ''
+                });
+            });
+            result[tipo].push({
+                grau, la, nome, custo, descricao, descricao_sucesso, descricao_fracasso,
+                aprimoramentos: aprs,
+                execucao: getInfo('execucao'), alcance: getInfo('alcance'),
+                area: getInfo('area'), alvo: getInfo('alvo'),
+                duracao: getInfo('duracao'), resistencia: getInfo('resistencia'),
+                divindade: getInfo('divindade'),
+                fonteId: card.dataset.fonteId || null,
+                fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
+            });
+        });
+    });
+    return result;
+}
+
+export function setMagiasState(data) {
+    if (!data) return;
+    document.querySelectorAll('.magic-sheet').forEach(sheet => {
+        const tipo = sheet.dataset.magicSheet;
+        if (!data[tipo]) return;
+        sheet.querySelectorAll('.magic-card').forEach(c => c.remove());
+        data[tipo].forEach(m => {
+            const magiaData = {
+                nome: m.nome, custo: m.custo, la: m.la, fe: m.la,
+                execucao: m.execucao, alcance: m.alcance, area: m.area,
+                alvo: m.alvo, duracao: m.duracao, resistencia: m.resistencia,
+                divindade: m.divindade, descricao: m.descricao,
+                descricao_geral: m.descricao, descricao_sucesso: m.descricao_sucesso,
+                descricao_fracasso: m.descricao_fracasso,
+                aprimoramentos: m.aprimoramentos || [],
+                tipo, grau: m.grau,
+            };
+            const grauKey = grauToKey(m.grau);
+            const grauDiv = sheet.querySelector(`.${grauKey}`);
+            if (!grauDiv) return;
+            const card = criarCardMagia(magiaData, tipo, String(m.grau));
+            if (m.fonteId) {
+                card.dataset.fonteId = m.fonteId;
+                card.dataset.fonteFe = m.fonteFe || 1;
+                anexarFonteBadge(card, m.fonteId);
+            }
+            const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
+            innerContainer.appendChild(card);
+        });
+        atualizarVisibilidadeGraus(sheet);
+    });
+    atualizarLaAtual();
 }

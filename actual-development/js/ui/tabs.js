@@ -1,3 +1,5 @@
+import { checkBestaTabVisibility } from './besta.js';
+
 export function initTabs() {
     const tabs = document.querySelectorAll('#tabs li');
     const mobileTabs = document.querySelectorAll('#mobile-tabs li');
@@ -41,4 +43,6 @@ export function initTabs() {
     } else {
         switchTab('geral');
     }
+
+    checkBestaTabVisibility();
 }

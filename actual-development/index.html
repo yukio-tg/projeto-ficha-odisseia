@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard — Odisseia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <div class="sheet-wrapper">
+    <div class="sheet-header">
+      <h1>Odisseia</h1>
+      <p>Dashboard</p>
+    </div>
+
+    <div class="tab-content active" id="tab-geral">
+      <div class="grid-2">
+        <div class="panel">
+          <h1>Fichas</h1>
+          <div id="dashboard">
+            <div id="lista-fichas" class="fichas-lista">Carregando fichas...</div>
+            <button class="important-button" onclick="criarNovaFicha()">Nova ficha</button>
+          </div>
+        </div>
+        <div>
+          <div class="panel">
+            <div id="auth-container">
+              <h1>Login</h1>
+              <fieldset class="text">
+                <input class="important-input" type="email" id="email" placeholder="E‑mail">
+                <input class="important-input" type="password" id="password" placeholder="Senha">
+              </fieldset>
+              <fieldset class="button">
+                <button class="important-button" onclick="signUp()">Criar conta</button>
+                <button class="important-button" onclick="signIn()">Entrar</button>
+              </fieldset>
+              <p id="auth-error" style="color:red; margin: 10px;"></p>
+            </div>
+            <button class="important-button" onclick="signOut()">Sair</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0GKHekJIBroBaQbbKIagcaZ52ljsgT6A",
+      authDomain: "fichas-odisseia.firebaseapp.com",
+      projectId: "fichas-odisseia",
+      storageBucket: "fichas-odisseia.firebasestorage.app",
+      messagingSenderId: "438632062292",
+      appId: "1:438632062292:web:68e9584cf8f5ffcf2e3cc1"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    async function signUp() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+      } catch (e) { document.getElementById('auth-error').textContent = e.message; }
+    }
+
+    async function signIn() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (e) { document.getElementById('auth-error').textContent = e.message; }
+    }
+
+    async function signOut() {
+      try { await auth.signOut(); } catch (e) { console.error(e); }
+    }
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        document.getElementById('auth-container').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        carregarDashboard(user.uid);
+      } else {
+        document.getElementById('auth-container').style.display = 'block';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+    });
+
+    async function carregarDashboard(uid) {
+      const lista = document.getElementById('lista-fichas');
+      lista.innerHTML = 'Carregando suas fichas...';
+      try {
+        const snapshot = await db.collection('sheets').where('owner', '==', uid).get();
+        if (snapshot.empty) { lista.innerHTML = 'Nenhuma ficha encontrada.'; return; }
+        lista.innerHTML = '';
+        snapshot.forEach(doc => {
+          const dados = doc.data();
+          const sheetId = doc.id;
+          const div = document.createElement('div');
+          div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;';
+          const nomeSpan = document.createElement('span');
+          nomeSpan.textContent = dados.name || 'Sem nome';
+          nomeSpan.style.cssText = 'cursor:pointer;flex:1;color:var(--text-light);';
+          nomeSpan.onclick = () => editarNomeFicha(sheetId, dados.name);
+          const botoesDiv = document.createElement('div');
+          botoesDiv.style.cssText = 'display:flex;gap:6px;';
+          const btnAbrir = document.createElement('button');
+          btnAbrir.textContent = 'Abrir';
+          btnAbrir.style.cssText = 'color:var(--accent-gold);background:transparent;border:1px solid var(--border-gold);padding:4px 8px;cursor:pointer;';
+          btnAbrir.onclick = () => abrirFicha(sheetId);
+          const btnExcluir = document.createElement('button');
+          btnExcluir.textContent = 'Excluir';
+          btnExcluir.style.cssText = 'color:#c0392b;background:transparent;border:1px solid #c0392b;padding:4px 8px;cursor:pointer;';
+          btnExcluir.onclick = () => excluirFicha(sheetId, dados.name);
+          botoesDiv.appendChild(btnAbrir);
+          botoesDiv.appendChild(btnExcluir);
+          div.appendChild(nomeSpan);
+          div.appendChild(botoesDiv);
+          lista.appendChild(div);
+        });
+      } catch (e) { lista.innerHTML = 'Erro ao carregar fichas.'; console.error(e); }
+    }
+
+    async function criarNovaFicha() {
+      const nome = prompt('Nome do personagem:');
+      if (!nome) return;
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        await db.collection('sheets').add({ owner: user.uid, name: nome, data: {} });
+        carregarDashboard(user.uid);
+      } catch (e) { alert('Erro ao criar ficha: ' + e.message); }
+    }
+
+    async function editarNomeFicha(sheetId, nomeAtual) {
+      const novoNome = prompt('Editar nome da ficha:', nomeAtual);
+      if (novoNome === null || novoNome.trim() === '') return;
+      try {
+        await db.collection('sheets').doc(sheetId).update({ name: novoNome.trim() });
+        carregarDashboard(auth.currentUser.uid);
+      } catch (e) { alert('Erro ao renomear: ' + e.message); }
+    }
+
+    async function excluirFicha(sheetId, nome) {
+      if (!confirm(`Excluir a ficha "${nome}"? Esta ação não pode ser desfeita.`)) return;
+      try {
+        await db.collection('sheets').doc(sheetId).delete();
+        carregarDashboard(auth.currentUser.uid);
+      } catch (e) { alert('Erro ao excluir: ' + e.message); }
+    }
+
+    function abrirFicha(id) {
+      window.location.href = '/ficha.html?sheetId=' + id;
+    }
+  </script>
+</body>
+</html>

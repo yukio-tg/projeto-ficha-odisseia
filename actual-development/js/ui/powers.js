@@ -48,6 +48,7 @@ function atualizarTotalPt() {
         if (isNaN(valor)) valor = 0;
         soma += valor;
     });
+    soma += parseInt(document.body.dataset.bestaPt || 0, 10);
     ptAtualInput.value = soma;
     // Força o calculation.js a verificar overflow
     ptAtualInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -428,4 +429,32 @@ export async function initPowers() {
     });
 
     console.log('[Powers] Inicializado com sucesso');
+}
+
+export function getPowersState() {
+    if (!containerCards) return [];
+    return Array.from(containerCards.querySelectorAll('.card-power')).map(card => ({
+        id: card.getAttribute('data-card-id'),
+        ptCost: parseInt(card.querySelector('.pt-cost-input')?.value, 10) || 0,
+        nome: card.querySelector('.power-name-input')?.value || '',
+        otherCosts: card.querySelector('.other-costs-input')?.value || '',
+        descricao: card.querySelector('.power-desc-textarea')?.value || '',
+        cor: card.dataset.cor || 'Vermelho',
+        collapsed: card.dataset.collapsed !== 'false',
+    }));
+}
+
+export function setPowersState(data) {
+    if (!containerCards || !Array.isArray(data)) return;
+    containerCards.innerHTML = '';
+    data.forEach(p => {
+        const card = criarCardPower({
+            nome: p.nome, ptCost: p.ptCost, otherCosts: p.otherCosts,
+            descricao: p.descricao, cor: p.cor
+        }, '', p.cor);
+        toggleCard(card, p.collapsed !== false);
+        containerCards.appendChild(card);
+    });
+    atualizarTotalPt();
+    reordenarCards();
 }

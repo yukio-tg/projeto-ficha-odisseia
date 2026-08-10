@@ -1,0 +1,1034 @@
+/* ═══════════════════════════════════════════════════════
+   BESTA TAB — Companion Creature Sheet
+   ═══════════════════════════════════════════════════════ */
+
+.besta-tab-root {
+    padding: 8px 0 40px;
+}
+
+/* ── Instance wrapper ───────────────────────────────── */
+.besta-instance {
+    background: rgba(247, 236, 212, 0.55);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--gold1);
+    border-radius: 8px;
+    margin-bottom: 32px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.18);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Section heading inside besta that uses the global .sh style */
+.besta-sub-sh {
+    color: var(--gold1);
+}
+
+.besta-instance-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1.5px solid var(--gold0);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.besta-instance-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 15px;
+    color: var(--gold1);
+    margin: 0;
+}
+
+.besta-remove-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: 1px solid var(--blood1, #b52418);
+    color: var(--blood1, #b52418);
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    opacity: .7;
+    transition: opacity .15s;
+}
+.besta-remove-btn:hover { opacity: 1; }
+
+/* ── Section header ─────────────────────────────────── */
+.besta-sh {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--gold0);
+    padding: 2px 0 4px;
+    border-bottom: 1px solid var(--gold0, #8a5e10);
+    margin-bottom: 8px;
+}
+
+.besta-section {
+    margin-bottom: 16px;
+}
+
+.besta-lbl {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    display: block;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+}
+
+.besta-readonly {
+    background: var(--p1, #eedcb2);
+    cursor: default;
+}
+
+/* ── Identity ───────────────────────────────────────── */
+.besta-identity {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 560px) {
+    .besta-identity { grid-template-columns: 1fr; }
+}
+
+/* Override ifinput-name size inside besta for compactness */
+.besta-identity .ifinput-name { font-size: 15px !important; }
+.besta-identity .ifinput-title { font-size: 12px !important; }
+
+/* Title auto-filled: cursor default */
+.besta-input-title { cursor: default !important; }
+
+/* Portrait image — fills the info-img box, no distortion */
+.besta-portrait-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+}
+
+/* URL input inside portrait placeholder */
+.besta-retrato-url {
+    font-family: 'IM Fell English', serif;
+    border: 1px solid var(--gold0);
+    border-radius: 4px;
+    background: rgba(30, 15, 4, 0.6);
+    color: var(--gold2);
+    padding: 6px 8px;
+    font-size: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.besta-retrato-url::placeholder {
+    color: var(--leath4, #b09060);
+    text-align: center;
+}
+
+.besta-retrato-url:focus {
+    outline: none;
+    border-color: var(--gold2);
+}
+
+/* Clear portrait button (mirrors #limpar-retrato from style.css) */
+.besta-clear-portrait {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: none;
+    align-items: center;
+}
+.besta-clear-portrait span {
+    border-radius: 50%;
+    background-color: rgba(92,14,7,.5);
+    color: var(--blood1);
+    font-size: 18px;
+}
+.besta-clear-portrait span:hover {
+    background-color: var(--blood2);
+    color: var(--p0);
+}
+
+/* ── Vitals ─────────────────────────────────────────── */
+/* Allow inputs inside the mana bar to be interactive */
+.besta-vitals-section .vital-bar-inputs,
+.besta-vitals-section .vital-bar-inputs input {
+    pointer-events: all;
+}
+
+/* Radar column inside besta fills its grid cell */
+.besta-instance .radar-column {
+    width: 100%;
+    max-width: none;
+}
+
+/* Vitals + Attrs grid responsive inside besta */
+.besta-instance .vitals-attrs-grid {
+    grid-template-columns: 1fr 1.15fr;
+}
+
+@media (max-width: 700px) {
+    .besta-instance .vitals-attrs-grid {
+        grid-template-columns: 1fr;
+    }
+    .besta-instance .radar-column {
+        max-width: 360px;
+        margin: 0 auto;
+    }
+}
+
+/* ── Attributes: radar fills the column ────────────────── */
+
+/* ── Skills (inside vitals-column, collapsible) ─────── */
+.besta-skills-inner-mount {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.besta-skills-section {
+    width: 100%;
+}
+
+.besta-skills-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.besta-skills-header .besta-proficiencia-counter {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.besta-skills-table-wrap {
+    transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.besta-skills-chevron {
+    font-size: 14px;
+    vertical-align: middle;
+    transition: transform 0.2s;
+}
+
+.besta-proficiencia-counter {
+    background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
+    border: 1px solid var(--leath3);
+    border-radius: 8px;
+    padding: 6px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(196,137,42,.1);
+    position: relative;
+    overflow: hidden;
+}
+.besta-proficiencia-counter::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+}
+
+.besta-expand-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--gold1);
+    background: none;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 3px 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+.besta-expand-btn:hover {
+    background: var(--p1);
+}
+
+.besta-skill-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IM Fell English', serif;
+    font-size: 12.5px;
+}
+
+.besta-skill-table th {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    padding: 2px 4px;
+    border-bottom: 1px solid var(--gold0);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.besta-skill-table td {
+    padding: 3px 4px;
+    border-bottom: 1px solid rgba(138,94,16,.14);
+}
+
+.besta-skill-table .col-nome { width: auto; }
+.besta-skill-table .col-prof { width: 106px; text-align: center; }
+.besta-skill-table .col-bonus { width: 64px; text-align: center; }
+.besta-skill-table .col-total { width: 80px; text-align: center; }
+
+.besta-pericia-bonus {
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    border: 1px solid var(--gold0);
+    border-radius: 2px;
+    background: var(--p0);
+    color: var(--ink1);
+    padding: 1px 4px;
+    width: 48px;
+    text-align: center;
+}
+
+.besta-empty {
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    color: var(--ink3);
+    font-size: 10px;
+    padding: 6px;
+    text-align: center;
+}
+
+/* ── Combat card lists inside besta ─────────────────── */
+.besta-ataques-list,
+.besta-condicoes-list,
+.besta-bonus-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+/* Condition cards in besta: full-width, no screen effects */
+.besta-cond-card {
+    width: 100%;
+}
+
+/* ── Combat (legacy simple list) ─────────────────────── */
+.besta-combat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.besta-ataque-card, .besta-reacao-card {
+    border: 1px solid var(--gold0);
+    border-radius: 4px;
+    background: var(--p1);
+    padding: 8px 10px;
+}
+
+.besta-ataque-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.besta-ataque-nome, .besta-reacao-nome {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    color: var(--ink1);
+}
+
+.besta-magia-nome {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    flex: 1;
+    color: var(--ink1);
+}
+
+.besta-magia-custo {
+    font-family: 'IM Fell English', serif;
+    font-size: 9px;
+    color: var(--mana1, #4a7cb5);
+    margin-right: 8px;
+}
+
+.besta-ataque-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.besta-ataque-row label {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Cinzel', serif;
+    font-size: 7.5px;
+    color: var(--ink3);
+    gap: 2px;
+}
+
+.besta-ataque-row input {
+    border: 1px solid var(--gold0);
+    border-radius: 2px;
+    background: var(--p0);
+    padding: 2px 4px;
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    width: 72px;
+    color: var(--ink1);
+}
+
+.besta-ataque-desc, .besta-reacao-desc, .besta-magia-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    color: var(--ink2);
+    width: 100%;
+    border: 1px solid var(--gold0);
+    border-radius: 2px;
+    background: var(--p0);
+    padding: 3px 6px;
+    resize: vertical;
+    min-height: 36px;
+}
+
+.besta-magia-desc { margin: 0; border: none; padding: 2px 0 0; }
+
+.besta-conditions-footer {
+    margin-top: 10px;
+    border-top: 1px solid var(--gold0, #8a5e10)33;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.besta-conditions-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.besta-sub-lbl {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    white-space: nowrap;
+}
+
+.besta-condicao-alert {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    color: #e65100;
+    background: #fff3e030;
+    border: 1px solid #e6510040;
+    border-radius: 3px;
+    padding: 1px 6px;
+    animation: besta-pulse 2s infinite;
+}
+
+@keyframes besta-pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: .6; }
+}
+
+.besta-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+.besta-chip {
+    font-family: 'IM Fell English', serif;
+    font-size: 9px;
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 12px;
+    padding: 1px 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink1);
+}
+
+.besta-chip button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+}
+
+.besta-bonus-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.besta-bonus-card {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 2px 4px;
+}
+
+.besta-bonus-nome {
+    font-family: 'IM Fell English', serif;
+    font-size: 9.5px;
+    border: none;
+    background: transparent;
+    color: var(--ink1);
+    width: 80px;
+}
+
+.besta-bonus-val {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    background: transparent;
+    color: var(--gold1);
+    width: 52px;
+}
+
+/* ── Abilities ──────────────────────────────────────── */
+
+/* Aspect block: visual card per type */
+.besta-aspect-block {
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 6px;
+    padding: 10px 12px 8px;
+    margin-bottom: 14px;
+}
+
+.besta-aspect-bio   { border-left: 4px solid #c0392b; }
+.besta-aspect-treino{ border-left: 4px solid #2e7d32; }
+.besta-aspect-indiv { border-left: 4px solid #1565c0; }
+
+.besta-aspect-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gold0);
+}
+
+.besta-aspect-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--aspect-color, var(--gold1));
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.besta-bio-inline {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink3);
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+.besta-aspect-pip {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Indiv card */
+.besta-indiv-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+
+.besta-indiv-card {
+    border: 1px solid rgba(139,105,50,.25);
+    border-radius: 4px;
+    padding: 8px 10px 6px;
+}
+
+.besta-indiv-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.besta-indiv-titulo {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    color: var(--ink1);
+    padding: 1px 0;
+}
+
+.besta-indiv-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 10.5px;
+    color: var(--ink2);
+    width: 100%;
+    border: 1px solid rgba(139,105,50,.2);
+    border-radius: 2px;
+    background: #ffffff50;
+    padding: 3px 6px;
+    resize: vertical;
+    min-height: 40px;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+}
+
+.besta-indiv-values {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.besta-indiv-value-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.besta-indiv-value-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: .05em;
+    color: var(--ink3);
+    text-transform: uppercase;
+}
+
+.besta-indiv-val1,
+.besta-indiv-val2 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    background: #ffffff50;
+    border: none;
+    border: 1px solid rgba(139,105,50,.3);
+    border-radius: 0;
+    padding: 2px 4px;
+    color: var(--gold1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Legacy hab-section (no longer used as top-level, kept for hab-card) */
+.besta-hab-section { margin-bottom: 12px; }
+
+.besta-hab-type-title {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    margin-bottom: 6px;
+    padding: 2px 0;
+    border-bottom: 1px solid;
+}
+
+.besta-hab-searcher {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.besta-hab-search-input {
+    width: 100%;
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    background: var(--p1);
+    padding: 3px 8px;
+    color: var(--ink1);
+}
+
+.besta-hab-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+
+.besta-hab-card {
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 4px 8px 6px;
+}
+
+.besta-hab-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.besta-hab-nome {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    font-weight: 700;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    color: var(--ink1);
+    padding: 1px 0;
+}
+
+.besta-hab-custo {
+    font-family: 'Georgia', serif;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 2px;
+    padding: 1px 4px;
+    color: var(--ink2);
+}
+
+.besta-hab-custo::before{
+    content: '(';
+}
+
+.besta-hab-custo::after{
+    content: ')';
+}
+
+.besta-hab-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 12px;
+    color: var(--ink2);
+    width: 100%;
+    border: 1px solid rgba(139,105,50,.25);
+    border-radius: 2px;
+    background: transparent;
+    padding: 2px 5px;
+    resize: vertical;
+    min-height: 40px;
+}
+
+/* ── Bio level selector ─────────────────────────────── */
+.besta-bio-nivel-group {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.besta-nivel-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border: 1px solid rgba(192,57,43,.4);
+    border-radius: 3px;
+    background: transparent;
+    color: #c0392b;
+    cursor: pointer;
+    transition: background .1s, color .1s;
+    line-height: 1.6;
+}
+
+.besta-nivel-btn.active {
+    background: #c0392b;
+    color: #fff;
+    border-color: #c0392b;
+}
+
+.besta-nivel-btn:hover:not(.active) { background: rgba(192,57,43,.12); }
+
+/* ── Treino PT group ─────────────────────────────────── */
+.besta-treino-pt-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.besta-treino-pt-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2e7d32;
+    letter-spacing: .05em;
+}
+
+/* ── Besta PT disclaimer (aba habilidades) ─────────── */
+.besta-pt-disclaimer {
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--ink2);
+    margin-top: 10px;
+    padding: 7px 14px;
+    background: rgba(247,236,212,.45);
+    border: 1px solid rgba(139,105,50,.2);
+    border-radius: 6px;
+    backdrop-filter: blur(2px);
+}
+
+/* ── Magias / Inventário collapsible ────────────────── */
+.besta-collapse-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 4px;
+    padding: 6px 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s;
+    margin-bottom: 6px;
+}
+
+.besta-collapse-toggle:hover { background: var(--p2, #e5d49e); }
+
+.besta-collapse-toggle input {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    color: var(--gold1);
+    width: 50px;
+    text-align: center;
+    cursor: text;
+}
+
+.besta-magias-body, .besta-inv-body {
+    border: 1px solid var(--gold0);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    background: var(--p0);
+    padding: 10px 12px;
+    margin-top: -6px;
+}
+
+.besta-magic-school {
+    margin-bottom: 10px;
+}
+
+.besta-magic-school-lbl {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    color: var(--ink3);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    border-bottom: 1px solid var(--gold0, #8a5e10)44;
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+}
+
+.besta-magia-card {
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 5px 8px;
+    margin-bottom: 4px;
+}
+
+.besta-item-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+}
+
+.besta-item-nome {
+    flex: 1;
+    font-family: 'IM Fell English', serif;
+    font-size: 10.5px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gold0);
+    color: var(--ink1);
+}
+
+.besta-item-peso, .besta-item-desc {
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    border: 1px solid var(--gold0);
+    border-radius: 2px;
+    background: var(--p0);
+    padding: 1px 4px;
+    color: var(--ink1);
+}
+
+.besta-item-list { display: flex; flex-direction: column; }
+
+/* ── Anotações ──────────────────────────────────────── */
+.besta-anotacoes {
+    width: 100%;
+    min-height: 80px;
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    color: var(--ink1);
+    background: var(--p1);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 8px 10px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+/* ── Shared buttons ─────────────────────────────────── */
+.besta-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: .08em;
+    color: var(--gold1);
+    background: none;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: background .15s;
+    margin-top: 4px;
+}
+.besta-add-btn:hover { background: var(--p1); }
+
+.besta-add-chip-btn {
+    background: none;
+    border: 1px solid var(--gold0);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    color: var(--gold1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.besta-del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink3);
+    padding: 0 2px;
+    transition: color .1s;
+    display: inline-flex;
+    align-items: center;
+}
+.besta-del-btn:hover { color: #c0392b; }
+
+/* ── Searcher & dropdown ─────────────────────────────── */
+.besta-searcher {
+    position: relative;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.besta-search-input {
+    flex: 1;
+    font-family: 'IM Fell English', serif;
+    font-size: 10.5px;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    background: var(--p0);
+    padding: 4px 8px;
+    color: var(--ink1);
+}
+
+.besta-dropdown--open {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--p0);
+    border: 1px solid var(--gold1);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 200;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.besta-dd-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'IM Fell English', serif;
+    font-size: 10px;
+    color: var(--ink1);
+    border-bottom: 1px solid var(--gold0, #8a5e10)22;
+    transition: background .1s;
+}
+.besta-dd-item:hover, .besta-dd-item--active { background: var(--p1); }
+
+/* ── Add bar ─────────────────────────────────────────── */
+.besta-add-bar {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gold0);
+}
+
+.besta-add-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    background: none;
+    border: 1.5px solid var(--gold1);
+    border-radius: 4px;
+    padding: 7px 20px;
+    cursor: pointer;
+    transition: background .15s;
+}
+.besta-add-new-btn:hover { background: var(--p1); }

@@ -13,3 +13,13 @@ export function initHeaderSync() {
     tituloInput?.addEventListener('input', updateHeader);
     updateHeader();
 }
+
+export function updateAuthHeader(user) {
+    if (!user) return;
+    const loggedEl = document.querySelector('.logged');
+    const notLoggedEl = document.querySelector('.not-logged');
+    const accountNameEl = document.querySelector('.your-account-name');
+    if (loggedEl) loggedEl.style.display = 'flex';
+    if (notLoggedEl) notLoggedEl.style.display = 'none';
+    if (accountNameEl) accountNameEl.textContent = user.email || user.uid;
+}

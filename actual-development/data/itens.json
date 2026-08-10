@@ -2,7 +2,7 @@
   "itens": [
     {
       "nome": "Poção de Cura",
-      "categoria": "equipamento",
+      "categoria": "básico",
       "peso": 1,
       "raridade": "comum",
       "descricao": "Recupera 2d8+3 PV. Ação protagonista.",
@@ -13,22 +13,129 @@
       "categoria": "arma",
       "peso": 2,
       "raridade": "incomum",
-      "descricao": "Arma típica de soldados e guerreiros, esta espada de dois gumes tem lâmina reta medindo entre 80cm e 1m. É adaptável, por isso por de ser empunhada com apenas uma mão, passando a causar 1d8 de dano nesses casos.",
-      "alcance": "Corpo-a-corpo"
+      "descricao": "Arma típica de soldados e guerreiros, esta espada de dois gumes tem lâmina reta medindo entre 80cm e 1m. É adaptável, por isso pode ser empunhada com apenas uma mão, passando a causar 1d8 de dano nesses casos. Corpo-a-corpo.",
+      "alcance": "Corpo-a-corpo",
+      "empunhadura": "Versátil",
+      "valor1": "Versátil",
+      "valor2": "1d10+FOR",
+      "dano": "1d10+FOR",
+      "ameaca": 20,
+      "multiplicador": 2,
+      "tipoDano": "Cortante"
+    },
+    {
+      "nome": "Adaga",
+      "categoria": "arma",
+      "peso": 1,
+      "raridade": "comum",
+      "descricao": "Pequena lâmina utilizada para ataques rápidos e furtivos. Leve o suficiente para ser empunhada com destreza. Corpo-a-corpo.",
+      "alcance": "Corpo-a-corpo",
+      "empunhadura": "Leve",
+      "valor1": "Leve",
+      "valor2": "1d4+DES",
+      "dano": "1d4+DES",
+      "ameaca": 19,
+      "multiplicador": 2,
+      "tipoDano": "Perfurante"
+    },
+    {
+      "nome": "Arco Longo",
+      "categoria": "arma",
+      "peso": 2,
+      "raridade": "incomum",
+      "descricao": "Arco de grande envergadura, capaz de atingir alvos a longas distâncias com precisão mortal.",
+      "alcance": "30m",
+      "empunhadura": "Duas mãos",
+      "valor1": "Duas mãos",
+      "valor2": "1d8+DES",
+      "dano": "1d8+DES",
+      "ameaca": 20,
+      "multiplicador": 3,
+      "tipoDano": "Perfurante"
+    },
+    {
+      "nome": "Martelo de Guerra",
+      "categoria": "arma",
+      "peso": 4,
+      "raridade": "raro",
+      "descricao": "Arma pesada de impacto brutal, empunhada com ambas as mãos. Corpo-a-corpo.",
+      "alcance": "Corpo-a-corpo",
+      "empunhadura": "Duas mãos",
+      "valor1": "Duas mãos",
+      "valor2": "2d6+FOR",
+      "dano": "2d6+FOR",
+      "ameaca": 20,
+      "multiplicador": 3,
+      "tipoDano": "Impacto"
     },
     {
       "nome": "Armadura Média",
       "categoria": "proteção",
       "peso": 5,
       "raridade": "comum",
-      "descricao": "Uma armadura de placas, couraça e malha que preza pela proteção das partes vitais do usuário. É usada por lutadores que prezam por um combate rápido e decisivo nas linhas de frente, oferecendo ótimo custo benefício, ainda que reduza o deslocamento de seu usuário em ¼."
+      "descricao": "Uma armadura de placas, couraça e malha que preza pela proteção das partes vitais do usuário. Reduz deslocamento em ¼.",
+      "defesa": 3,
+      "rd": 2,
+      "deslocamento": 0.25,
+      "valor1": "DEF +3 / RD +2",
+      "valor2": "Desl. −25%"
     },
     {
-      "nome": "a",
-      "categoria": "equipamento",
+      "nome": "Armadura Pesada",
+      "categoria": "proteção",
+      "peso": 8,
+      "raridade": "incomum",
+      "descricao": "Armadura completa de placas de aço reforçado. Oferece proteção máxima ao custo de mobilidade. Reduz deslocamento em ⅓.",
+      "defesa": 5,
+      "rd": 4,
+      "deslocamento": 0.333,
+      "valor1": "DEF +5 / RD +4",
+      "valor2": "Desl. −33%"
+    },
+    {
+      "nome": "Escudo de Torre",
+      "categoria": "proteção",
+      "peso": 6,
+      "raridade": "comum",
+      "descricao": "Escudo grande que cobre praticamente todo o corpo. Oferece defesa passiva sem penalidade de deslocamento.",
+      "defesa": 2,
+      "rd": 1,
+      "deslocamento": 0,
+      "valor1": "DEF +2 / RD +1",
+      "valor2": "Desl. 0%"
+    },
+    {
+      "nome": "Couro Reforçado",
+      "categoria": "proteção",
+      "peso": 3,
+      "raridade": "comum",
+      "descricao": "Armadura leve de couro endurecido com placas metálicas pontuais. Reduz deslocamento em 10%.",
+      "defesa": 1,
+      "rd": 1,
+      "deslocamento": 0.1,
+      "valor1": "DEF +1 / RD +1",
+      "valor2": "Desl. −10%"
+    },
+    {
+      "nome": "Fonte",
+      "categoria": "fonte",
+      "peso": 2,
+      "raridade": "comum",
+      "descricao": "Um grimório ou artefato sagrado que armazena magias de Teurgia. A raridade determina quantas magias pode carregar e até qual grau."
+    },
+    {
+      "nome": "Corda (15m)",
+      "categoria": "básico",
+      "peso": 2,
+      "raridade": "banal",
+      "descricao": "Corda de cânhamo resistente, 15 metros."
+    },
+    {
+      "nome": "Tocha",
+      "categoria": "básico",
       "peso": 1,
-      "raridade": "raro",
-      "descricao": "d"
+      "raridade": "banal",
+      "descricao": "Ilumina um raio de 6 metros. Dura 1 hora."
     }
   ]
 }

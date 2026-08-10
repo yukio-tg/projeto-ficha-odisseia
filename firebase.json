@@ -1,12 +1,19 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
-    "public": "public",
+    "public": "actual-development",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/ficha",
+        "destination": "/ficha.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"
