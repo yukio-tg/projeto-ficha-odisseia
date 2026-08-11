@@ -1,11 +1,46 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Qualquer usuário autenticado pode ler perfis (necessário para lookup email→uid).
+    // Apenas o próprio usuário pode escrever no seu perfil.
+    match /users/{uid} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
     match /sheets/{sheetId} {
-      allow read: if request.auth != null && resource.data.owner == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.owner == request.auth.uid;
-      allow update: if request.auth != null && resource.data.owner == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.owner == request.auth.uid;
+
+      function isOwner() {
+        return request.auth.uid == resource.data.owner;
+      }
+
+      // Acesso de leitura: uid na lista compartilhada OU ficha pública.
+      // get() com default garante compatibilidade com fichas antigas sem esses campos.
+      function hasReadAccess() {
+        return request.auth.uid in resource.data.get('sharedUids', [])
+            || resource.data.get('isPublic', false) == true;
+      }
+
+      // Acesso de edição: uid na lista de editores OU ficha pública com permissão 'edit'.
+      function hasEditAccess() {
+        return request.auth.uid in resource.data.get('sharedUidsEdit', [])
+            || (resource.data.get('isPublic', false) == true
+                && resource.data.get('publicPermission', 'read') == 'edit');
+      }
+
+      // Editores só podem alterar dados da ficha; metadados de compartilhamento são exclusivos do dono.
+      function onlyDataFields() {
+        return request.resource.data.diff(resource.data)
+               .affectedKeys().hasOnly(['data', 'name', 'updatedAt']);
+      }
+
+      allow read:   if request.auth != null && (isOwner() || hasReadAccess());
+      allow create: if request.auth != null
+                    && request.resource.data.owner == request.auth.uid;
+      allow update: if request.auth != null
+                    && (isOwner() || (hasEditAccess() && onlyDataFields()));
+      allow delete: if request.auth != null && isOwner();
     }
   }
 }

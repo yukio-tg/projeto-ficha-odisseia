@@ -24,8 +24,15 @@
         <div class="panel">
           <h1>Fichas</h1>
           <div id="dashboard">
+            <!-- Minhas fichas -->
             <div id="lista-fichas" class="fichas-lista">Carregando fichas...</div>
             <button class="important-button" onclick="criarNovaFicha()">Nova ficha</button>
+
+            <!-- Fichas compartilhadas comigo -->
+            <div id="fichas-compartilhadas-section" style="display:none; margin-top:18px;">
+              <h2 class="dashboard-section-title">Compartilhadas comigo</h2>
+              <div id="lista-fichas-compartilhadas" class="fichas-lista">Carregando...</div>
+            </div>
           </div>
         </div>
         <div>
@@ -62,11 +69,20 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
+    // ── Autenticação ──────────────────────────────────────────────────────────
+
+    async function ensureUserDoc(uid, email) {
+      try {
+        await db.collection('users').doc(uid).set({ email }, { merge: true });
+      } catch (e) { console.warn('[Auth] ensureUserDoc:', e); }
+    }
+
     async function signUp() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
-        await auth.createUserWithEmailAndPassword(email, password);
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        await ensureUserDoc(cred.user.uid, email);
       } catch (e) { document.getElementById('auth-error').textContent = e.message; }
     }
 
@@ -74,7 +90,8 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       try {
-        await auth.signInWithEmailAndPassword(email, password);
+        const cred = await auth.signInWithEmailAndPassword(email, password);
+        await ensureUserDoc(cred.user.uid, email);
       } catch (e) { document.getElementById('auth-error').textContent = e.message; }
     }
 
@@ -84,49 +101,170 @@
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
+        // Garante que o perfil existe (para logins já existentes antes desta versão)
+        await ensureUserDoc(user.uid, user.email);
         document.getElementById('auth-container').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
         carregarDashboard(user.uid);
       } else {
         document.getElementById('auth-container').style.display = 'block';
         document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('fichas-compartilhadas-section').style.display = 'none';
       }
     });
+
+    // ── Minhas fichas ─────────────────────────────────────────────────────────
 
     async function carregarDashboard(uid) {
       const lista = document.getElementById('lista-fichas');
       lista.innerHTML = 'Carregando suas fichas...';
       try {
         const snapshot = await db.collection('sheets').where('owner', '==', uid).get();
-        if (snapshot.empty) { lista.innerHTML = 'Nenhuma ficha encontrada.'; return; }
+        if (snapshot.empty) {
+          lista.innerHTML = 'Nenhuma ficha encontrada.';
+        } else {
+          lista.innerHTML = '';
+          snapshot.forEach(doc => {
+            const dados = doc.data();
+            const sheetId = doc.id;
+            const div = document.createElement('div');
+            div.className = 'ficha-row';
+
+            const nomeSpan = document.createElement('span');
+            nomeSpan.textContent = dados.name || 'Sem nome';
+            nomeSpan.className = 'ficha-nome';
+            nomeSpan.onclick = () => editarNomeFicha(sheetId, dados.name);
+
+            const botoesDiv = document.createElement('div');
+            botoesDiv.className = 'ficha-botoes';
+
+            const btnAbrir = document.createElement('button');
+            btnAbrir.textContent = 'Abrir';
+            btnAbrir.className = 'ficha-btn ficha-btn-abrir';
+            btnAbrir.onclick = () => abrirFicha(sheetId);
+
+            const btnExcluir = document.createElement('button');
+            btnExcluir.textContent = 'Excluir';
+            btnExcluir.className = 'ficha-btn ficha-btn-excluir';
+            btnExcluir.onclick = () => excluirFicha(sheetId, dados.name);
+
+            botoesDiv.appendChild(btnAbrir);
+            botoesDiv.appendChild(btnExcluir);
+            div.appendChild(nomeSpan);
+            div.appendChild(botoesDiv);
+            lista.appendChild(div);
+          });
+        }
+      } catch (e) {
+        lista.innerHTML = 'Erro ao carregar fichas.';
+        console.error(e);
+      }
+
+      // Carrega fichas compartilhadas em paralelo
+      carregarFichasCompartilhadas(uid);
+    }
+
+    // ── Fichas compartilhadas comigo ──────────────────────────────────────────
+
+    async function carregarFichasCompartilhadas(uid) {
+      const section = document.getElementById('fichas-compartilhadas-section');
+      const lista = document.getElementById('lista-fichas-compartilhadas');
+
+      try {
+        const userSnap = await db.collection('users').doc(uid).get();
+        if (!userSnap.exists) { section.style.display = 'none'; return; }
+
+        const sharedIds = (userSnap.data().sharedSheetIds || []);
+        if (sharedIds.length === 0) { section.style.display = 'none'; return; }
+
+        section.style.display = 'block';
+        lista.innerHTML = 'Carregando...';
+
+        // Busca todos os docs em paralelo
+        const snaps = await Promise.all(
+          sharedIds.map(id => db.collection('sheets').doc(id).get())
+        );
+
         lista.innerHTML = '';
-        snapshot.forEach(doc => {
-          const dados = doc.data();
-          const sheetId = doc.id;
+        let found = false;
+
+        snaps.forEach(snap => {
+          if (!snap.exists) return; // ficha deletada
+          found = true;
+          const dados = snap.data();
+          const sheetId = snap.id;
+
+          // Resolve a permissão deste usuário nesta ficha
+          const entry = (dados.sharedWith || []).find(s => s.uid === uid);
+          const perm = entry
+            ? entry.permission
+            : (dados.isPublic ? (dados.publicPermission || 'read') : 'read');
+
           const div = document.createElement('div');
-          div.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;';
+          div.className = 'ficha-row';
+
+          const infoDiv = document.createElement('div');
+          infoDiv.className = 'ficha-info';
+
           const nomeSpan = document.createElement('span');
           nomeSpan.textContent = dados.name || 'Sem nome';
-          nomeSpan.style.cssText = 'cursor:pointer;flex:1;color:var(--text-light);';
-          nomeSpan.onclick = () => editarNomeFicha(sheetId, dados.name);
+          nomeSpan.className = 'ficha-nome ficha-nome-readonly';
+
+          const ownerSpan = document.createElement('span');
+          ownerSpan.textContent = '👤 ' + (dados.ownerEmail || dados.owner || '?');
+          ownerSpan.className = 'ficha-owner-label';
+
+          infoDiv.appendChild(nomeSpan);
+          infoDiv.appendChild(ownerSpan);
+
           const botoesDiv = document.createElement('div');
-          botoesDiv.style.cssText = 'display:flex;gap:6px;';
+          botoesDiv.className = 'ficha-botoes';
+
+          const permBadge = document.createElement('span');
+          permBadge.textContent = perm === 'edit' ? '✏' : '👁';
+          permBadge.title = perm === 'edit' ? 'Permissão de edição' : 'Permissão de leitura';
+          permBadge.className = 'ficha-perm-badge';
+
           const btnAbrir = document.createElement('button');
           btnAbrir.textContent = 'Abrir';
-          btnAbrir.style.cssText = 'color:var(--accent-gold);background:transparent;border:1px solid var(--border-gold);padding:4px 8px;cursor:pointer;';
+          btnAbrir.className = 'ficha-btn ficha-btn-abrir';
           btnAbrir.onclick = () => abrirFicha(sheetId);
-          const btnExcluir = document.createElement('button');
-          btnExcluir.textContent = 'Excluir';
-          btnExcluir.style.cssText = 'color:#c0392b;background:transparent;border:1px solid #c0392b;padding:4px 8px;cursor:pointer;';
-          btnExcluir.onclick = () => excluirFicha(sheetId, dados.name);
+
+          const btnRemover = document.createElement('button');
+          btnRemover.textContent = 'Remover';
+          btnRemover.title = 'Remover do meu dashboard';
+          btnRemover.className = 'ficha-btn ficha-btn-remover';
+          btnRemover.onclick = () => removerFichaCompartilhada(uid, sheetId);
+
+          botoesDiv.appendChild(permBadge);
           botoesDiv.appendChild(btnAbrir);
-          botoesDiv.appendChild(btnExcluir);
-          div.appendChild(nomeSpan);
+          botoesDiv.appendChild(btnRemover);
+
+          div.appendChild(infoDiv);
           div.appendChild(botoesDiv);
           lista.appendChild(div);
         });
-      } catch (e) { lista.innerHTML = 'Erro ao carregar fichas.'; console.error(e); }
+
+        if (!found) {
+          lista.innerHTML = 'Nenhuma ficha compartilhada encontrada.';
+        }
+      } catch (e) {
+        lista.innerHTML = 'Erro ao carregar fichas compartilhadas.';
+        console.error(e);
+      }
     }
+
+    async function removerFichaCompartilhada(uid, sheetId) {
+      if (!confirm('Remover esta ficha do seu dashboard?')) return;
+      try {
+        await db.collection('users').doc(uid).update({
+          sharedSheetIds: firebase.firestore.FieldValue.arrayRemove(sheetId)
+        });
+        carregarFichasCompartilhadas(uid);
+      } catch (e) { alert('Erro ao remover: ' + e.message); }
+    }
+
+    // ── CRUD de fichas ────────────────────────────────────────────────────────
 
     async function criarNovaFicha() {
       const nome = prompt('Nome do personagem:');
@@ -134,7 +272,17 @@
       const user = auth.currentUser;
       if (!user) return;
       try {
-        await db.collection('sheets').add({ owner: user.uid, name: nome, data: {} });
+        await db.collection('sheets').add({
+          owner: user.uid,
+          ownerEmail: user.email,
+          name: nome,
+          data: {},
+          isPublic: false,
+          publicPermission: 'read',
+          sharedWith: [],
+          sharedUids: [],
+          sharedUidsEdit: []
+        });
         carregarDashboard(user.uid);
       } catch (e) { alert('Erro ao criar ficha: ' + e.message); }
     }

@@ -23,3 +23,9 @@ export function updateAuthHeader(user) {
     if (notLoggedEl) notLoggedEl.style.display = 'none';
     if (accountNameEl) accountNameEl.textContent = user.email || user.uid;
 }
+
+/** Preenche o nome do dono da ficha no header (substitui o valor hardcoded). */
+export function updateOwnerHeader(ownerEmail) {
+    const ownerEl = document.querySelector('.owner-account-name');
+    if (ownerEl) ownerEl.textContent = ownerEmail || '—';
+}

@@ -6,7 +6,7 @@ import { initBars } from './ui/vitals.js';
 import { initPortrait } from './ui/portrait.js';
 import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
-import { initHeaderSync, updateAuthHeader } from './ui/header.js';
+import { initHeaderSync, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
 import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
 import { atualizarHeranca } from './core/heranca-logic.js';
@@ -18,14 +18,18 @@ import { initInventory } from './ui/inventory.js';
 import { initItemEffects } from './core/item-effects.js';
 import { initBesta } from './ui/besta.js';
 import { initAnotacoes } from './ui/anotacoes.js';
-import { initFirebase, waitForAuth, getSheetId, loadSheetData, saveSheetData } from './core/firebase-service.js';
+import { initFirebase, waitForAuth, getSheetId, loadSheetDoc, saveSheetData, saveSheetDataOnly, ensureUserDoc, addToUserSharedSheets } from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
+import { initSharePopup } from './ui/share.js';
 
-// ── Auto-save state ──────────────────────────────────────────────────────────
+// ── Estado global ────────────────────────────────────────────────────────────
 let suppressSave = false;
 let saveTimer = null;
 let currentUser = null;
 let currentSheetId = null;
+let currentPermission = null; // 'owner' | 'edit' | 'read'
+
+// ── Indicadores de save ──────────────────────────────────────────────────────
 
 function showSaved() {
     document.getElementById('saved')?.style.setProperty('display', 'flex');
@@ -55,11 +59,19 @@ async function performSave() {
     try {
         const data = serializeSheet();
         const name = data.fields?.['personagem-nome'] || 'Sem nome';
-        await saveSheetData(currentSheetId, currentUser.uid, name, data);
+        if (currentPermission === 'owner') {
+            await saveSheetData(currentSheetId, currentUser.uid, name, data);
+        } else {
+            await saveSheetDataOnly(currentSheetId, name, data);
+        }
         showSaved();
     } catch (e) {
         console.error('[Save] Erro ao salvar:', e);
-        showError(e.message);
+        if (e.code === 'permission-denied') {
+            showError('Seu acesso a esta ficha foi revogado.');
+        } else {
+            showError(e.message);
+        }
     }
 }
 
@@ -68,6 +80,35 @@ function triggerAutoSave() {
     showNonSaved();
     clearTimeout(saveTimer);
     saveTimer = setTimeout(performSave, 1500);
+}
+
+// ── Lógica de permissão ──────────────────────────────────────────────────────
+
+function resolvePermission(sheetDoc, uid) {
+    if (sheetDoc.owner === uid) return 'owner';
+    const match = (sheetDoc.sharedWith || []).find(s => s.uid === uid);
+    if (match) return match.permission; // 'read' ou 'edit'
+    if (sheetDoc.isPublic) return sheetDoc.publicPermission || 'read';
+    return null;
+}
+
+function applyReadOnlyMode(ownerEmail) {
+    suppressSave = true;
+    // Desabilita todos os inputs interativos
+    document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+    // Oculta controles de edição
+    document.getElementById('manual-save')?.closest('.header-save')?.style.setProperty('display', 'none');
+    document.getElementById('autocalc-switch')?.closest('.header-autocalc')?.style.setProperty('display', 'none');
+    document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'none');
+    // Exibe banner de leitura
+    const banner = document.getElementById('readonly-banner');
+    if (banner) {
+        banner.style.display = 'flex';
+        const emailEl = document.getElementById('owner-email-banner');
+        if (emailEl) emailEl.textContent = ownerEmail;
+    }
+    // Remove indicadores de save (não fazem sentido em modo leitura)
+    document.getElementById('saved')?.style.setProperty('display', 'none');
 }
 
 // ── Inicialização dos módulos ────────────────────────────────────────────────
@@ -172,6 +213,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     currentUser = user;
 
+    // Garante que o perfil do usuário existe (para lookup por email funcionar)
+    ensureUserDoc(user.uid, user.email).catch(e => console.warn('[Auth] ensureUserDoc:', e));
+
     const sheetId = getSheetId();
     if (!sheetId) {
         window.location.href = '/index.html';
@@ -179,14 +223,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     currentSheetId = sheetId;
 
-    await initAllModules();
-
-    suppressSave = true;
+    // Carrega o documento completo da ficha
+    let sheetDoc;
     try {
-        const savedData = await loadSheetData(sheetId);
-        if (savedData) deserializeSheet(savedData);
+        sheetDoc = await loadSheetDoc(sheetId);
     } catch (e) {
         console.error('[Load] Erro ao carregar ficha:', e);
+        window.location.href = '/index.html';
+        return;
+    }
+    if (!sheetDoc) {
+        window.location.href = '/index.html';
+        return;
+    }
+
+    // Resolve a permissão do usuário atual
+    const perm = resolvePermission(sheetDoc, user.uid);
+    if (!perm) {
+        // Sem acesso — redireciona
+        window.location.href = '/index.html';
+        return;
+    }
+    currentPermission = perm;
+
+    // Se não é dono e ainda não tem a ficha no dashboard, adiciona
+    if (perm !== 'owner') {
+        addToUserSharedSheets(user.uid, sheetId).catch(e => console.warn('[Share] track:', e));
+    }
+
+    await initAllModules();
+
+    // Carrega dados sem disparar autosave
+    suppressSave = true;
+    try {
+        if (sheetDoc.data) deserializeSheet(sheetDoc.data);
+    } catch (e) {
+        console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);
     } finally {
         suppressSave = false;
@@ -194,6 +266,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     wireCalculations();
     updateAuthHeader(user);
+
+    // Preenche o nome do dono dinamicamente
+    const ownerEmail = sheetDoc.ownerEmail || sheetDoc.owner || '—';
+    updateOwnerHeader(ownerEmail);
+
+    // Aplica UI de acordo com a permissão
+    if (perm === 'read') {
+        applyReadOnlyMode(ownerEmail);
+        return; // não precisa das wires de edição
+    }
+
+    // Modo edit ou owner: exibe save e calcs
+    if (perm === 'owner') {
+        document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'flex');
+        initSharePopup(sheetId, user, sheetDoc);
+    }
 
     // Botão autocalc
     const autocalcBtn = document.getElementById('autocalc-switch');

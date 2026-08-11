@@ -1,0 +1,310 @@
+/* share.css — Popup de compartilhamento de fichas */
+
+/* ── Overlay ── */
+.share-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 6, 2, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+}
+
+/* ── Popup ── */
+.share-popup {
+    background: var(--leath1);
+    border: 1px solid var(--gold0);
+    border-radius: 4px;
+    width: min(480px, calc(100vw - 32px));
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.share-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--gold0);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--gold2);
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.share-popup-header button {
+    background: none;
+    border: none;
+    color: var(--gold1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    opacity: 0.75;
+    transition: opacity .15s;
+}
+.share-popup-header button:hover { opacity: 1; }
+
+.share-popup-body {
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ── Seção pública ── */
+.share-visibility {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.share-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    color: var(--p1);
+    font-size: 13px;
+}
+
+.share-toggle-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--gold1);
+    cursor: pointer;
+}
+
+.share-public-options {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 26px;
+}
+
+.share-perm-label {
+    font-size: 12px;
+    color: var(--p3);
+}
+
+.share-public-options select,
+.share-perm-select {
+    background: var(--leath2);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    color: var(--p1);
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+}
+
+.share-link-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 26px;
+    flex-wrap: wrap;
+}
+
+.share-link-text {
+    font-size: 11px;
+    color: var(--p3);
+    word-break: break-all;
+    flex: 1;
+    min-width: 0;
+}
+
+/* ── Botões de ação ── */
+.share-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--leath2);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    color: var(--gold2);
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    transition: background .15s, border-color .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.share-action-btn:hover {
+    background: var(--leath3);
+    border-color: var(--gold1);
+}
+.share-action-btn .material-symbols-outlined {
+    font-size: 15px;
+}
+
+/* ── Título de seção ── */
+.share-section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--gold1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(139, 94, 16, 0.3);
+}
+
+/* ── Lista de usuários ── */
+.share-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 32px;
+}
+
+.share-no-users {
+    font-size: 12px;
+    color: var(--p4);
+    font-style: italic;
+}
+
+.share-user-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    border: 1px solid rgba(139, 94, 16, 0.2);
+}
+
+.share-user-icon {
+    font-size: 16px;
+    color: var(--gold1);
+    flex-shrink: 0;
+    font-variation-settings: 'FILL' 1;
+}
+
+.share-user-email {
+    flex: 1;
+    font-size: 12px;
+    color: var(--p1);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.share-remove-btn {
+    background: none;
+    border: none;
+    color: var(--p4);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    opacity: 0.6;
+    transition: opacity .15s, color .15s;
+    flex-shrink: 0;
+}
+.share-remove-btn:hover {
+    opacity: 1;
+    color: #c0392b;
+}
+.share-remove-btn .material-symbols-outlined { font-size: 17px; }
+
+/* ── Adicionar usuário ── */
+.share-add-user {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.share-add-row {
+    display: flex;
+    gap: 8px;
+}
+
+.share-email-input {
+    flex: 1;
+    background: var(--leath2);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    color: var(--p1);
+    font-size: 13px;
+    padding: 6px 10px;
+    min-width: 0;
+    font-family: inherit;
+    transition: border-color .15s;
+}
+.share-email-input:focus {
+    outline: none;
+    border-color: var(--gold1);
+}
+
+.share-status-msg {
+    font-size: 12px;
+    color: var(--p4);
+    min-height: 16px;
+}
+.share-status-ok { color: var(--gold2); }
+
+/* ── Botão de compartilhar no header ── */
+#share-btn {
+    background: none;
+    border: none;
+    color: var(--gold1);
+    opacity: 0.85;
+    font-variation-settings: 'FILL' 0, 'wght' 300;
+    margin: 0 0px 0 20px;
+    transition: all .1s;
+    translate: 0 2px;
+    cursor: pointer;
+}
+#share-btn:hover {
+    font-variation-settings: 'FILL' 1;
+    opacity: 0.9;
+    color: var(--gold1);
+}
+#share-btn:active {
+    color: var(--gold3);
+    text-shadow: 0 0 2px var(--gold3);
+}
+#share-btn-wrapper {
+    display: none; /* mostrado via JS apenas para o dono */
+    align-items: center;
+}
+
+/* ── Banner de modo leitura ── */
+#readonly-banner {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: rgba(10, 6, 2, 0.7);
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--p2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 8px;
+}
+#readonly-banner .material-symbols-outlined {
+    font-size: 17px;
+    color: var(--gold1);
+    flex-shrink: 0;
+}
+
+/* Estilo visual para inputs desabilitados (modo leitura) */
+.sheet input:disabled,
+.sheet select:disabled,
+.sheet textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
