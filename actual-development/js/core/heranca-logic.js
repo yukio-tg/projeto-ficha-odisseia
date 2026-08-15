@@ -1,5 +1,5 @@
 import { HERANCA_DATA, HIERARQUIA_ORDEM } from '../config/herancas.js';
-import { getNivel, getRadarAttrWrap } from './radar-service.js';
+import { getNivel, getRadarAttrWrap, adjustRadarMaxPoints } from './radar-service.js';
 import { autoCalcEnabled } from './state.js';
 
 export let herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
@@ -33,6 +33,8 @@ function adjustRadarBaseAttribute(attr, delta) {
         val = Math.max(0, val + delta);
         input.value = val;
         input.dispatchEvent(new Event('input', { bubbles: true }));
+        // O bônus de herança aumenta o atributo E o limite máximo de pontos no radar
+        adjustRadarMaxPoints(delta);
     }
 }
 

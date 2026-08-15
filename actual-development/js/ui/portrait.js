@@ -1,35 +1,55 @@
+let _limparRetrato = null;
+let _retratoImg = null;
+let _retratoUrlInput = null;
+let _retratoInputs = null;
+let _limparRetratoBtn = null;
+
 export function initPortrait() {
-    const retratoImg = document.getElementById('retrato-img');
-    const retratoUrlInput = document.getElementById('retrato-url');
-    const limparRetratoBtn = document.getElementById('limpar-retrato');
-    const retratoInputs = document.getElementById('retrato-inputs');
-    const retratoArea = document.getElementById('retrato-area');
+    _retratoImg = document.getElementById('retrato-img');
+    _retratoUrlInput = document.getElementById('retrato-url');
+    _limparRetratoBtn = document.getElementById('limpar-retrato');
+    _retratoInputs = document.getElementById('retrato-inputs');
 
-    function limparRetrato() {
-        retratoImg.removeAttribute('src');
-        retratoImg.style.display = 'none';
-        retratoInputs.style.display = '';
-        limparRetratoBtn.style.display = 'none';
-        retratoUrlInput.value = '';
-    }
+    _limparRetrato = function limparRetrato() {
+        _retratoImg.removeAttribute('src');
+        _retratoImg.style.display = 'none';
+        _retratoInputs.style.display = '';
+        _limparRetratoBtn.style.display = 'none';
+        _retratoUrlInput.value = '';
+    };
 
-    retratoImg.addEventListener('load', function () {
+    _retratoImg.addEventListener('load', function () {
         if (!this.src || this.src === window.location.href) return;
         this.style.display = 'block';
-        retratoInputs.style.display = 'none';
-        limparRetratoBtn.style.display = 'inline-flex';
+        _retratoInputs.style.display = 'none';
+        _limparRetratoBtn.style.display = 'inline-flex';
     });
 
-    retratoImg.addEventListener('error', limparRetrato);
+    _retratoImg.addEventListener('error', _limparRetrato);
 
-    retratoUrlInput.addEventListener('input', function () {
+    _retratoUrlInput.addEventListener('input', function () {
         const url = this.value.trim();
         if (url) {
-            retratoImg.src = url;
+            _retratoImg.src = url;
         } else {
-            limparRetrato();
+            _limparRetrato();
         }
     });
 
-    limparRetratoBtn.addEventListener('click', limparRetrato);
+    _limparRetratoBtn.addEventListener('click', _limparRetrato);
+}
+
+/**
+ * Aplica uma URL de retrato programaticamente (ex.: ao carregar ficha salva).
+ * Deve ser chamado após initPortrait() e após preencher o campo retrato-url.
+ */
+export function applyPortraitUrl(url) {
+    if (!_retratoImg || !_retratoUrlInput) return;
+    const trimmed = (url || '').trim();
+    _retratoUrlInput.value = trimmed;
+    if (trimmed) {
+        _retratoImg.src = trimmed;
+    } else if (_limparRetrato) {
+        _limparRetrato();
+    }
 }

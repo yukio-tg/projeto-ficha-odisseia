@@ -226,6 +226,8 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
             dot.dataset.cor = cor;
             dot.title = cor;
             reordenarCards();
+            // Notifica auto-save (cor não gera evento input/change nativo)
+            document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
         });
     });
 
@@ -316,12 +318,12 @@ function mostrarAutocomplete(query) {
         item.className = 'autocomplete-item-power';
         const bolinha = `<span class="autocomplete-cor-dot" style="background-color:${corCSSMap[p.cor] || '#ccc'}"></span>`;
         item.innerHTML = `${bolinha}<strong>${escapeHtml(p.nome)}</strong><span>PT: ${p.ptCost}</span>`;
-        item.addEventListener('click', () => {
+        item.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // impede blur no inputBusca antes do disparo
             inputBusca.value = p.nome;
             currentSelectedColor = p.cor || "Vermelho";
             atualizarCategoryDot();
-            fecharAutocomplete();
-            btnAdicionar.focus();
+            adicionarPoderDoBusca(); // adiciona diretamente sem exigir clique extra
         });
         dropdown.appendChild(item);
     });

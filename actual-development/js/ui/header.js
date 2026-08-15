@@ -1,3 +1,5 @@
+let _updateHeader = null;
+
 export function initHeaderSync() {
     const nomeInput = document.querySelector('[data-field="personagem-nome"]');
     const tituloInput = document.querySelector('[data-field="personagem-titulo"]');
@@ -9,9 +11,15 @@ export function initHeaderSync() {
         if (headerEyebrow) headerEyebrow.textContent = tituloInput?.value.trim() || 'Título';
     }
 
+    _updateHeader = updateHeader;
     nomeInput?.addEventListener('input', updateHeader);
     tituloInput?.addEventListener('input', updateHeader);
     updateHeader();
+}
+
+/** Força a atualização do header após carregamento de dados externos (ex.: deserializeSheet). */
+export function refreshHeader() {
+    if (_updateHeader) _updateHeader();
 }
 
 export function updateAuthHeader(user) {

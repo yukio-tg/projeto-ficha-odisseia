@@ -220,29 +220,36 @@
 .share-add-user {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
-.share-add-row {
-    display: flex;
-    gap: 8px;
-}
-
+/* Email ocupa linha inteira para fácil leitura */
 .share-email-input {
-    flex: 1;
+    width: 100%;
     background: var(--leath2);
     border: 1px solid var(--gold0);
     border-radius: 3px;
     color: var(--p1);
-    font-size: 13px;
-    padding: 6px 10px;
-    min-width: 0;
+    font-size: 14px;
+    padding: 8px 12px;
     font-family: inherit;
     transition: border-color .15s;
+    box-sizing: border-box;
 }
 .share-email-input:focus {
     outline: none;
     border-color: var(--gold1);
+}
+.share-email-input::placeholder {
+    color: var(--p4);
+    opacity: 0.7;
+}
+
+/* Linha de controles: permissão + botão lado a lado */
+.share-add-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .share-status-msg {
@@ -251,6 +258,34 @@
     min-height: 16px;
 }
 .share-status-ok { color: var(--gold2); }
+
+/* ── Transferência de propriedade ── */
+.share-transfer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(139, 94, 16, 0.2);
+}
+
+.share-transfer-info {
+    font-size: 12px;
+    color: var(--p4);
+    font-style: italic;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Botão de ação com estilo de perigo */
+.share-action-btn--danger {
+    border-color: rgba(160, 50, 30, 0.6);
+    color: #c07060;
+}
+.share-action-btn--danger:hover {
+    background: rgba(120, 30, 20, 0.3);
+    border-color: #a03828;
+    color: #d08070;
+}
 
 /* ── Botão de compartilhar no header ── */
 #share-btn {
@@ -300,11 +335,58 @@
     flex-shrink: 0;
 }
 
-/* Estilo visual para inputs desabilitados (modo leitura) */
-.sheet input:disabled,
-.sheet select:disabled,
-.sheet textarea:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+/* ═══════════════════════════════════════════════════════════════
+   MODO LEITURA
+   Bloqueia toda interação no conteúdo da ficha via pointer-events.
+   O sidebar (abas) e o header ficam fora de .page-wrap e continuam
+   funcionando normalmente.
+   ═══════════════════════════════════════════════════════════════ */
+
+body.mode-readonly .page-wrap {
     pointer-events: none;
+    user-select: text; /* permite copiar texto */
+}
+
+/* Re-habilita os botões de minimizar/expandir dentro dos cards */
+body.mode-readonly .page-wrap .btn-summarize,
+body.mode-readonly .page-wrap .btn-magic-minimize,
+body.mode-readonly .page-wrap .besta-collapse-toggle {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+/* Visual sutil para indicar modo leitura nos inputs */
+body.mode-readonly .page-wrap input,
+body.mode-readonly .page-wrap select,
+body.mode-readonly .page-wrap textarea {
+    opacity: 0.75;
+    cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INDICADOR DE PRESENÇA
+   ═══════════════════════════════════════════════════════════════ */
+
+.presence-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--gold1);
+    opacity: 0.85;
+    justify-content: flex-end;
+    max-width: 220px;
+    overflow: hidden;
+}
+
+.presence-indicator .material-symbols-outlined {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.presence-list {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
 }

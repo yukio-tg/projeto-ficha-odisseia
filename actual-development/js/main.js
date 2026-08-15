@@ -3,10 +3,10 @@ import './config/herancas.js';
 import { initRadar } from './core/radar-service.js';
 import { initAutocomplete } from './ui/autocomplete.js';
 import { initBars } from './ui/vitals.js';
-import { initPortrait } from './ui/portrait.js';
+import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
 import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
-import { initHeaderSync, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
+import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
 import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
 import { atualizarHeranca } from './core/heranca-logic.js';
@@ -18,7 +18,12 @@ import { initInventory } from './ui/inventory.js';
 import { initItemEffects } from './core/item-effects.js';
 import { initBesta } from './ui/besta.js';
 import { initAnotacoes } from './ui/anotacoes.js';
-import { initFirebase, waitForAuth, getSheetId, loadSheetDoc, saveSheetData, saveSheetDataOnly, ensureUserDoc, addToUserSharedSheets } from './core/firebase-service.js';
+import {
+    initFirebase, waitForAuth, getSheetId,
+    loadSheetDoc, saveSheetData, saveSheetDataOnly,
+    ensureUserDoc, addToUserSharedSheets,
+    listenToSheet, listenToPresence, updatePresence, deletePresence
+} from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { initSharePopup } from './ui/share.js';
 
@@ -28,6 +33,12 @@ let saveTimer = null;
 let currentUser = null;
 let currentSheetId = null;
 let currentPermission = null; // 'owner' | 'edit' | 'read'
+
+// Controle de realtime
+let snapshotUnsubscribe = null;
+let presenceUnsubscribe = null;
+let presenceInterval = null;
+let initialSnapshotDone = false; // ignora o primeiro disparo do onSnapshot
 
 // ── Indicadores de save ──────────────────────────────────────────────────────
 
@@ -79,7 +90,10 @@ function triggerAutoSave() {
     if (suppressSave) return;
     showNonSaved();
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(performSave, 1500);
+    saveTimer = setTimeout(() => {
+        saveTimer = null;
+        performSave();
+    }, 1500);
 }
 
 // ── Lógica de permissão ──────────────────────────────────────────────────────
@@ -92,14 +106,25 @@ function resolvePermission(sheetDoc, uid) {
     return null;
 }
 
+/**
+ * Aplica o modo de leitura: bloqueia toda interação no conteúdo da ficha
+ * via CSS pointer-events, impede qualquer save, e exibe o banner de leitura.
+ * Botões .btn-summarize, .btn-magic-minimize e .besta-collapse-toggle
+ * continuam funcionando (ver share.css).
+ */
 function applyReadOnlyMode(ownerEmail) {
     suppressSave = true;
-    // Desabilita todos os inputs interativos
-    document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
-    // Oculta controles de edição
+    document.body.classList.add('mode-readonly');
+
+    // Desabilita o editor de anotações (contenteditable não é bloqueado por pointer-events)
+    const anotEditor = document.getElementById('anot-editor');
+    if (anotEditor) anotEditor.contentEditable = 'false';
+
+    // Oculta controles de edição no header
     document.getElementById('manual-save')?.closest('.header-save')?.style.setProperty('display', 'none');
     document.getElementById('autocalc-switch')?.closest('.header-autocalc')?.style.setProperty('display', 'none');
     document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'none');
+
     // Exibe banner de leitura
     const banner = document.getElementById('readonly-banner');
     if (banner) {
@@ -107,8 +132,114 @@ function applyReadOnlyMode(ownerEmail) {
         const emailEl = document.getElementById('owner-email-banner');
         if (emailEl) emailEl.textContent = ownerEmail;
     }
-    // Remove indicadores de save (não fazem sentido em modo leitura)
+
+    // Remove indicadores de save (irrelevantes em leitura)
     document.getElementById('saved')?.style.setProperty('display', 'none');
+}
+
+// ── Realtime sync ─────────────────────────────────────────────────────────────
+
+/**
+ * Configura o listener de sincronização em tempo real.
+ * - Leitores: aplicam sempre (sem edições locais)
+ * - Editores/donos: aplicam apenas quando não há alterações locais pendentes
+ */
+function setupRealtimeSync(sheetId) {
+    snapshotUnsubscribe = listenToSheet(
+        sheetId,
+        (snap) => {
+            // Ignora o primeiro disparo (dados já carregados manualmente)
+            if (!initialSnapshotDone) {
+                initialSnapshotDone = true;
+                return;
+            }
+            if (!snap.exists()) return;
+
+            // Ignora snapshots com escrita local pendente (nosso próprio dado sendo refletido)
+            if (snap.metadata.hasPendingWrites) return;
+
+            // Para editores/donos: aguarda não haver salvamento local em curso
+            if (currentPermission !== 'read' && saveTimer !== null) return;
+
+            const remoteData = snap.data()?.data;
+            if (!remoteData) return;
+
+            // Aplica dados remotos sem disparar autosave
+            suppressSave = true;
+            try {
+                deserializeSheet(remoteData);
+                refreshHeader();
+                applyPortraitUrl(remoteData?.fields?.['retrato-url'] || '');
+                if (currentPermission !== 'read') showSaved();
+            } finally {
+                // setTimeout garante que eventos síncronos do deserialize sejam
+                // absorvidos antes de reativar o autosave
+                setTimeout(() => { suppressSave = false; }, 50);
+            }
+        },
+        (err) => {
+            console.error('[Realtime] Listener error:', err);
+            if (err.code === 'permission-denied') {
+                showError('Acesso revogado. Recarregue a página.');
+            }
+        }
+    );
+}
+
+// ── Presença ──────────────────────────────────────────────────────────────────
+
+const PRESENCE_HEARTBEAT_MS = 30_000; // 30s de heartbeat
+const PRESENCE_TTL_MS       = 70_000; // considera offline após 70s sem heartbeat
+
+function setupPresence(sheetId, user) {
+    // Registra presença inicial
+    updatePresence(sheetId, user.uid, user.email).catch(() => {});
+
+    // Heartbeat periódico
+    presenceInterval = setInterval(
+        () => updatePresence(sheetId, user.uid, user.email).catch(() => {}),
+        PRESENCE_HEARTBEAT_MS
+    );
+
+    // Escuta outros usuários presentes
+    presenceUnsubscribe = listenToPresence(sheetId, (snap) => {
+        const now = Date.now();
+        const others = [];
+        snap.forEach(d => {
+            if (d.id === user.uid) return; // pula o próprio usuário
+            const lastSeen = d.data().lastSeen?.toMillis?.() ?? 0;
+            if (now - lastSeen < PRESENCE_TTL_MS) {
+                others.push(d.data().email || d.id);
+            }
+        });
+        renderPresenceIndicator(others);
+    });
+
+    // Limpa presença ao fechar a página (best-effort)
+    window.addEventListener('beforeunload', () => {
+        clearInterval(presenceInterval);
+        if (presenceUnsubscribe) presenceUnsubscribe();
+        // Tenta remover presença de forma síncrona (sendBeacon seria ideal, mas
+        // deleteDoc é assíncrono; na prática, o TTL resolve em ~70s)
+        deletePresence(sheetId, user.uid).catch(() => {});
+    });
+}
+
+function renderPresenceIndicator(emails) {
+    const indicator = document.getElementById('presence-indicator');
+    const list = document.getElementById('presence-list');
+    if (!indicator || !list) return;
+
+    if (emails.length === 0) {
+        indicator.style.display = 'none';
+        return;
+    }
+
+    const MAX_SHOW = 2;
+    let text = emails.slice(0, MAX_SHOW).join(', ');
+    if (emails.length > MAX_SHOW) text += ` +${emails.length - MAX_SHOW}`;
+    list.textContent = text;
+    indicator.style.display = 'flex';
 }
 
 // ── Inicialização dos módulos ────────────────────────────────────────────────
@@ -213,8 +344,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     currentUser = user;
 
-    // Garante que o perfil do usuário existe (para lookup por email funcionar)
-    ensureUserDoc(user.uid, user.email).catch(e => console.warn('[Auth] ensureUserDoc:', e));
+    // Garante que o perfil do usuário existe com o email normalizado
+    ensureUserDoc(user.uid, user.email.toLowerCase()).catch(e =>
+        console.warn('[Auth] ensureUserDoc:', e)
+    );
 
     const sheetId = getSheetId();
     if (!sheetId) {
@@ -240,15 +373,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Resolve a permissão do usuário atual
     const perm = resolvePermission(sheetDoc, user.uid);
     if (!perm) {
-        // Sem acesso — redireciona
         window.location.href = '/index.html';
         return;
     }
     currentPermission = perm;
 
-    // Se não é dono e ainda não tem a ficha no dashboard, adiciona
+    // Se não é dono e ainda não tem a ficha no dashboard, registra
     if (perm !== 'owner') {
-        addToUserSharedSheets(user.uid, sheetId).catch(e => console.warn('[Share] track:', e));
+        addToUserSharedSheets(user.uid, sheetId).catch(e =>
+            console.warn('[Share] track:', e)
+        );
     }
 
     await initAllModules();
@@ -257,11 +391,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     suppressSave = true;
     try {
         if (sheetDoc.data) deserializeSheet(sheetDoc.data);
+        refreshHeader(); // atualiza header-title e header-eyebrow com os dados carregados
+        // Aplica a imagem do retrato (o campo foi preenchido mas nenhum evento input foi disparado)
+        applyPortraitUrl(sheetDoc.data?.fields?.['retrato-url'] || '');
     } catch (e) {
         console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);
     } finally {
-        suppressSave = false;
+        setTimeout(() => { suppressSave = false; }, 50);
     }
 
     wireCalculations();
@@ -271,13 +408,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ownerEmail = sheetDoc.ownerEmail || sheetDoc.owner || '—';
     updateOwnerHeader(ownerEmail);
 
+    // Inicia realtime sync e presença (para todos os usuários)
+    setupRealtimeSync(sheetId);
+    setupPresence(sheetId, user);
+
     // Aplica UI de acordo com a permissão
     if (perm === 'read') {
         applyReadOnlyMode(ownerEmail);
-        return; // não precisa das wires de edição
+        return; // sem wires de edição
     }
 
-    // Modo edit ou owner: exibe save e calcs
+    // Modo edit ou owner: exibe botão de share apenas para o dono
     if (perm === 'owner') {
         document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'flex');
         initSharePopup(sheetId, user, sheetDoc);
@@ -298,6 +439,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (manualSaveBtn) {
         manualSaveBtn.addEventListener('click', () => {
             clearTimeout(saveTimer);
+            saveTimer = null;
             atualizarPericias(true);
             performSave();
         });

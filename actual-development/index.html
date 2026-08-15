@@ -73,7 +73,8 @@
 
     async function ensureUserDoc(uid, email) {
       try {
-        await db.collection('users').doc(uid).set({ email }, { merge: true });
+        // Armazena o email normalizado para que a busca por email seja case-insensitive
+        await db.collection('users').doc(uid).set({ email: email.trim().toLowerCase() }, { merge: true });
       } catch (e) { console.warn('[Auth] ensureUserDoc:', e); }
     }
 
@@ -276,7 +277,7 @@
           owner: user.uid,
           ownerEmail: user.email,
           name: nome,
-          data: {},
+          data: { fields: { 'personagem-nome': nome } },
           isPublic: false,
           publicPermission: 'read',
           sharedWith: [],

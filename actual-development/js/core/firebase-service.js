@@ -3,8 +3,10 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebas
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 import {
     getFirestore,
-    doc, getDoc, setDoc, updateDoc,
-    collection, query, where, limit, getDocs,
+    doc, collection,
+    getDoc, setDoc, updateDoc, deleteDoc,
+    query, where, limit, getDocs,
+    onSnapshot,
     arrayUnion, arrayRemove,
     serverTimestamp
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
@@ -84,7 +86,7 @@ export async function saveSheetDataOnly(sheetId, name, data) {
 /** Cria ou atualiza o perfil do usuário (chamado após login/cadastro). */
 export async function ensureUserDoc(uid, email) {
     const ref = doc(db, 'users', uid);
-    await setDoc(ref, { email }, { merge: true });
+    await setDoc(ref, { email: (email || '').trim().toLowerCase() }, { merge: true });
 }
 
 /** Retorna o perfil do usuário ou null. */
@@ -94,14 +96,26 @@ export async function getUserDoc(uid) {
     return snap.exists() ? snap.data() : null;
 }
 
-/** Busca um usuário pelo email. Retorna { uid, email } ou null. */
+/** Busca um usuário pelo email (case-insensitive via normalização no cliente).
+ *  Retorna { uid, email } ou null. */
 export async function getUserByEmail(email) {
+    const normalized = email.trim().toLowerCase();
     const colRef = collection(db, 'users');
-    const q = query(colRef, where('email', '==', email), limit(1));
+    // Busca pela versão normalizada armazenada
+    const q = query(colRef, where('email', '==', normalized), limit(1));
     const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const d = snap.docs[0];
-    return { uid: d.id, email: d.data().email };
+    if (!snap.empty) {
+        const d = snap.docs[0];
+        return { uid: d.id, email: d.data().email };
+    }
+    // Fallback: busca pelo email sem normalização (contas criadas antes da padronização)
+    const q2 = query(colRef, where('email', '==', email.trim()), limit(1));
+    const snap2 = await getDocs(q2);
+    if (!snap2.empty) {
+        const d = snap2.docs[0];
+        return { uid: d.id, email: d.data().email };
+    }
+    return null;
 }
 
 /** Adiciona um sheetId à lista de fichas compartilhadas do usuário (idempotente). */
@@ -122,6 +136,81 @@ export async function removeFromUserSharedSheets(uid, sheetId) {
 export async function updateSheetSharing(sheetId, updates) {
     const ref = doc(db, 'sheets', sheetId);
     await updateDoc(ref, updates);
+}
+
+/**
+ * Transfere a propriedade de uma ficha para outro usuário.
+ * O dono atual é adicionado como colaborador com permissão de edição.
+ * @param {string} sheetId
+ * @param {string} newOwnerUid
+ * @param {string} newOwnerEmail
+ * @param {{ uid: string, email: string }} oldOwner
+ */
+export async function transferSheetOwnership(sheetId, newOwnerUid, newOwnerEmail, oldOwner) {
+    const ref = doc(db, 'sheets', sheetId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) throw new Error('Ficha não encontrada.');
+
+    const sheetData = snap.data();
+    let sharedWith = [...(sheetData.sharedWith || [])];
+
+    // Remove o novo dono da lista de compartilhados (ele passa a ser dono)
+    sharedWith = sharedWith.filter(s => s.uid !== newOwnerUid);
+
+    // Adiciona o dono anterior como colaborador com edição (se ainda não estiver)
+    if (!sharedWith.some(s => s.uid === oldOwner.uid)) {
+        sharedWith.push({ uid: oldOwner.uid, email: (oldOwner.email || '').toLowerCase(), permission: 'edit' });
+    }
+
+    const sharedUids = sharedWith.map(s => s.uid);
+    const sharedUidsEdit = sharedWith.filter(s => s.permission === 'edit').map(s => s.uid);
+
+    await updateDoc(ref, {
+        owner: newOwnerUid,
+        ownerEmail: newOwnerEmail,
+        sharedWith,
+        sharedUids,
+        sharedUidsEdit,
+        updatedAt: serverTimestamp()
+    });
+
+    // Dono anterior entra na lista de fichas compartilhadas
+    await addToUserSharedSheets(oldOwner.uid, sheetId);
+    // Novo dono sai da lista de fichas compartilhadas (agora é dono)
+    await removeFromUserSharedSheets(newOwnerUid, sheetId);
+}
+
+// ── Realtime ─────────────────────────────────────────────────────────────────
+
+/**
+ * Escuta mudanças em tempo real na ficha.
+ * Retorna a função de cancelamento (unsubscribe).
+ */
+export function listenToSheet(sheetId, callback, onError) {
+    const ref = doc(db, 'sheets', sheetId);
+    return onSnapshot(ref, { includeMetadataChanges: true }, callback, onError || (() => {}));
+}
+
+// ── Presença ─────────────────────────────────────────────────────────────────
+
+/** Registra ou atualiza a presença do usuário na ficha. */
+export async function updatePresence(sheetId, uid, email) {
+    const ref = doc(db, 'sheets', sheetId, 'presence', uid);
+    await setDoc(ref, { email, lastSeen: serverTimestamp() }, { merge: true });
+}
+
+/** Remove a presença do usuário (ao sair da página). */
+export async function deletePresence(sheetId, uid) {
+    try {
+        const ref = doc(db, 'sheets', sheetId, 'presence', uid);
+        await deleteDoc(ref);
+    } catch { /* best-effort */ }
+}
+
+/** Escuta a subcoleção de presença em tempo real. Retorna unsubscribe. */
+export function listenToPresence(sheetId, callback) {
+    const colRef = collection(db, 'sheets', sheetId, 'presence');
+    return onSnapshot(colRef, callback, () => {});
 }
 
 export function getAuth_() { return auth; }

@@ -1372,9 +1372,11 @@ export function setCombatState(data) {
             });
         }
     }
-    if (data.reacoes && data.reacoes.length > 0) {
+    if (data.reacoes) {
         const c = document.getElementById('reacoes-container');
         if (c) {
+            // Remove apenas reações personalizadas; mantém o card fixo de Ataque de Oportunidade
+            Array.from(c.querySelectorAll('.combat-card--reacao:not([data-oportunidade])')).forEach(el => el.remove());
             data.reacoes.forEach(r => {
                 const nome = (r.fields && r.fields[`reacao-nome-${r.id}`]) || '';
                 const desc = (r.fields && r.fields[`reacao-desc-${r.id}`]) || '';

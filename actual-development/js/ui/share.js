@@ -4,7 +4,8 @@ import {
     getUserByEmail,
     updateSheetSharing,
     addToUserSharedSheets,
-    removeFromUserSharedSheets
+    removeFromUserSharedSheets,
+    transferSheetOwnership
 } from '../core/firebase-service.js';
 
 // Estado local do popup
@@ -47,6 +48,9 @@ export function initSharePopup(sheetId, user, sheetDoc) {
 
     document.getElementById('copy-link-btn')
         ?.addEventListener('click', handleCopyLink);
+
+    document.getElementById('share-transfer-btn')
+        ?.addEventListener('click', handleTransferOwnership);
 }
 
 function openSharePopup() {
@@ -173,11 +177,13 @@ async function handleAddUser() {
     }
 
     status.textContent = 'Buscando usuário…';
+    document.getElementById('share-add-btn').disabled = true;
 
     try {
         const found = await getUserByEmail(email);
         if (!found) {
-            status.textContent = 'Usuário não encontrado. Ele precisa ter conta no site.';
+            status.textContent =
+                'Usuário não encontrado. O usuário precisa ter acessado o site pelo menos uma vez.';
             return;
         }
 
@@ -201,6 +207,8 @@ async function handleAddUser() {
     } catch (err) {
         console.error('[Share] Erro ao adicionar:', err);
         status.textContent = 'Erro ao adicionar usuário. Tente novamente.';
+    } finally {
+        document.getElementById('share-add-btn').disabled = false;
     }
 }
 
@@ -241,6 +249,51 @@ async function handleRemoveUser(uid, email) {
         renderSharePopup();
     } catch (err) {
         console.error('[Share] Erro ao remover:', err);
+    }
+}
+
+async function handleTransferOwnership() {
+    const emailInput = document.getElementById('share-transfer-email');
+    const status = document.getElementById('share-transfer-status');
+    const btn = document.getElementById('share-transfer-btn');
+
+    const email = emailInput.value.trim().toLowerCase();
+    status.className = 'share-status-msg';
+
+    if (!email) { status.textContent = 'Digite o e-mail do novo dono.'; return; }
+    if (email === (_user.email || '').toLowerCase()) {
+        status.textContent = 'Você já é o dono desta ficha.';
+        return;
+    }
+
+    const confirmado = confirm(
+        `Transferir a propriedade desta ficha para "${email}"?\n\nVocê passará a ser colaborador com permissão de edição. Esta ação não pode ser desfeita facilmente.`
+    );
+    if (!confirmado) return;
+
+    status.textContent = 'Buscando usuário…';
+    btn.disabled = true;
+
+    try {
+        const found = await getUserByEmail(email);
+        if (!found) {
+            status.textContent = 'Usuário não encontrado. O usuário precisa ter acessado o site pelo menos uma vez.';
+            return;
+        }
+
+        await transferSheetOwnership(_sheetId, found.uid, found.email, {
+            uid: _user.uid,
+            email: _user.email
+        });
+
+        status.className = 'share-status-msg share-status-ok';
+        status.textContent = 'Propriedade transferida com sucesso! Recarregando…';
+        setTimeout(() => window.location.reload(), 1500);
+    } catch (err) {
+        console.error('[Share] Erro ao transferir propriedade:', err);
+        status.textContent = 'Erro ao transferir. Tente novamente.';
+    } finally {
+        btn.disabled = false;
     }
 }
 

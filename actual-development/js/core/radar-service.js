@@ -54,6 +54,16 @@ export function getRadarAttrWrap(attr) {
     return null;
 }
 
+/**
+ * Ajusta o maxPoints do radarInstance em `delta` unidades.
+ * Usado para refletir bônus de herança (Aprendizado da Vida) no contador.
+ */
+export function adjustRadarMaxPoints(delta) {
+    if (!radarInstance) return;
+    radarInstance.maxPoints = Math.max(0, radarInstance.maxPoints + delta);
+    radarInstance.updateTotal();
+}
+
 export function getAtributoTotal(attr) {
     const wrap = getRadarAttrWrap(attr);
     if (!wrap) return 0;

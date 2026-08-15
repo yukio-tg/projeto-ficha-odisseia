@@ -14,7 +14,7 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=Habibi&family=Jost:ital,wght@0,100..900;1,100..900&family=UnifrakturCook:wght@700&display=swap"
         rel="stylesheet">
     <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,add_photo_alternate,apparel,arrow_drop_down,arrow_right,auto_awesome,backpack,block,calculate,category_search,check,close,cloud_alert,content_copy,crown,delete,drag_indicator,earthquake,edit,edit_note,expand_less,expand_more,format_align_center,format_align_left,format_align_right,format_bold,format_clear,format_italic,format_list_bulleted,format_list_numbered,format_strikethrough,format_underlined,group_add,home,logout,person,person_add,person_remove,photo_library,progress_activity,redo,remove,save,search,shield,shopping_bag,stat_1,stat_minus_1,swords,text_fields,title,undo,visibility,warning"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,add_photo_alternate,apparel,arrow_drop_down,arrow_right,auto_awesome,backpack,block,calculate,category_search,check,close,cloud_alert,content_copy,crown,delete,drag_indicator,earthquake,edit,edit_note,expand_less,expand_more,format_align_center,format_align_left,format_align_right,format_bold,format_clear,format_italic,format_list_bulleted,format_list_numbered,format_strikethrough,format_underlined,group_add,groups,home,logout,person,person_add,person_remove,photo_library,progress_activity,redo,remove,save,search,shield,shopping_bag,stat_1,stat_minus_1,swords,text_fields,title,undo,visibility,warning"
         rel="stylesheet" />
     <link rel="stylesheet" href="css/style-main.css">
     <style>
@@ -63,24 +63,30 @@
                 <div class="header-body">
                     <div class="header-crest">⚜</div>
                     <div class="header-text">
-                        <div class="header-title">Nome</div>
-                        <div class="header-eyebrow">Título</div>
+                        <div class="header-title"></div>
+                        <div class="header-eyebrow"></div>
                     </div>
                     <div class="header-info">
                         <div class="header-login">
                             <div class="owner-sheet">
                                 <span class="material-symbols-outlined"
                                     style="font-variation-settings: 'FILL' 1;">crown</span>
-                                <div class="owner-account-name">Ywalrabdulaba</div>
+                                <div class="owner-account-name">—</div>
                             </div>
                             <div class="logged">
                                 <span class="material-symbols-outlined"
                                     style="font-variation-settings: 'FILL' 1;">person</span>
-                                <div class="your-account-name">dantagata2018@mgialc,aidnawduabw</div>
+                                <div class="your-account-name"></div>
                             </div>
                             <div class="not-logged">
                                 Você não está logado, volte ao <a href="/index.html">Dashboard</a> e realize seu
                                 login
+                            </div>
+                            <!-- Indicador de presença: quem mais está vendo a ficha agora -->
+                            <div id="presence-indicator" class="presence-indicator" style="display:none">
+                                <span class="material-symbols-outlined"
+                                    style="font-variation-settings: 'FILL' 1;">groups</span>
+                                <span id="presence-list" class="presence-list"></span>
                             </div>
                         </div>
                         <div class="header-buttons">
@@ -891,18 +897,30 @@
                 <!-- Adicionar pessoa -->
                 <div class="share-add-user">
                     <div class="share-section-title">Adicionar pessoa</div>
-                    <div class="share-add-row">
-                        <input type="email" id="share-email-input"
-                               class="share-email-input" placeholder="email@exemplo.com">
+                    <input type="email" id="share-email-input"
+                           class="share-email-input" placeholder="email@exemplo.com">
+                    <div class="share-add-controls">
                         <select id="share-perm-select" class="share-perm-select">
                             <option value="read">Leitura</option>
                             <option value="edit">Edição</option>
                         </select>
+                        <button id="share-add-btn" class="share-action-btn">
+                            <span class="material-symbols-outlined">person_add</span> Adicionar
+                        </button>
                     </div>
-                    <button id="share-add-btn" class="share-action-btn">
-                        <span class="material-symbols-outlined">person_add</span> Adicionar
-                    </button>
                     <div id="share-add-status" class="share-status-msg"></div>
+                </div>
+
+                <!-- Transferir Propriedade -->
+                <div class="share-transfer-section">
+                    <div class="share-section-title">Transferir Propriedade</div>
+                    <p class="share-transfer-info">Após a transferência, você passará a ser colaborador com permissão de edição.</p>
+                    <input type="email" id="share-transfer-email"
+                           class="share-email-input" placeholder="email@novo-dono.com">
+                    <button id="share-transfer-btn" class="share-action-btn share-action-btn--danger">
+                        <span class="material-symbols-outlined">groups</span> Transferir propriedade
+                    </button>
+                    <div id="share-transfer-status" class="share-status-msg"></div>
                 </div>
 
             </div>
