@@ -26,9 +26,12 @@ import {
 } from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { initSharePopup } from './ui/share.js';
+import { initThemePanel } from './ui/theme.js';
+import { addManualOverride } from './core/state.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
 let suppressSave = false;
+let autoSaveEnabled = true;
 let saveTimer = null;
 let currentUser = null;
 let currentSheetId = null;
@@ -65,10 +68,42 @@ function showError(msg) {
     document.getElementById('non-saved')?.style.setProperty('display', 'none');
 }
 
+/**
+ * Recursively converts any nested arrays (arrays inside arrays) into plain objects.
+ * Firestore does not support nested arrays; this is a defensive sanitizer.
+ * Also logs warnings to the console so the root cause can be identified.
+ */
+function sanitizeForFirestore(value, path = '') {
+    if (Array.isArray(value)) {
+        // Detect nested arrays (arrays containing arrays)
+        if (value.some(item => Array.isArray(item))) {
+            const firstItem = value[0];
+            // If it looks like Map.entries() → [[key, val], ...], convert to object
+            if (Array.isArray(firstItem) && firstItem.length === 2 && typeof firstItem[0] === 'string') {
+                console.warn(`[Save] Nested array (Map-entries format) at "${path}", converting to object.`);
+                return Object.fromEntries(value.map(([k, v]) => [k, sanitizeForFirestore(v, `${path}.${k}`)]));
+            }
+            // Generic nested array: convert to indexed object
+            console.warn(`[Save] Nested array at "${path}", converting to indexed object.`);
+            return Object.fromEntries(value.map((item, i) => [String(i), sanitizeForFirestore(item, `${path}[${i}]`)]));
+        }
+        return value.map((item, i) => sanitizeForFirestore(item, `${path}[${i}]`));
+    }
+    if (value !== null && typeof value === 'object' && !(value instanceof Date)) {
+        const result = {};
+        for (const [k, v] of Object.entries(value)) {
+            result[k] = sanitizeForFirestore(v, path ? `${path}.${k}` : k);
+        }
+        return result;
+    }
+    return value;
+}
+
 async function performSave() {
     if (!currentUser || !currentSheetId) return;
     try {
-        const data = serializeSheet();
+        const rawData = serializeSheet();
+        const data = sanitizeForFirestore(rawData); // defensive: removes any remaining nested arrays
         const name = data.fields?.['personagem-nome'] || 'Sem nome';
         if (currentPermission === 'owner') {
             await saveSheetData(currentSheetId, currentUser.uid, name, data);
@@ -87,7 +122,7 @@ async function performSave() {
 }
 
 function triggerAutoSave() {
-    if (suppressSave) return;
+    if (suppressSave || !autoSaveEnabled) return;
     showNonSaved();
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
@@ -116,6 +151,27 @@ function applyReadOnlyMode(ownerEmail) {
     suppressSave = true;
     document.body.classList.add('mode-readonly');
 
+    // Prevent scroll-wheel from changing number input values.
+    // We check document.activeElement (focused element) because the browser changes the FOCUSED
+    // number input on wheel, not necessarily the one under the cursor (e.target).
+    document.addEventListener('wheel', (e) => {
+        const focused = document.activeElement;
+        if (focused instanceof HTMLInputElement && focused.type === 'number') {
+            e.preventDefault();
+            focused.blur();
+        }
+        // Also block direct hover-scroll on number inputs
+        if (e.target instanceof HTMLInputElement && e.target.type === 'number') {
+            e.preventDefault();
+        }
+    }, { passive: false, capture: true });
+
+    // Remove tabindex from all focusable form elements so TAB-navigation can't reach them
+    // (focused elements can still be scrolled to change their value)
+    document.querySelectorAll('input, select, textarea, button').forEach(el => {
+        el.setAttribute('tabindex', '-1');
+    });
+
     // Desabilita o editor de anotações (contenteditable não é bloqueado por pointer-events)
     const anotEditor = document.getElementById('anot-editor');
     if (anotEditor) anotEditor.contentEditable = 'false';
@@ -123,6 +179,7 @@ function applyReadOnlyMode(ownerEmail) {
     // Oculta controles de edição no header
     document.getElementById('manual-save')?.closest('.header-save')?.style.setProperty('display', 'none');
     document.getElementById('autocalc-switch')?.closest('.header-autocalc')?.style.setProperty('display', 'none');
+    document.getElementById('autosave-switch')?.closest('.header-autosave')?.style.setProperty('display', 'none');
     document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'none');
 
     // Exibe banner de leitura
@@ -321,6 +378,21 @@ function wireCalculations() {
             classeInput.addEventListener('change', () => { if (autoCalcEnabled) calcStats(); });
         }
 
+        // Detect when user manually edits auto-calculated fields → preserve their values
+        const CALC_FIELDS = [
+            'pv-total', 'pv-atual', 'mana-total', 'mana-atual',
+            'pt-total', 'la-total', 'la-atual', 'inv-total',
+            'fe-total', 'fe-atual', 'inertidao-base'
+        ];
+        CALC_FIELDS.forEach(field => {
+            document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
+                el.addEventListener('input', (e) => {
+                    // e.isTrusted = true only for real user interactions (not programmatic dispatches)
+                    if (e.isTrusted) addManualOverride(field);
+                });
+            });
+        });
+
         atualizarInertidao();
         atualizarHeranca();
         updateVisibilityByLevel();
@@ -335,6 +407,9 @@ function wireCalculations() {
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Aplica o tema salvo antes de qualquer carregamento para evitar flash
+    initThemePanel(new URLSearchParams(window.location.search).get('sheetId'));
+
     initFirebase();
 
     const user = await waitForAuth();
@@ -431,6 +506,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             setAutoCalcEnabled(!autoCalcEnabled);
             autocalcBtn.classList.toggle('active', autoCalcEnabled);
             if (autoCalcEnabled) { atualizarHeranca(); atualizarPericias(true); }
+        });
+    }
+
+    // Botão de toggle de auto-save
+    const autoSaveBtn = document.getElementById('autosave-switch');
+    if (autoSaveBtn) {
+        autoSaveBtn.addEventListener('click', () => {
+            autoSaveEnabled = !autoSaveEnabled;
+            autoSaveBtn.classList.toggle('active', autoSaveEnabled);
+            autoSaveBtn.title = autoSaveEnabled ? 'Auto-save ativado' : 'Auto-save desativado';
         });
     }
 

@@ -1,5 +1,5 @@
 import { getNivel, getAtributoTotal } from './radar-service.js';
-import { autoCalcEnabled } from './state.js';
+import { autoCalcEnabled, manualOverrides } from './state.js';
 import { refreshAllBars } from '../ui/vitals.js';
 
 export const INERTIDAO_TAMANHO = {
@@ -13,6 +13,7 @@ export const INERTIDAO_TAMANHO = {
 
 export function atualizarInertidao() {
     if (!autoCalcEnabled) return;
+    if (manualOverrides.has('inertidao-base')) return;
     const nivel = getNivel();
     const tamanho = document.querySelector('[data-field="tamanho"]')?.value || 'tam-medio';
     const bonus = INERTIDAO_TAMANHO[tamanho] ?? 7;
@@ -47,21 +48,30 @@ function atualizarVital(prefix, maxVal, skipAtualUpdate = false) {
     const oldMax = parseInt(maxInput.value) || 0;
     const oldAtual = parseInt(atualInput.value) || 0;
 
-    if (!skipAtualUpdate) {
-        // Comportamento original: se estava cheio ou zerado, atualiza para o novo máximo
-        if (oldAtual === oldMax || (oldMax === 0 && oldAtual === 0)) {
-            atualInput.value = maxVal;
-        } else if (oldAtual > maxVal) {
-            atualInput.value = maxVal;
+    const totalManual = manualOverrides.has(`${prefix}-total`);
+    const atualManual = manualOverrides.has(`${prefix}-atual`);
+
+    // Effective max: use manually-set value if overridden, otherwise the computed one
+    const effectiveMax = totalManual ? oldMax : maxVal;
+
+    if (!atualManual) {
+        if (!skipAtualUpdate) {
+            // Comportamento original: se estava cheio ou zerado, atualiza para o novo máximo
+            if (oldAtual === oldMax || (oldMax === 0 && oldAtual === 0)) {
+                atualInput.value = effectiveMax;
+            } else if (oldAtual > effectiveMax) {
+                atualInput.value = effectiveMax;
+            }
+        } else {
+            // Para PT: só assegura que atual não seja negativo e não ultrapasse novo máximo
+            if (oldAtual > effectiveMax) atualInput.value = effectiveMax;
+            if (oldAtual < 0) atualInput.value = 0;
         }
-    } else {
-        // Para PT: só assegura que atual não seja negativo e não ultrapasse novo máximo
-        if (oldAtual > maxVal) {
-            atualInput.value = maxVal;
-        }
-        if (oldAtual < 0) atualInput.value = 0;
     }
-    maxInput.value = maxVal;
+
+    if (!totalManual) {
+        maxInput.value = maxVal;
+    }
 }
 
 // ---------- Controle de classe de overflow do PT ----------
@@ -161,11 +171,11 @@ export function calcStats() {
 
     // Atualiza o campo total na interface e dispara evento
     const invTotalInput = document.querySelector('[data-field="inv-total"]');
-    if (invTotalInput) {
+    if (invTotalInput && !manualOverrides.has('inv-total')) {
         invTotalInput.value = invMax;
         invTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    // Exporta o limite para outros módulos (ex: inventory.js)
+    // Exporta o limite para outros módulos (ex: inventory.js) — sempre atualiza o limite interno
     calculatedLimits.inv = invMax;
 
     const alinhamento = document.querySelector('[data-field="alinhamento-nome"]')?.value.trim().toLowerCase() || 'nenhum';
@@ -207,32 +217,26 @@ export function calcStats() {
     // Só atualiza o total e garante que o atual não ultrapasse o novo máximo
     // mas NÃO sobrescreve o atual com o máximo (o atual é controlado pelos cards de poder)
     const ptTotalInput = document.querySelector('[data-field="pt-total"]');
-    if (ptTotalInput) {
+    if (ptTotalInput && !manualOverrides.has('pt-total')) {
         ptTotalInput.value = ptMax;
     }
-    calculatedLimits.pt = ptMax;
-
-    // Atualiza o limite exportado
     calculatedLimits.pt = ptMax;
     calculatedLimits.inv = invMax;
     calculatedLimits.la = laMax;
 
     // ===== TRATAMENTO ESPECIAL PARA LA =====
     const laTotalInput = document.querySelector('[data-field="la-total"]');
-    if (laTotalInput) {
-        const oldTotal = parseInt(laTotalInput.value) || 0;
+    if (laTotalInput && !manualOverrides.has('la-total')) {
         laTotalInput.value = laMax;
         // Dispara evento 'input' para que o watcher de magias.js reaja ao novo total
         laTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     const laAtualInput = document.querySelector('[data-field="la-atual"]');
-    if (laAtualInput) {
+    if (laAtualInput && !manualOverrides.has('la-atual')) {
         let oldAtual = parseInt(laAtualInput.value) || 0;
         let novoAtual = oldAtual;
-        if (oldAtual > laMax) {
-            novoAtual = laMax;
-        }
+        if (oldAtual > laMax) novoAtual = laMax;
         if (novoAtual < 0) novoAtual = 0;
         if (novoAtual !== oldAtual) {
             laAtualInput.value = novoAtual;
@@ -247,16 +251,18 @@ export function calcStats() {
         if (feMaxInput) {
             const oldMax = parseInt(feMaxInput.value) || 0;
             const oldAtual = feAtualInput ? parseInt(feAtualInput.value) || 0 : 0;
-            if (oldAtual === oldMax || oldMax === 0) {
-                if (feAtualInput) feAtualInput.value = feMax;
-            } else if (oldAtual > feMax) {
-                if (feAtualInput) feAtualInput.value = feMax;
+            if (!manualOverrides.has('fe-atual') && feAtualInput) {
+                if (oldAtual === oldMax || oldMax === 0) {
+                    feAtualInput.value = feMax;
+                } else if (oldAtual > feMax) {
+                    feAtualInput.value = feMax;
+                }
             }
-            feMaxInput.value = feMax;
+            if (!manualOverrides.has('fe-total')) feMaxInput.value = feMax;
         }
     } else {
         const feMaxInput = document.querySelector('[data-field="fe-total"]');
-        if (feMaxInput) feMaxInput.value = 0;
+        if (feMaxInput && !manualOverrides.has('fe-total')) feMaxInput.value = 0;
     }
 
     // Reaplica classe de overflow (caso pt-total tenha mudado)

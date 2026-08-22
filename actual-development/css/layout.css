@@ -17,7 +17,7 @@
     display: flex;
     flex-direction: column;
     padding: 16px 0 16px;
-    background: linear-gradient(180deg, var(--leath1) 0%, var(--leath0) 60%, #0e0700 100%);
+    background: linear-gradient(180deg, var(--leath1) 0%, var(--leath0) 100%);
     z-index: 10;
     border-right: 1px solid var(--leath3);
     box-shadow: inset -4px 0 12px rgba(0, 0, 0, 0.4);
@@ -37,7 +37,7 @@
 .sidebar-logo {
     text-align: center;
     padding: 0 8px 18px;
-    border-bottom: 1px solid rgba(138, 78, 32, 0.35);
+    border-bottom: 1px solid color-mix(in srgb, var(--leath4) 35%, transparent);
     margin-bottom: 14px;
     position: relative;
 }
@@ -63,7 +63,7 @@
     color: var(--gold2);
     display: block;
     margin-bottom: 6px;
-    text-shadow: 0 0 20px rgba(232, 184, 74, 0.6), 0 0 40px rgba(232, 184, 74, 0.2);
+    text-shadow: 0 0 20px color-mix(in srgb, var(--gold2) 60%, transparent), 0 0 40px color-mix(in srgb, var(--gold2) 20%, transparent);
     transition: all .2s;
 }
 
@@ -79,7 +79,7 @@
 
 a span:hover {
     color: var(--gold3);
-    text-shadow: 0 0 24px rgba(245, 216, 120, 0.8);
+    text-shadow: 0 0 24px color-mix(in srgb, var(--gold3) 80%, transparent);
 }
 
 .tab-list {
@@ -108,13 +108,13 @@ a span:hover {
 }
 
 .tab-list li:hover {
-    background: rgba(98, 52, 20, 0.5);
+    background: color-mix(in srgb, var(--leath3) 50%, transparent);
     color: var(--gold2);
     padding-left: 15px;
 }
 
 .tab-list li.active {
-    background: linear-gradient(90deg, #f0e4c0 0%, #f7ecd4 100%);
+    background: linear-gradient(90deg, var(--p1) 0%, var(--p0) 100%);
     color: var(--ink0);
     font-weight: 700;
     padding-left: 13px;
@@ -136,7 +136,7 @@ a span:hover {
 /* Sidebar bottom ornament */
 .sidebar-bottom {
     padding: 14px 8px 0;
-    border-top: 1px solid rgba(138, 78, 32, 0.3);
+    border-top: 1px solid color-mix(in srgb, var(--leath4) 30%, transparent);
     text-align: center;
     color: var(--leath3);
     font-size: 16px;
@@ -223,9 +223,9 @@ a span:hover {
     box-shadow:
         0 0 0 3px var(--leath0),
         0 0 0 5px var(--gold0),
-        0 0 20px rgba(196, 137, 42, 0.3);
+        0 0 20px color-mix(in srgb, var(--gold1) 30%, transparent);
     color: var(--gold2);
-    text-shadow: 0 0 16px rgba(232, 184, 74, 0.7);
+    text-shadow: 0 0 16px color-mix(in srgb, var(--gold2) 70%, transparent);
 }
 
 .header-text {
@@ -251,7 +251,7 @@ a span:hover {
     line-height: 1;
     text-shadow:
         0 2px 12px rgba(0, 0, 0, 0.8),
-        0 0 30px rgba(196, 137, 42, 0.3);
+        0 0 30px color-mix(in srgb, var(--gold1) 30%, transparent);
 }
 
 .header-info {
@@ -318,6 +318,7 @@ a span:hover {
 }
 
 #autocalc-switch,
+#autosave-switch,
 #manual-save {
     background: none;
     border: none;
@@ -330,6 +331,7 @@ a span:hover {
 }
 
 #autocalc-switch.active,
+#autosave-switch.active,
 #manual-save.active {
     font-variation-settings: 'FILL' 1;
     opacity: 1;
@@ -337,6 +339,7 @@ a span:hover {
 }
 
 #autocalc-switch:hover,
+#autosave-switch:hover,
 #manual-save:hover {
     font-variation-settings: 'FILL' 1;
     opacity: 0.9;
@@ -345,9 +348,16 @@ a span:hover {
 }
 
 #autocalc-switch:active,
+#autosave-switch:active,
 #manual-save:active {
     color: var(--gold3);
     text-shadow: 0 0 2px var(--gold3);
+}
+
+/* Autosave disabled state */
+#autosave-switch:not(.active) {
+    opacity: 0.4;
+    color: var(--leath4);
 }
 
 /* SCROLL WRAPPER */

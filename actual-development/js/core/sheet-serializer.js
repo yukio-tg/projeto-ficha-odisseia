@@ -10,6 +10,7 @@ import { getItemEffectsState, setItemEffectsState } from './item-effects.js';
 import { getAnotacoesState, setAnotacoesState } from '../ui/anotacoes.js';
 import { getBestasState, setBestasState } from '../ui/besta.js';
 import { getRadarAttrWrap } from './radar-service.js';
+import { manualOverrides } from './state.js';
 
 const ATTRS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 
@@ -94,11 +95,17 @@ export function serializeSheet() {
         itemEffects: getItemEffectsState(),
         anotacoes: getAnotacoesState(),
         bestas: getBestasState(),
+        manualOverrides: Array.from(manualOverrides),
     };
 }
 
 export function deserializeSheet(data) {
     if (!data) return;
+    // Restore manual overrides FIRST so calc functions respect them during deserialization
+    manualOverrides.clear();
+    if (Array.isArray(data.manualOverrides)) {
+        data.manualOverrides.forEach(f => manualOverrides.add(f));
+    }
     deserializeFields(data.fields);
     deserializeRadar(data.radar);
     if (data.pericias) setSkillsState(data.pericias);

@@ -559,27 +559,43 @@ export function onItemAdded(cardId, category, itemData) {
 function saveItemEffectsState() { /* substituído por auto-save Firebase */ }
 
 export function getItemEffectsState() {
-    const fontesSerial = Array.from(activeFontes.entries()).map(([k, f]) => [k, {
-        ...f,
-        spells: (f.spells || []).map(({ cardRef: _cr, ...rest }) => rest)
-    }]);
+    // Use plain objects instead of arrays-of-arrays to avoid Firestore nested-array restriction
+    const fontesObj = {};
+    activeFontes.forEach((f, k) => {
+        fontesObj[k] = {
+            ...f,
+            spells: (f.spells || []).map(({ cardRef: _cr, ...rest }) => rest)
+        };
+    });
     return {
-        weapons: Array.from(activeWeapons.entries()),
-        protections: Array.from(activeProtections.entries()),
-        fontes: fontesSerial
+        weapons: Object.fromEntries(activeWeapons),
+        protections: Object.fromEntries(activeProtections),
+        fontes: fontesObj
     };
 }
 
 export function setItemEffectsState(state) {
     if (!state) return;
     try {
-        if (state.weapons) state.weapons.forEach(([k, v]) => activeWeapons.set(k, v));
+        if (state.weapons) {
+            // Support both legacy array format [[k,v],...] and new object format {k:v,...}
+            const entries = Array.isArray(state.weapons)
+                ? state.weapons
+                : Object.entries(state.weapons);
+            entries.forEach(([k, v]) => activeWeapons.set(k, v));
+        }
         if (state.protections) {
-            state.protections.forEach(([k, v]) => activeProtections.set(k, v));
+            const entries = Array.isArray(state.protections)
+                ? state.protections
+                : Object.entries(state.protections);
+            entries.forEach(([k, v]) => activeProtections.set(k, v));
             recalcProtectionBonuses();
         }
         if (state.fontes) {
-            state.fontes.forEach(([k, v]) => {
+            const entries = Array.isArray(state.fontes)
+                ? state.fontes
+                : Object.entries(state.fontes);
+            entries.forEach(([k, v]) => {
                 v.spells = (v.spells || []).map(s => ({ ...s, cardRef: null }));
                 activeFontes.set(k, v);
             });
