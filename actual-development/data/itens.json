@@ -95,7 +95,7 @@
     {
       "nome": "Escudo Leve",
       "categoria": "proteção",
-      "peso": 6,
+      "peso": 3,
       "raridade": "comum",
       "descricao": "Escudos de madeira, pequenos e leves. Criados para evitar estocadas e evitar brechas contra inimigos. Eles precisam ser empunhados em pelo menos uma das mãos para oferecer os benefícios, além disso, estes acumulam com armaduras.",
       "defesa": 2,
@@ -134,7 +134,7 @@
       "nome": "Flecha/Virote",
       "categoria": "básico",
       "peso": 1,
-      "raridade": "comum",
+      "raridade": "banal",
       "descricao": "Uma aljava que contém 20 flechas/virotes que estarão à disposição de seu usuário. Flechas são a munição de Arcos Curtos e Arcos Longos, enquanto virotes são a munição de Balestras Leves e Balestras Grandes. Independentemente de como for, os Virotes e Flechas ocupam a mesma categoria no sistema e por isso são tratados como um só. Mas isso não significa que possam ser utilizados um no outro, ao escolher esta munição, decida a quantidade de Flechas ou Virotes que a aljava possuirá."
     },
 

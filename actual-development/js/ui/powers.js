@@ -496,7 +496,7 @@ export function removerPoderHeranca() {
 export function adicionarPoderHeranca(poderData) {
     if (!containerCards) return;
     removerPoderHeranca();
-    const card = criarCardPower(poderData, '', poderData.cor || 'Rosa');
+    const card = criarCardPower(poderData, '', poderData.cor || 'Verde');
     _marcarComoPoderHeranca(card);
     containerCards.appendChild(card);
     atualizarTotalPt();
