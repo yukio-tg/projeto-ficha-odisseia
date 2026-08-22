@@ -13,11 +13,13 @@ body {
 
 body {
     min-height: 100%;
-    background: var(--leath0);
+    background-color: var(--leath0);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 10% 20%,  color-mix(in srgb, var(--leath2) 70%, black) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 90% 80%,  color-mix(in srgb, var(--leath1) 60%, black) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%,  color-mix(in srgb, var(--leath1) 45%, black) 0%, transparent 70%);
+    background-attachment: fixed;
+    background-size: cover;
     font-family: 'IM Fell English', Georgia, serif;
     color: var(--ink0);
-    background-image:
-        radial-gradient(ellipse 80% 60% at 10% 20%, #2e1200 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 90% 80%, #180800 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 50% 50%, #120900 0%, transparent 70%);
 }

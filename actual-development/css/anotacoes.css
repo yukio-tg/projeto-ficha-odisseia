@@ -17,7 +17,7 @@
     align-items: center;
     gap: 9px;
     padding: 10px 14px 9px;
-    background: linear-gradient(90deg, rgba(92, 14, 7, 0.07), transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--blood0) 7%, transparent), transparent);
     border-bottom: 1px solid var(--p3);
 }
 
@@ -42,7 +42,7 @@
     align-items: center;
     gap: 2px;
     padding: 6px 10px;
-    background: rgba(200, 170, 100, 0.12);
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
     border-bottom: 1px solid var(--p3);
 }
 
@@ -65,13 +65,13 @@
 }
 
 .anot-toolbar-btn:hover {
-    background: rgba(138, 24, 16, 0.1);
+    background: color-mix(in srgb, var(--blood1) 10%, transparent);
     border-color: var(--p3);
     color: var(--blood1);
 }
 
 .anot-toolbar-btn.active {
-    background: rgba(138, 24, 16, 0.18);
+    background: color-mix(in srgb, var(--blood1) 18%, transparent);
     border-color: var(--blood1);
     color: var(--blood0);
 }
@@ -114,7 +114,7 @@
     color: var(--blood1);
     text-transform: uppercase;
     margin: 14px 0 6px;
-    border-bottom: 1px solid rgba(200, 170, 100, 0.4);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold2) 40%, transparent);
     padding-bottom: 4px;
 }
 
@@ -154,7 +154,7 @@
     align-items: center;
     gap: 9px;
     padding: 10px 14px 9px;
-    background: linear-gradient(90deg, rgba(92, 14, 7, 0.07), transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--blood0) 7%, transparent), transparent);
     border-bottom: 1px solid var(--p3);
 }
 
@@ -185,7 +185,7 @@
     flex-wrap: wrap;
     gap: 8px;
     padding: 12px 14px;
-    background: rgba(200, 170, 100, 0.08);
+    background: color-mix(in srgb, var(--gold1) 8%, transparent);
     border-bottom: 1px solid var(--p3);
     align-items: center;
 }
@@ -234,8 +234,8 @@
     gap: 5px;
     padding: 0 14px;
     height: 32px;
-    background: linear-gradient(135deg, var(--blood1), var(--blood0));
-    color: var(--p0);
+    background: linear-gradient(135deg, var(--gold1), var(--gold2));
+    color: var(--ink0);
     border: none;
     border-radius: 5px;
     font-family: 'Cinzel', serif;
@@ -250,7 +250,7 @@
 
 .anot-gallery-add-btn:hover {
     opacity: 0.88;
-    box-shadow: 0 2px 8px rgba(92, 14, 7, 0.4);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--gold1) 40%, transparent);
 }
 
 .anot-gallery-add-btn .material-symbols-outlined {
@@ -307,13 +307,13 @@
     object-fit: cover;
     cursor: zoom-in;
     display: block;
-    background: rgba(200, 170, 100, 0.15);
+    background: color-mix(in srgb, var(--gold1) 15%, transparent);
 }
 
 .anot-gallery-img-broken {
     aspect-ratio: 4 / 3;
     width: 100%;
-    background: rgba(200, 170, 100, 0.12)
+    background: color-mix(in srgb, var(--gold1) 12%, transparent)
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23c8aa64' stroke-width='1.5'%3E%3Cpath d='M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z'/%3E%3Cpolyline points='13 2 13 9 20 9'/%3E%3C%3E%3C/svg%3E")
         no-repeat center center;
     cursor: default;
@@ -354,7 +354,7 @@
 
 .anot-gallery-del:hover {
     color: var(--blood2);
-    background: rgba(181, 36, 24, 0.1);
+    background: color-mix(in srgb, var(--blood2) 10%, transparent);
 }
 
 .anot-gallery-del .material-symbols-outlined {
@@ -394,7 +394,7 @@
     top: -36px;
     right: 0;
     background: none;
-    border: 1px solid rgba(200, 170, 100, 0.4);
+    border: 1px solid color-mix(in srgb, var(--gold1) 40%, transparent);
     border-radius: 4px;
     color: var(--p1);
     cursor: pointer;
@@ -405,7 +405,7 @@
 }
 
 .anot-lightbox-close:hover {
-    background: rgba(200, 170, 100, 0.15);
+    background: color-mix(in srgb, var(--gold1) 15%, transparent);
     color: var(--gold3);
 }
 

@@ -22,11 +22,12 @@ import {
     initFirebase, waitForAuth, getSheetId,
     loadSheetDoc, saveSheetData, saveSheetDataOnly,
     ensureUserDoc, addToUserSharedSheets,
-    listenToSheet, listenToPresence, updatePresence, deletePresence
+    listenToSheet, listenToPresence, updatePresence, deletePresence,
+    saveSheetTheme, extractSheetTheme
 } from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { initSharePopup } from './ui/share.js';
-import { initThemePanel } from './ui/theme.js';
+import { initThemePanel, applyRemoteTheme, setThemeSaveFn } from './ui/theme.js';
 import { addManualOverride } from './core/state.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
@@ -476,6 +477,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         setTimeout(() => { suppressSave = false; }, 50);
     }
 
+    // Aplica o tema salvo no Firestore (sobrepõe o cache local se houver)
+    const remoteTheme = extractSheetTheme(sheetDoc);
+    if (remoteTheme) applyRemoteTheme(remoteTheme);
+
     wireCalculations();
     updateAuthHeader(user);
 
@@ -492,6 +497,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyReadOnlyMode(ownerEmail);
         return; // sem wires de edição
     }
+
+    // Habilita o save de tema no Firestore (apenas para editores/donos)
+    setThemeSaveFn((theme) => {
+        if (!currentSheetId) return;
+        saveSheetTheme(currentSheetId, theme).catch(e =>
+            console.warn('[Theme] Erro ao salvar tema:', e)
+        );
+    });
 
     // Modo edit ou owner: exibe botão de share apenas para o dono
     if (perm === 'owner') {

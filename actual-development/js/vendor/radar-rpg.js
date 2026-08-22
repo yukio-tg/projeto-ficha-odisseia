@@ -18,15 +18,15 @@ const RadarRPG = (() => {
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap');
 
     .radar-rpg {
-      --gold:            ${DEFAULT_THEME.gold};
-      --gold-light:      ${DEFAULT_THEME.goldLight};
-      --gold-dim:        ${DEFAULT_THEME.goldDim};
-      --crimson:         ${DEFAULT_THEME.crimson};
-      --ink:             ${DEFAULT_THEME.ink};
-      --ink-dim:         ${DEFAULT_THEME.inkDim};
-      --level-color:     ${DEFAULT_THEME.levelColor};
-      --parchment:       ${DEFAULT_THEME.parchment};
-      --parchment-dark:  ${DEFAULT_THEME.parchmentDark};
+      --gold:            var(--gold1, ${DEFAULT_THEME.gold});
+      --gold-light:      var(--gold3, ${DEFAULT_THEME.goldLight});
+      --gold-dim:        var(--gold0, ${DEFAULT_THEME.goldDim});
+      --crimson:         var(--blood2, ${DEFAULT_THEME.crimson});
+      --ink:             var(--ink1,  ${DEFAULT_THEME.ink});
+      --ink-dim:         var(--ink3,  ${DEFAULT_THEME.inkDim});
+      --level-color:     var(--blood2, ${DEFAULT_THEME.levelColor});
+      --parchment:       var(--sheet-bg, ${DEFAULT_THEME.parchment});
+      --parchment-dark:  var(--p1, ${DEFAULT_THEME.parchmentDark});
       font-family: 'IM Fell English', Georgia, serif;
       color: var(--ink);
       width: 100%;
@@ -56,7 +56,7 @@ const RadarRPG = (() => {
       font-size: 0.58rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: #5a3c14;
+      color: var(--ink-dim);
     }
     .radar-rpg .mode-switch {
       position: relative; display: inline-block; width: 32px; height: 16px;
@@ -162,11 +162,11 @@ const RadarRPG = (() => {
       font-size: clamp(0.40rem, 1vw, 0.52rem);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #5a3c14;
+      color: var(--ink-dim);
       opacity: 0.85;
       pointer-events: none;
       white-space: nowrap;
-      text-shadow: 0 0 4px #f4e8c8, 0 1px 2px rgba(0,0,0,0.4);
+      text-shadow: 0 0 4px var(--parchment), 0 1px 2px rgba(0,0,0,0.4);
     }
     .radar-rpg .mod-input {
       pointer-events: all;
@@ -175,7 +175,7 @@ const RadarRPG = (() => {
       background: rgba(14, 9, 3, 0.9);
       border: 1px solid;
       border-radius: 3px;
-      color: #f5d878;
+      color: var(--gold-light);
       font-family: 'Cinzel', serif;
       font-size: clamp(0.54rem, 1.2vw, 0.70rem);
       font-weight: 700;
@@ -219,7 +219,7 @@ const RadarRPG = (() => {
 
     .radar-rpg .hex-svg {
       position: absolute; top: 0; left: 0; pointer-events: none;
-      filter: drop-shadow(0 0 5px rgba(196,137,42,0.55));
+      filter: drop-shadow(0 0 5px color-mix(in srgb, var(--gold) 55%, transparent));
     }
 
     /* Level arc SVG — outside the hex, shows level 1-20 progress */
@@ -298,15 +298,19 @@ const RadarRPG = (() => {
     .radar-rpg .total-label {
       font-family: 'Cinzel', serif;
       font-size: 0.62rem;
-      color: #5a3c14;
+      color: var(--ink-dim);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
     .radar-rpg .total-value {
       font-family: 'Cinzel Decorative', serif;
       font-size: 0.95rem;
-      color: #3a2208;
+      color: var(--ink);
       text-shadow: none;
+    }
+    .radar-rpg .total-value.over-budget {
+      color: var(--crimson);
+      text-shadow: 0 0 8px color-mix(in srgb, var(--crimson) 30%, transparent);
     }
 
     /* ── Level legend below radar ── */
@@ -320,7 +324,7 @@ const RadarRPG = (() => {
       font-size: 0.55rem;
       letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: #6b4820;
+      color: var(--ink-dim);
     }
     .radar-rpg .level-legend-tier {
       padding: 1px 6px;
@@ -331,9 +335,9 @@ const RadarRPG = (() => {
     }
     .radar-rpg .level-legend-tier.active {
       opacity: 1;
-      color: #8a1810;
-      border-color: #b52418;
-      text-shadow: 0 0 6px rgba(181,36,24,0.4);
+      color: var(--crimson);
+      border-color: var(--crimson);
+      text-shadow: 0 0 6px color-mix(in srgb, var(--crimson) 40%, transparent);
     }
   `;
 
@@ -1114,8 +1118,9 @@ const RadarRPG = (() => {
       const sum = this.values.reduce((a, b) => a + b, 0);
       const over = sum > this.maxPoints;
       this.totalEl.textContent = `${sum} / ${this.maxPoints}`;
-      this.totalEl.style.color = over ? '#8a1810' : '#3a2208';
-      this.totalEl.style.textShadow = over ? '0 0 8px rgba(181,36,24,0.3)' : 'none';
+      this.totalEl.style.color = '';
+      this.totalEl.style.textShadow = '';
+      this.totalEl.classList.toggle('over-budget', over);
     }
 
     // ── ResizeObserver ────────────────────────────────────────────────────────

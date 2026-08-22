@@ -129,7 +129,7 @@ a span:hover {
     top: 15%;
     bottom: 15%;
     width: 3px;
-    background: linear-gradient(180deg, var(--blood0), var(--blood1), var(--blood0));
+    background: linear-gradient(180deg, var(--gold0), var(--gold1), var(--gold0));
     border-radius: 0 2px 2px 0;
 }
 
@@ -171,10 +171,10 @@ a span:hover {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 120% 25% at 50% 0%, rgba(40, 18, 0, 0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 25% 100% at 0% 50%, rgba(50, 22, 0, 0.12) 0%, transparent 100%),
-        radial-gradient(ellipse 25% 100% at 100% 50%, rgba(50, 22, 0, 0.12) 0%, transparent 100%),
-        radial-gradient(ellipse 120% 25% at 50% 100%, rgba(40, 18, 0, 0.10) 0%, transparent 100%);
+        radial-gradient(ellipse 120% 25% at 50% 0%,   color-mix(in srgb, var(--leath3) 18%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 25% 100% at 0% 50%,   color-mix(in srgb, var(--leath3) 12%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 25% 100% at 100% 50%, color-mix(in srgb, var(--leath3) 12%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 120% 25% at 50% 100%, color-mix(in srgb, var(--leath3) 10%, transparent) 0%, transparent 100%);
     pointer-events: none;
     z-index: 0;
 }

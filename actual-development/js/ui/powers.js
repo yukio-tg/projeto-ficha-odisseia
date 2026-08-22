@@ -40,7 +40,7 @@ let cardCounter = 0;
 
 // ---------- Funções auxiliares ----------
 
-function atualizarTotalPt() {
+export function atualizarTotalPt() {
     if (!ptAtualInput) return;
     let soma = 0;
     document.querySelectorAll('.card-power .pt-cost-input').forEach(input => {
@@ -430,6 +430,16 @@ export async function initPowers() {
         if (e.target.classList?.contains('pt-cost-input')) atualizarTotalPt();
     });
 
+    // Listener do sistema de herança: adiciona/remove o poder automaticamente
+    document.addEventListener('heranca:atualizar-poder', (e) => {
+        if (e.detail) {
+            adicionarPoderHeranca(e.detail);
+        } else {
+            removerPoderHeranca();
+        }
+        atualizarTotalPt();
+    });
+
     console.log('[Powers] Inicializado com sucesso');
 }
 
@@ -443,6 +453,7 @@ export function getPowersState() {
         descricao: card.querySelector('.power-desc-textarea')?.value || '',
         cor: card.dataset.cor || 'Vermelho',
         collapsed: card.dataset.collapsed !== 'false',
+        herancaPower: card.dataset.herancaPower === 'true',
     }));
 }
 
@@ -455,8 +466,39 @@ export function setPowersState(data) {
             descricao: p.descricao, cor: p.cor
         }, '', p.cor);
         toggleCard(card, p.collapsed !== false);
+        if (p.herancaPower) _marcarComoPoderHeranca(card);
         containerCards.appendChild(card);
     });
+    atualizarTotalPt();
+    reordenarCards();
+}
+
+// ---------- Herança power ----------
+
+function _marcarComoPoderHeranca(card) {
+    card.dataset.herancaPower = 'true';
+    // Ao remover o card manualmente, desmarca o checkbox habilidadeAdquirida
+    card.querySelector('.btn-remove-power')?.addEventListener('click', () => {
+        const cb = document.querySelector('[data-field="habilidadeAdquirida"]');
+        if (cb && cb.checked) {
+            cb.checked = false;
+            cb.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+}
+
+export function removerPoderHeranca() {
+    if (!containerCards) return;
+    containerCards.querySelectorAll('.card-power[data-heranca-power="true"]').forEach(card => card.remove());
+    atualizarTotalPt();
+}
+
+export function adicionarPoderHeranca(poderData) {
+    if (!containerCards) return;
+    removerPoderHeranca();
+    const card = criarCardPower(poderData, '', poderData.cor || 'Rosa');
+    _marcarComoPoderHeranca(card);
+    containerCards.appendChild(card);
     atualizarTotalPt();
     reordenarCards();
 }

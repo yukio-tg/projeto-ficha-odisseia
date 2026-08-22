@@ -8,7 +8,7 @@ import {
     query, where, limit, getDocs,
     onSnapshot,
     arrayUnion, arrayRemove,
-    serverTimestamp
+    serverTimestamp, deleteField
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
 
 const FIREBASE_CONFIG = {
@@ -79,6 +79,28 @@ export async function saveSheetDataOnly(sheetId, name, data) {
         updatedAt: serverTimestamp(),
         data
     });
+}
+
+/**
+ * Salva o tema de cores da ficha no Firestore (campo separado, sem sobrescrever data).
+ * Qualquer usuário com permissão de edição pode alterar o tema.
+ * @param {string} sheetId
+ * @param {{ fundo: string, metalico: string, pergaminho: string }} theme
+ */
+export async function saveSheetTheme(sheetId, theme) {
+    const ref = doc(db, 'sheets', sheetId);
+    // theme === null significa reset: remove o campo do documento
+    await updateDoc(ref, { theme: theme ?? deleteField() });
+}
+
+/**
+ * Lê apenas o campo `theme` de uma ficha já carregada.
+ * Recebe o sheetDoc (objeto já obtido via loadSheetDoc) para evitar uma leitura extra.
+ * @param {{ theme?: object }} sheetDoc
+ * @returns {{ fundo: string, metalico: string, pergaminho: string } | null}
+ */
+export function extractSheetTheme(sheetDoc) {
+    return sheetDoc?.theme ?? null;
 }
 
 // ── Perfil de usuário ────────────────────────────────────────────────────────

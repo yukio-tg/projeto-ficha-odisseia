@@ -163,7 +163,7 @@ option:hover {
     font-size: 10px;
     letter-spacing: 0.35em;
     text-transform: uppercase;
-    color: var(--blood1);
+    color: var(--gold1);
     display: flex;
     align-items: center;
     gap: 12px;
@@ -179,8 +179,8 @@ option:hover {
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, var(--blood0), transparent);
-    opacity: 0.6;
+    background: linear-gradient(90deg, transparent, var(--gold1), transparent);
+    opacity: 0.5;
 }
 
 /* Small diamond ornament after section headings */
@@ -1144,11 +1144,11 @@ option:hover {
 }
 
 .vital-card-mana {
-    border-color: rgba(35, 24, 181, 0.25);
+    border-color: color-mix(in srgb, var(--mana2) 30%, transparent);
 }
 
 .vital-card-mana .vital-card-label {
-    color: var(--mana1);
+    color: var(--mana2);
 }
 
 .vital-card-fe {

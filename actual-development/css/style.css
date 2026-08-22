@@ -54,13 +54,15 @@ body {
 
 body {
     min-height: 100%;
-    background: var(--leath0);
+    background-color: var(--leath0);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 10% 20%,  color-mix(in srgb, var(--leath2) 70%, black) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 90% 80%,  color-mix(in srgb, var(--leath1) 60%, black) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%,  color-mix(in srgb, var(--leath1) 45%, black) 0%, transparent 70%);
+    background-attachment: fixed;
+    background-size: cover;
     font-family: 'IM Fell English', Georgia, serif;
     color: var(--ink0);
-    background-image:
-        radial-gradient(ellipse 80% 60% at 10% 20%, #2e1200 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 90% 80%, #180800 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 50% 50%, #120900 0%, transparent 70%);
 }
 
 /* APP SHELL */
@@ -194,7 +196,7 @@ a span:hover {
     top: 15%;
     bottom: 15%;
     width: 3px;
-    background: linear-gradient(180deg, var(--blood0), var(--blood1), var(--blood0));
+    background: linear-gradient(180deg, var(--gold0), var(--gold1), var(--gold0));
     border-radius: 0 2px 2px 0;
 }
 
@@ -1126,6 +1128,7 @@ option:hover {
     pointer-events: auto;
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .vital-bar-inputs input::-webkit-outer-spin-button,
@@ -1698,11 +1701,11 @@ option:hover {
 }
 
 .vital-card-mana {
-    border-color: rgba(35, 24, 181, 0.25);
+    border-color: color-mix(in srgb, var(--mana2) 30%, transparent);
 }
 
 .vital-card-mana .vital-card-label {
-    color: var(--mana1);
+    color: var(--mana2);
 }
 
 .vital-card-fe {
@@ -1765,6 +1768,7 @@ option:hover {
     pointer-events: auto;
     text-shadow: 0 0 6px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.8);
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .vital-bar-inputs input::-webkit-outer-spin-button,
@@ -2315,6 +2319,7 @@ option:hover {
     background: none;
     border: none;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .cstat-main-input--sm {
@@ -2418,6 +2423,7 @@ option:hover {
     color: var(--ink0);
     text-align: center;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .cstat-val-input::-webkit-inner-spin-button,
@@ -2513,6 +2519,7 @@ option:hover {
     color: var(--ink0);
     text-align: center;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .desl-mode-val::-webkit-inner-spin-button,
@@ -3186,7 +3193,7 @@ option:hover {
 }
 
 .vital-card-mana .vital-temp-toggle.active {
-    color: var(--mana1);
+    color: var(--mana2);
 }
 
 .vital-card-fe .vital-temp-toggle.active {
@@ -3301,6 +3308,7 @@ option:hover {
     width: 100%;
     transition: border-color 0.15s, background 0.15s;
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 .combat-input::-webkit-inner-spin-button,
@@ -3801,6 +3809,7 @@ option:hover {
     background: none;
     border: none;
     -moz-appearance: textfield;
+    appearance: textfield;
     line-height: 1;
     transition: color 0.15s;
 }
@@ -5182,8 +5191,8 @@ textarea[data-brecha-notes]:focus {
     gap: 5px;
     padding: 0 14px;
     height: 32px;
-    background: linear-gradient(135deg, var(--blood1), var(--blood0));
-    color: var(--p0);
+    background: linear-gradient(135deg, var(--gold1), var(--gold2));
+    color: var(--ink0);
     border: none;
     border-radius: 5px;
     font-family: 'Cinzel', serif;
@@ -5198,7 +5207,7 @@ textarea[data-brecha-notes]:focus {
 
 .anot-gallery-add-btn:hover {
     opacity: 0.88;
-    box-shadow: 0 2px 8px rgba(92, 14, 7, 0.4);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--gold1) 40%, transparent);
 }
 
 .anot-gallery-add-btn .material-symbols-outlined {

@@ -87,6 +87,94 @@
 .theme-swatch.active {
     border-color: var(--gold2);
     transform: scale(1.22);
-    box-shadow: 0 0 5px rgba(232, 184, 74, 0.62);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--gold2) 62%, transparent);
     z-index: 1;
 }
+
+/* ── Linha de reset ───────────────────────────────────────────────────────── */
+.theme-reset-row {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 2px;
+}
+
+.theme-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: 1px solid color-mix(in srgb, var(--gold1) 28%, transparent);
+    border-radius: 4px;
+    color: var(--gold1);
+    font-family: 'Cinzel', serif;
+    font-size: 7.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    cursor: pointer;
+    opacity: 0.62;
+    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.theme-reset-btn .material-symbols-outlined {
+    font-size: 13px;
+}
+
+.theme-reset-btn:hover {
+    opacity: 1;
+    border-color: color-mix(in srgb, var(--gold2) 55%, transparent);
+    color: var(--gold2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   OVERRIDES PARA PAPEL ESCURO (body.theme-dark-paper)
+   Elementos que usam cores semânticas fixas (blood*, mana*, tunic*)
+   ou backgrounds hardcoded recebem versões mais claras e visíveis.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Vital cards ─────────────────────────────────────────────────── */
+/* Em papel escuro, as cores semânticas blood1/mana1/tunic1 são muito
+   escuras para serem legíveis. Substituímos por versões desaturadas/claras. */
+
+/* HP — vermelho claro legível */
+body.theme-dark-paper .vital-card-hp .vital-card-label,
+body.theme-dark-paper .vital-card-hp .vital-temp-toggle.active {
+    color: hsl(0, 70%, 72%);
+}
+
+/* Mana — azul claro, muito mais legível em fundo escuro que mana1/mana2 */
+body.theme-dark-paper .vital-card-mana .vital-card-label,
+body.theme-dark-paper .vital-card-mana .vital-temp-toggle.active {
+    color: hsl(220, 80%, 75%);
+}
+
+/* FE — roxo claro */
+body.theme-dark-paper .vital-card-fe .vital-card-label,
+body.theme-dark-paper .vital-card-fe .vital-temp-toggle.active {
+    color: hsl(285, 65%, 78%);
+}
+
+/* Bordas */
+body.theme-dark-paper .vital-card-hp   { border-color: hsla(0,   70%, 72%, 0.35); }
+body.theme-dark-paper .vital-card-mana { border-color: hsla(220, 80%, 75%, 0.30); }
+body.theme-dark-paper .vital-card-fe   { border-color: hsla(285, 65%, 78%, 0.30); }
+
+/* Barra de vida: clarear fundo para contrastar com o card escuro */
+body.theme-dark-paper .vital-bar {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Anotações — cabeçalhos e editor ───────────────────────────────── */
+body.theme-dark-paper .anot-editor-icon,
+body.theme-dark-paper .anot-editor-title,
+body.theme-dark-paper .anot-gallery-icon,
+body.theme-dark-paper .anot-gallery-title { color: var(--gold2); }
+
+body.theme-dark-paper .anot-editor h3 { color: var(--gold2); }
+
+body.theme-dark-paper .anot-toolbar-btn { color: var(--ink2); }
+body.theme-dark-paper .anot-toolbar-btn:hover { color: var(--gold2); }
+body.theme-dark-paper .anot-toolbar-btn.active { color: var(--gold2); border-color: var(--gold2); }
+
+/* ── Ornamento (.orn) ────────────────────────────────────────────── */
+body.theme-dark-paper .orn { color: var(--gold2); }

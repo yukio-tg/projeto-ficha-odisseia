@@ -190,10 +190,29 @@ export function atualizarFortuna() {
     document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
 }
 
+function _dispararPoderHeranca() {
+    const herancaNome = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
+    const chave = herancaNome.toLowerCase();
+    const data = HERANCA_DATA[chave];
+    const checkHabilidade = getCheckHabilidade();
+    const habilidadeAtiva = checkHabilidade && checkHabilidade.checked;
+
+    document.dispatchEvent(new CustomEvent('heranca:atualizar-poder', {
+        detail: (data && habilidadeAtiva) ? {
+            nome: data.poder,
+            ptCost: data.poderPt ?? 0,
+            otherCosts: data.poderOtherCosts || '',
+            descricao: data.poderDesc || '',
+            cor: 'Rosa',
+        } : null
+    }));
+}
+
 export function atualizarHeranca() {
     if (!autoCalcEnabled) return;
     limitarCheckboxes();
     atualizarFortuna();
     removerBonusAtuais();
     aplicarNovoBonus();
+    _dispararPoderHeranca();
 }
