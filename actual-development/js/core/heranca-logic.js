@@ -203,7 +203,7 @@ function _dispararPoderHeranca() {
             ptCost: data.poderPt ?? 0,
             otherCosts: data.poderOtherCosts || '',
             descricao: data.poderDesc || '',
-            cor: 'Rosa',
+            cor: 'Verde',
         } : null
     }));
 }

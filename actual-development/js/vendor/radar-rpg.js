@@ -112,12 +112,12 @@ const RadarRPG = (() => {
       pointer-events: none;
       font-weight: 700;
       text-shadow:
-        0 0 6px #f4e8c8,
-        0 0 12px #f4e8c8,
-        1px  1px 0 #f4e8c8,
-       -1px -1px 0 #f4e8c8,
-        1px -1px 0 #f4e8c8,
-       -1px  1px 0 #f4e8c8,
+        0 0 6px var(--parchment, #f4e8c8),
+        0 0 12px var(--parchment, #f4e8c8),
+        1px  1px 0 var(--parchment, #f4e8c8),
+       -1px -1px 0 var(--parchment, #f4e8c8),
+        1px -1px 0 var(--parchment, #f4e8c8),
+       -1px  1px 0 var(--parchment, #f4e8c8),
         0 2px 5px rgba(0,0,0,0.75);
     }
 
@@ -350,6 +350,23 @@ const RadarRPG = (() => {
     styleInjected = true;
   }
 
+  /**
+   * Converte qualquer valor CSS de cor válido (hex, hsl, rgb, etc.) para hex.
+   * Usa um canvas 1×1 como intermediário para que o navegador faça a conversão.
+   */
+  function parseCSSColorToHex(cssColor) {
+    if (!cssColor || !cssColor.trim()) return null;
+    try {
+      const tmp = document.createElement('canvas');
+      tmp.width = tmp.height = 1;
+      const c = tmp.getContext('2d');
+      c.fillStyle = cssColor.trim();
+      c.fillRect(0, 0, 1, 1);
+      const [r, g, b] = c.getImageData(0, 0, 1, 1).data;
+      return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+    } catch { return null; }
+  }
+
   function hexToRgba(hex, alpha) {
     hex = hex.replace('#', '');
     if (hex.length === 3) hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
@@ -477,6 +494,37 @@ const RadarRPG = (() => {
       this.resize();
     }
 
+    /**
+     * Atualiza as cores do tema lendo as variáveis CSS atuais do documento.
+     * Chamado sempre que o tema da ficha é alterado pelo usuário.
+     * Apenas as cores customizáveis (gold*, p*, ink*) são atualizadas;
+     * crimson e levelColor permanecem fixos intencionalmente (cor de sangue/vida).
+     */
+    updateTheme() {
+      const cs = getComputedStyle(document.documentElement);
+      const read = (varName, fallback) => {
+        const raw = cs.getPropertyValue(varName).trim();
+        return parseCSSColorToHex(raw) || fallback;
+      };
+      this.theme.gold         = read('--gold1',   this.theme.gold);
+      this.theme.goldLight    = read('--gold3',   this.theme.goldLight);
+      this.theme.goldDim      = read('--gold0',   this.theme.goldDim);
+      this.theme.ink          = read('--ink1',    this.theme.ink);
+      this.theme.inkDim       = read('--ink3',    this.theme.inkDim);
+      this.theme.parchment    = read('--p0',      this.theme.parchment);
+      this.theme.parchmentDark = read('--p1',     this.theme.parchmentDark);
+      // Atualiza vars CSS no container para que os elementos DOM (não-canvas) também se atualizem
+      this.container.style.setProperty('--gold',          this.theme.gold);
+      this.container.style.setProperty('--gold-light',    this.theme.goldLight);
+      this.container.style.setProperty('--gold-dim',      this.theme.goldDim);
+      this.container.style.setProperty('--ink',           this.theme.ink);
+      this.container.style.setProperty('--ink-dim',       this.theme.inkDim);
+      this.container.style.setProperty('--parchment',     this.theme.parchment);
+      this.container.style.setProperty('--parchment-dark', this.theme.parchmentDark);
+      this.draw();
+      this.updateHexGlow();
+    }
+
     resize = () => {
       const side = this.radarContainer.clientWidth;
       if (side === 0) return;
@@ -528,7 +576,7 @@ const RadarRPG = (() => {
         }
         ctx.closePath();
         if (isOuter) {
-          ctx.fillStyle = 'rgba(238,220,178,0.15)';
+          ctx.fillStyle = hexToRgba(theme.parchmentDark, 0.15);
           ctx.fill();
           ctx.strokeStyle = hexToRgba(theme.gold, 0.55);
           ctx.lineWidth = 1.5;
@@ -577,9 +625,9 @@ const RadarRPG = (() => {
           ? `${t * (100 / TICKS)}%`
           : `${t * (MAX / TICKS)}`;
         // Parchment knockout halo so label reads on both dark grid lines and light bg
-        ctx.fillStyle = 'rgba(244,232,200,0.95)';
+        ctx.fillStyle = hexToRgba(theme.parchment, 0.95);
         ctx.fillText(label, cx + 5 - 0.5, cy - r + 0.5);
-        ctx.fillStyle = 'rgba(80, 48, 14, 0.9)';
+        ctx.fillStyle = hexToRgba(theme.inkDim, 0.9);
         ctx.fillText(label, cx + 5, cy - r);
       }
 

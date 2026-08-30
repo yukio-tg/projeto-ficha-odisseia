@@ -1,4 +1,4 @@
-/* Estilos para os novos controles de perícia */
+﻿/* Estilos para os novos controles de perícia */
 .pericia-grau {
     width: 55px;
     background: var(--p1);
@@ -20,7 +20,7 @@
 
 .pericia-mod-extra:focus {
     outline: none;
-    border-color: var(--blood1);
+    border-color: var(--gold1);
 }
 
 .stbl td {
@@ -196,7 +196,7 @@
 .prof-pip.active {
     background: var(--blood1);
     border-color: var(--blood0);
-    box-shadow: 0 0 4px rgba(138, 24, 16, 0.4);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--blood1) 40%, transparent);
 }
 
 .prof-pip[data-level="0"] {
@@ -213,7 +213,7 @@
 .prof-pip[data-level="2"].active {
     background: var(--gold0);
     border-color: var(--gold1);
-    box-shadow: 0 0 3px rgba(196, 137, 42, 0.4);
+    box-shadow: 0 0 3px color-mix(in srgb, var(--gold1) 40%, transparent);
 }
 
 .prof-pip[data-level="3"].active {
@@ -253,7 +253,7 @@
     gap: 10px;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(196, 137, 42, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 color-mix(in srgb, var(--gold1) 10%, transparent);
     position: relative;
     overflow: hidden;
 }
@@ -288,7 +288,7 @@
     font-size: 20px;
     line-height: 1;
     color: var(--gold3);
-    text-shadow: 0 0 12px rgba(245, 216, 120, 0.4);
+    text-shadow: 0 0 12px color-mix(in srgb, var(--gold3) 40%, transparent);
 }
 
 .counter-sep {
@@ -393,7 +393,7 @@
     border-left: 3px solid var(--row-attr-color, var(--gold1));
     margin: 0 0 0 0;
     background: rgba(255, 255, 240, 0.35);
-    border-bottom: 1px dotted rgba(100, 70, 20, 0.18);
+    border-bottom: 1px dotted color-mix(in srgb, var(--leath3) 18%, transparent);
     text-align: left;
 }
 

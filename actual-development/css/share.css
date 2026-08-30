@@ -1,4 +1,4 @@
-/* share.css — Popup de compartilhamento de fichas */
+﻿/* share.css — Popup de compartilhamento de fichas */
 
 /* ── Overlay ── */
 .share-overlay {
@@ -154,7 +154,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(139, 94, 16, 0.3);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 30%, transparent);
 }
 
 /* ── Lista de usuários ── */
@@ -178,7 +178,7 @@
     padding: 6px 8px;
     background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
-    border: 1px solid rgba(139, 94, 16, 0.2);
+    border: 1px solid color-mix(in srgb, var(--gold0) 20%, transparent);
 }
 
 .share-user-icon {
@@ -212,7 +212,7 @@
 }
 .share-remove-btn:hover {
     opacity: 1;
-    color: #c0392b;
+    color: var(--blood2);
 }
 .share-remove-btn .material-symbols-outlined { font-size: 17px; }
 
@@ -265,7 +265,7 @@
     flex-direction: column;
     gap: 10px;
     padding-top: 6px;
-    border-top: 1px solid rgba(139, 94, 16, 0.2);
+    border-top: 1px solid color-mix(in srgb, var(--gold0) 20%, transparent);
 }
 
 .share-transfer-info {
@@ -278,13 +278,13 @@
 
 /* Botão de ação com estilo de perigo */
 .share-action-btn--danger {
-    border-color: rgba(160, 50, 30, 0.6);
-    color: #c07060;
+    border-color: color-mix(in srgb, var(--blood1) 60%, transparent);
+    color: color-mix(in srgb, var(--blood2) 70%, var(--p0));
 }
 .share-action-btn--danger:hover {
-    background: rgba(120, 30, 20, 0.3);
-    border-color: #a03828;
-    color: #d08070;
+    background: color-mix(in srgb, var(--blood1) 30%, transparent);
+    border-color: var(--blood1);
+    color: color-mix(in srgb, var(--blood2) 55%, var(--p0));
 }
 
 /* ── Botão de compartilhar no header ── */

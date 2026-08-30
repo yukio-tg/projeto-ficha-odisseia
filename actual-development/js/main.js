@@ -1,6 +1,6 @@
 import './config/classes.js';
 import './config/herancas.js';
-import { initRadar } from './core/radar-service.js';
+import { initRadar, updateRadarTheme } from './core/radar-service.js';
 import { initAutocomplete } from './ui/autocomplete.js';
 import { initBars } from './ui/vitals.js';
 import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
@@ -27,7 +27,7 @@ import {
 } from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { initSharePopup } from './ui/share.js';
-import { initThemePanel, applyRemoteTheme, setThemeSaveFn } from './ui/theme.js';
+import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
 import { addManualOverride } from './core/state.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
@@ -305,6 +305,7 @@ function renderPresenceIndicator(emails) {
 
 async function initAllModules() {
     initRadar('secao-radar');
+    setThemeUpdateFn(updateRadarTheme); // radar redesenha ao mudar o tema
     initAutocomplete();
     initBars();
     initPortrait();
@@ -378,8 +379,12 @@ function wireCalculations() {
         if (classeInput) {
             classeInput.addEventListener('input', () => {
                 if (autoCalcEnabled) { atualizarHeranca(); calcStats(); atualizarAcoesPorNivel(); atualizarAvisoReacoes(); }
+                checkMorrendoCondition();
             });
-            classeInput.addEventListener('change', () => { if (autoCalcEnabled) calcStats(); });
+            classeInput.addEventListener('change', () => {
+                if (autoCalcEnabled) calcStats();
+                checkMorrendoCondition();
+            });
         }
 
         // Detect when user manually edits auto-calculated/auto-protected fields → preserve their values

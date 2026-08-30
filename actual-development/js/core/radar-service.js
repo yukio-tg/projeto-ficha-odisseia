@@ -55,6 +55,15 @@ export function getRadarAttrWrap(attr) {
 }
 
 /**
+ * Atualiza as cores do radar lendo as variáveis CSS atuais.
+ * Deve ser chamado sempre que o tema da ficha for alterado.
+ */
+export function updateRadarTheme() {
+    if (!radarInstance) return;
+    radarInstance.updateTheme();
+}
+
+/**
  * Ajusta o maxPoints do radarInstance em `delta` unidades.
  * Usado para refletir bônus de herança (Aprendizado da Vida) no contador.
  */

@@ -214,7 +214,7 @@ function criarCardReacaoPreset(nome, id) {
     const headerHtml = `
         <div class="combat-card__header" data-action="toggle-accordion" role="button" tabindex="0" aria-expanded="false">
             <div class="combat-card__header-left">
-                <input type="text" class="combat-card__name-input" data-field="reacao-nome-${id}" value="${nome}" placeholder="Nome da Reação" list="reacoes-preset-list" style="background:#f0e4c0; color:var(--mana1);">
+                <input type="text" class="combat-card__name-input" data-field="reacao-nome-${id}" value="${nome}" placeholder="Nome da Reação" list="reacoes-preset-list" style="background:var(--p0); color:var(--mana1);">
             </div>
             <button type="button" class="combat-card__delete-btn" title="Remover reação">
                 <span class="material-symbols-outlined" style="font-size:16px;">remove</span>
@@ -1048,10 +1048,11 @@ export function checkMorrendoCondition() {
     const pvAtual   = parseInt(document.querySelector('[data-field="pv-atual"]')?.value,   10);
     const manaAtual = parseInt(document.querySelector('[data-field="mana-atual"]')?.value, 10);
     const isMonstro = document.querySelector('[data-field="monstro"]')?.checked ?? false;
+    const classeEscolhida = document.querySelector('[data-field="classe-nome"]')?.value.trim() || '';
 
     // Valor relevante de acordo com o tipo de personagem
     const triggerVal     = isMonstro ? manaAtual : pvAtual;
-    const shouldMorrendo = Number.isFinite(triggerVal) && triggerVal < 1;
+    const shouldMorrendo = Number.isFinite(triggerVal) && triggerVal < 1 && Boolean(classeEscolhida);
 
     const container = document.getElementById('condicoes-container');
     if (!container) return;

@@ -47,8 +47,9 @@ const TOOLBAR_ACTIONS = [
     { cmd: 'justifyCenter', icon: 'format_align_center', title: 'Centralizar' },
     { cmd: 'justifyRight',  icon: 'format_align_right',  title: 'Alinhar à direita' },
     { sep: true },
-    { cmd: 'heading1', icon: 'title',         title: 'Título' },
-    { cmd: 'heading2', icon: 'text_fields',   title: 'Subtítulo' },
+    { cmd: 'paragraph', icon: 'subject',       title: 'Texto padrão' },
+    { cmd: 'heading1',  icon: 'title',         title: 'Título' },
+    { cmd: 'heading2',  icon: 'text_fields',   title: 'Subtítulo' },
     { sep: true },
     { cmd: 'undo',   icon: 'undo',   title: 'Desfazer' },
     { cmd: 'redo',   icon: 'redo',   title: 'Refazer' },
@@ -77,7 +78,9 @@ function buildToolbar(editor) {
 
         btn.addEventListener('mousedown', e => {
             e.preventDefault();
-            if (item.cmd === 'heading1') {
+            if (item.cmd === 'paragraph') {
+                document.execCommand('formatBlock', false, 'p');
+            } else if (item.cmd === 'heading1') {
                 document.execCommand('formatBlock', false, 'h3');
             } else if (item.cmd === 'heading2') {
                 document.execCommand('formatBlock', false, 'h4');
@@ -302,6 +305,12 @@ export function initAnotacoes() {
     if (state.html) editor.innerHTML = state.html;
 
     const toolbar = buildToolbar(editor);
+
+    editor.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = e.clipboardData?.getData('text/plain') || '';
+        document.execCommand('insertText', false, text);
+    });
 
     let saveTimer = null;
     editor.addEventListener('input', () => {

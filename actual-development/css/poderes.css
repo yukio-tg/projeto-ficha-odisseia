@@ -1,12 +1,12 @@
-/* ── PT over limit ───────────────────────────────────────────── */
+﻿/* ── PT over limit ───────────────────────────────────────────── */
 
 .total-pt.pt-over-limit input,.total-inv.inv-over-limit input {
-    color: #d32f2f;
+    color: var(--blood2);
     font-weight: bold;
 }
 
 .total-pt.pt-over-limit ,.total-inv.inv-over-limit{
-    background-color: #ffeeee;
+    background-color: color-mix(in srgb, var(--blood2) 8%, var(--p0));
     border-radius: 4px;
 }
 
@@ -34,7 +34,7 @@
     padding: 4px 12px;
     box-shadow:
         0 2px 8px rgba(0,0,0,0.35),
-        inset 0 1px 0 rgba(245,216,120,0.08);
+        inset 0 1px 0 color-mix(in srgb, var(--gold3) 8%, transparent);
     position: relative;
     overflow: hidden;
 }
@@ -66,7 +66,7 @@
     background: none;
     border: none;
     padding: 2px 4px;
-    text-shadow: 0 0 10px rgba(245,216,120,0.4);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--gold3) 40%, transparent);
 }
 
 .total-pt input:focus, .total-inv input:focus {
@@ -90,7 +90,7 @@
 
 .total-pt.pt-over-limit ,.total-pt.la-over-limit,.total-inv.inv-over-limit{
     border-color: var(--blood1);
-    background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--blood0) 45%, #000) 0%, color-mix(in srgb, var(--blood0) 65%, #000) 100%);
 }
 
 .total-pt.pt-over-limit::before ,.total-pt.la-over-limit::before,.total-inv.inv-over-limit::before {
@@ -99,7 +99,7 @@
 
 .total-pt.pt-over-limit input[data-field="pt-atual"], .total-pt.la-over-limit input[data-field="la-atual"], .total-inv.inv-over-limit input[data-field="inv-atual"] {
     color: var(--blood2);
-    text-shadow: 0 0 10px rgba(181,36,24,0.5);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--blood2) 50%, transparent);
 }
 
 
@@ -125,7 +125,7 @@
 
 .power-container-searcher:focus-within ,.magic-container-searcher:focus-within,.item-container-searcher:focus-within {
     border-color: var(--gold1);
-    box-shadow: 0 0 0 2px rgba(196,137,42,0.15), 0 1px 4px rgba(0,0,0,0.15);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 15%, transparent), 0 1px 4px rgba(0,0,0,0.15);
 }
 
 /* ícone de lupa */
@@ -184,7 +184,7 @@
     background: linear-gradient(135deg, var(--leath3) 0%, var(--leath4) 100%);
     border-color: var(--gold2);
     color: var(--gold3);
-    box-shadow: 0 0 8px rgba(196,137,42,0.25);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--gold1) 25%, transparent);
 }
 
 .btn-add-power:active,.btn-add-magic:active,.btn-add-item:active{
@@ -231,7 +231,7 @@
 .category-color-dot--active {
     opacity: 1;
     border-color: var(--gold2);
-    box-shadow: 0 0 0 2px rgba(196,137,42,0.25);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 25%, transparent);
 }
 
 
@@ -270,7 +270,7 @@
 
 .color-dot:hover {
     transform: scale(1.2);
-    box-shadow: 0 0 0 2px rgba(196,137,42,0.45);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 45%, transparent);
 }
 
 .color-dot--active {
@@ -311,7 +311,7 @@
     font-size: 13px;
     color: var(--ink1);
     padding: 7px 12px;
-    border-bottom: 1px solid rgba(200,170,100,0.25);
+    border-bottom: 1px solid color-mix(in srgb, var(--p3) 25%, transparent);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -325,7 +325,7 @@
 
 .autocomplete-item-power:hover,
 .autocomplete-item-power--active {
-    background: rgba(196,137,42,0.12);
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
     color: var(--ink0);
 }
 
@@ -366,7 +366,7 @@
 /* ── Card de poder ───────────────────────────────────────────── */
 
 .card-power {
-    --card-color: #c0392b;
+    --card-color: var(--blood2);
     --card-color-faint: color-mix(in srgb, var(--card-color) 7%, var(--p1));
     --card-color-whisper: color-mix(in srgb, var(--card-color) 4%, var(--p0));
     border: 1px solid color-mix(in srgb, var(--card-color) 22%, var(--p2));
@@ -389,7 +389,7 @@
 
 .card-power:hover {
     border-color: var(--gold1);
-    box-shadow: 0 2px 12px rgba(196,137,42,0.12);
+    box-shadow: 0 2px 12px color-mix(in srgb, var(--gold1) 12%, transparent);
 }
 
 
@@ -588,7 +588,7 @@
 
 .card-color-dot:hover {
     transform: scale(1.25);
-    box-shadow: 0 0 0 2px rgba(196,137,42,0.4);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 40%, transparent);
 }
 
 
@@ -642,7 +642,7 @@
 .power-desc-textarea:focus {
     outline: none;
     border-color: var(--gold1);
-    background: rgba(247,236,212,0.7);
+    background: color-mix(in srgb, var(--p0) 70%, transparent);
 }
 
 .power-desc-textarea::placeholder {
@@ -750,13 +750,13 @@
 
     .sidebar-mobile-nav ul li:hover {
         color: var(--gold2);
-        background: rgba(98, 52, 20, 0.3);
+        background: color-mix(in srgb, var(--leath3) 30%, transparent);
     }
 
     .sidebar-mobile-nav ul li.active {
         color: var(--gold3);
         border-top-color: var(--blood1);
-        background: rgba(18, 13, 4, 0.4);
+        background: color-mix(in srgb, var(--ink0) 40%, transparent);
         font-weight: 700;
     }
 

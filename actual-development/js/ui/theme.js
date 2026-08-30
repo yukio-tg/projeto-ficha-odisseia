@@ -121,6 +121,8 @@ function applyTheme(fundoId, metalicoId, pergaminhoId) {
     const root = document.documentElement;
     for (const [prop, val] of Object.entries(vars)) root.style.setProperty(prop, val);
     document.body.classList.toggle('theme-dark-paper', p.darkPaper);
+    // Notifica listeners de canvas (ex: radar) para redesenhar com as novas cores
+    if (_onThemeUpdate) _onThemeUpdate();
 }
 
 function resetTheme() {
@@ -155,6 +157,7 @@ function cacheClear() {
 // ── Estado atual ──────────────────────────────────────────────────────────────
 let state = { ...DEFAULTS };
 let _saveToFirestore = null; // callback injetado por main.js
+let _onThemeUpdate   = null; // callback para redesenhar elementos canvas (ex: radar)
 
 // ── Cor de preview dos swatches ───────────────────────────────────────────────
 
@@ -277,4 +280,9 @@ export function initThemePanel(sheetId, saveFn = null) {
 /** Atualiza o callback de save (chamado quando a autenticação confirmar a permissão). */
 export function setThemeSaveFn(fn) {
     _saveToFirestore = fn;
+}
+
+/** Registra callback chamado após cada mudança de tema (ex: redesenhar canvas do radar). */
+export function setThemeUpdateFn(fn) {
+    _onThemeUpdate = fn;
 }

@@ -1,4 +1,4 @@
-/* ==============================================
+﻿/* ==============================================
    MAGIAS — Sistema completo de folha de magias
    Alinhado ao design system do projeto (var CSS)
    ============================================== */
@@ -128,7 +128,7 @@
 }
 
 .magic-card--teurgia {
-    border-left: 3px solid var(--magic-teurgia-color, #c026d3);
+    border-left: 3px solid var(--magic-teurgia-color, var(--tunic2));
 }
 
 /* ── Header do card ── */
@@ -373,8 +373,8 @@
 }
 
 #tab-magias .total-pt {
-    background: linear-gradient(135deg, #001e2c 0%, #00154e 100%);
-    border: 1px solid #9eb0ff;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mana1) 25%, #000) 0%, color-mix(in srgb, var(--mana1) 18%, #000) 100%);
+    border: 1px solid color-mix(in srgb, var(--mana2) 50%, #fff);
 }
 
 #tab-magias .total-pt h1 {
@@ -382,29 +382,29 @@
 }
 
 #tab-magias .total-pt::before {
-    background: linear-gradient(90deg, transparent, #9eb0ff, #9eb0ff, #9eb0ff, transparent);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--mana2) 50%, #fff), transparent);
 }
 
 #tab-magias .total-pt input {
-    color: #99c8ff;
+    color: color-mix(in srgb, var(--mana2) 40%, #fff);
 }
 
 #tab-magias .total-pt input:focus {
     outline: none;
-    color: #9eb0ff;
+    color: color-mix(in srgb, var(--mana2) 50%, #fff);
 }
 
 #tab-magias .total-pt input[data-field="pt-total"], #tab-magias .total-pt input[data-field="la-total"], #tab-magias .total-pt input[data-field="dt-sab"] {
-    color: #9eb0ff;
+    color: color-mix(in srgb, var(--mana2) 50%, #fff);
 }
 
 #tab-magias .total-pt .separator {
-    color: #9eb0ff;
+    color: color-mix(in srgb, var(--mana2) 50%, #fff);
 }
 
 #tab-magias .total-pt.pt-over-limit ,#tab-magias .total-pt.la-over-limit{
     border-color: var(--blood1);
-    background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--blood0) 45%, #000) 0%, color-mix(in srgb, var(--blood0) 65%, #000) 100%);
     color: var(--blood2);
 }
 
@@ -415,16 +415,16 @@
 
 /* Botão Adicionar */
 .btn-add-magic{
-    background: linear-gradient(135deg, #001e2c 0%, #00154e 100%);
-    border: 1px solid #9eb0ff;
-    color: #9eb0ff;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mana1) 25%, #000) 0%, color-mix(in srgb, var(--mana1) 18%, #000) 100%);
+    border: 1px solid color-mix(in srgb, var(--mana2) 50%, #fff);
+    color: color-mix(in srgb, var(--mana2) 50%, #fff);
 }
 
 .btn-add-magic:hover{
-    background: linear-gradient(135deg, #003147 0%, #001d6d 100%);
-    border: 1px solid #9eb0ff;
-    color: #9eb0ff;
-    box-shadow: 0 0 8px rgba(158,176,255,0.25);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mana1) 35%, #000) 0%, color-mix(in srgb, var(--mana1) 22%, #000) 100%);
+    border: 1px solid color-mix(in srgb, var(--mana2) 50%, #fff);
+    color: color-mix(in srgb, var(--mana2) 50%, #fff);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--mana2) 12%, transparent);
 }
 
 .la-excedido {
@@ -506,7 +506,7 @@
 .magic-editor-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(18, 13, 4, 0.55);
+    background: color-mix(in srgb, var(--ink0) 55%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -698,7 +698,7 @@
 }
 
 .btn-apr-remove-edit:hover {
-    background: #ffe0e0;
+    background: color-mix(in srgb, var(--blood1) 12%, var(--p0));
     color: var(--blood2);
 }
 
@@ -823,7 +823,7 @@
 
 .fonte-item--over {
     border-color: var(--blood2);
-    background: rgba(181, 36, 24, 0.04);
+    background: color-mix(in srgb, var(--blood2) 4%, transparent);
 }
 
 .fonte-item__name {
@@ -958,8 +958,8 @@
     font-family: 'Cinzel', serif;
     font-size: 8px;
     color: var(--gold0);
-    background: rgba(196, 137, 42, 0.08);
-    border: 1px solid rgba(196, 137, 42, 0.25);
+    background: color-mix(in srgb, var(--gold1) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold1) 25%, transparent);
     border-radius: 3px;
     padding: 1px 5px;
     margin-left: auto;

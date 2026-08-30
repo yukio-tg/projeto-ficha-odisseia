@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════
    BESTA TAB — Companion Creature Sheet
    ═══════════════════════════════════════════════════════ */
 
@@ -8,7 +8,7 @@
 
 /* ── Instance wrapper ───────────────────────────────── */
 .besta-instance {
-    background: rgba(247, 236, 212, 0.55);
+    background: color-mix(in srgb, var(--p0) 55%, transparent);
     backdrop-filter: blur(4px);
     border: 1px solid var(--gold1);
     border-radius: 8px;
@@ -85,7 +85,7 @@
 }
 
 .besta-readonly {
-    background: var(--p1, #eedcb2);
+    background: var(--p1);
     cursor: default;
 }
 
@@ -124,7 +124,7 @@
     font-family: 'IM Fell English', serif;
     border: 1px solid var(--gold0);
     border-radius: 4px;
-    background: rgba(30, 15, 4, 0.6);
+    background: color-mix(in srgb, var(--leath0) 60%, transparent);
     color: var(--gold2);
     padding: 6px 8px;
     font-size: 12px;
@@ -133,7 +133,7 @@
 }
 
 .besta-retrato-url::placeholder {
-    color: var(--leath4, #b09060);
+    color: var(--leath4);
     text-align: center;
 }
 
@@ -156,7 +156,7 @@
 }
 .besta-clear-portrait span {
     border-radius: 50%;
-    background-color: rgba(92,14,7,.5);
+    background-color: color-mix(in srgb, var(--blood0) 50%, transparent);
     color: var(--blood1);
     font-size: 18px;
 }
@@ -238,7 +238,7 @@
     gap: 8px;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 rgba(196,137,42,.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,.2), inset 0 1px 0 color-mix(in srgb, var(--gold1) 10%, transparent);
     position: relative;
     overflow: hidden;
 }
@@ -289,7 +289,7 @@
 
 .besta-skill-table td {
     padding: 3px 4px;
-    border-bottom: 1px solid rgba(138,94,16,.14);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 14%, transparent);
 }
 
 .besta-skill-table .col-nome { width: auto; }
@@ -423,7 +423,7 @@
 
 .besta-conditions-footer {
     margin-top: 10px;
-    border-top: 1px solid var(--gold0, #8a5e10)33;
+    border-top: 1px solid color-mix(in srgb, var(--gold0) 20%, transparent);
     padding-top: 8px;
     display: flex;
     flex-direction: column;
@@ -793,7 +793,7 @@
     color: var(--ink2);
     margin-top: 10px;
     padding: 7px 14px;
-    background: rgba(247,236,212,.45);
+    background: color-mix(in srgb, var(--p0) 45%, transparent);
     border: 1px solid rgba(139,105,50,.2);
     border-radius: 6px;
     backdrop-filter: blur(2px);
@@ -821,7 +821,7 @@
     margin-bottom: 6px;
 }
 
-.besta-collapse-toggle:hover { background: var(--p2, #e5d49e); }
+.besta-collapse-toggle:hover { background: var(--p2); }
 
 .besta-collapse-toggle input {
     font-family: 'Cinzel', serif;
@@ -854,7 +854,7 @@
     color: var(--ink3);
     text-transform: uppercase;
     letter-spacing: .12em;
-    border-bottom: 1px solid var(--gold0, #8a5e10)44;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 27%, transparent);
     padding-bottom: 3px;
     margin-bottom: 6px;
 }
@@ -1001,7 +1001,7 @@
     font-family: 'IM Fell English', serif;
     font-size: 10px;
     color: var(--ink1);
-    border-bottom: 1px solid var(--gold0, #8a5e10)22;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 13%, transparent);
     transition: background .1s;
 }
 .besta-dd-item:hover, .besta-dd-item--active { background: var(--p1); }

@@ -96,7 +96,7 @@ function serializeProtectionBases() {
             bases[field] = el.dataset.baseValue;
         }
     });
-    return Object.keys(bases).length ? bases : undefined;
+    return Object.keys(bases).length ? bases : null;
 }
 
 function deserializeProtectionBases(bases) {

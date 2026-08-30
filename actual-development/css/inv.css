@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    INV.CSS — Inventário · Odisseia Character Sheet
    ================================================================ */
 
@@ -27,13 +27,13 @@
     border: 1px solid var(--gold0);
     border-radius: 6px;
     padding: 4px 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(245,216,120,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 color-mix(in srgb, var(--gold3) 8%, transparent);
     position: relative;
     overflow: hidden;
     font-family: 'Cinzel', serif;
     font-weight: 700;
     color: var(--gold3);
-    text-shadow: 0 0 10px rgba(245,216,120,0.4);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--gold3) 40%, transparent);
     white-space: nowrap;
     cursor: default;
     user-select: none;
@@ -93,7 +93,7 @@
     min-height: 53px;
     min-width: 80px;
     background: linear-gradient(135deg, var(--leath1) 0%, var(--leath2) 100%);
-    border: 1px solid rgba(138,94,43,0.2);
+    border: 1px solid color-mix(in srgb, var(--leath4) 20%, transparent);
     border-radius: 6px;
     padding: 4px 14px;
     position: relative;
@@ -131,7 +131,7 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 rgba(245,216,120,0.06);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35), inset 0 1px 0 color-mix(in srgb, var(--gold3) 6%, transparent);
 }
 
 .raridade-counters-panel::before {
@@ -147,7 +147,7 @@
     align-items: center;
     gap: 5px;
     background: rgba(0,0,0,0.28);
-    border: 1px solid rgba(138,78,32,0.20);
+    border: 1px solid color-mix(in srgb, var(--leath4) 20%, transparent);
     padding: 4px 10px;
     border-radius: 20px;
     font-size: 11px;
@@ -167,7 +167,7 @@
 }
 
 .raridade-counter.excedido {
-    background: rgba(181,36,24,0.18);
+    background: color-mix(in srgb, var(--blood2) 18%, transparent);
     border-color: var(--blood1);
     color: var(--blood2);
     font-weight: 700;
@@ -180,7 +180,7 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
-    background: rgba(181,36,24,0.22);
+    background: color-mix(in srgb, var(--blood2) 22%, transparent);
     border: 1px solid var(--blood1);
     padding: 4px 12px;
     border-radius: 20px;
@@ -206,8 +206,8 @@
 
 /* ── Card ─────────────────────────────────────────────────────── */
 .item-card {
-    --item-rarity-color: #8b5a2b;
-    border: 1px solid rgba(200,170,100,0.30);
+    --item-rarity-color: var(--leath4);
+    border: 1px solid color-mix(in srgb, var(--p3) 30%, transparent);
     border-left: 3px solid var(--item-rarity-color);
     border-radius: 5px;
     background: linear-gradient(158deg, var(--p1) 0%, var(--p0) 100%);
@@ -232,7 +232,7 @@
     gap: 6px;
     padding: 4px 8px;
     background: rgba(0,0,0,0.04);
-    border-bottom: 1px solid rgba(200,170,100,0.12);
+    border-bottom: 1px solid color-mix(in srgb, var(--p3) 12%, transparent);
     min-height: 30px;
     flex-wrap: nowrap;
 }
@@ -243,7 +243,7 @@
     align-items: baseline;
     gap: 3px;
     flex-shrink: 0;
-    border: 1px solid rgba(138,94,43,0.12);
+    border: 1px solid color-mix(in srgb, var(--leath4) 12%, transparent);
     border-radius: 3px;
     padding: 1px 5px;
 }
@@ -258,7 +258,7 @@
 .btn-item-increment,
 .btn-item-decrement {
     background: none;
-    border: 1px solid rgba(138,94,43,0.15);
+    border: 1px solid color-mix(in srgb, var(--leath4) 15%, transparent);
     border-radius: 2px;
     width: 14px;
     height: 14px;
@@ -305,7 +305,7 @@
     align-items: center;
     gap: 2px;
     background: var(--p1);
-    border: 1px solid rgba(138,94,43,0.15);
+    border: 1px solid color-mix(in srgb, var(--leath4) 15%, transparent);
     border-radius: 3px;
     padding: 1px 4px;
     flex-shrink: 0;
@@ -334,7 +334,7 @@
     align-items: center;
     gap: 1px;
     background: var(--p1);
-    border: 1px solid rgba(138,94,43,0.15);
+    border: 1px solid color-mix(in srgb, var(--leath4) 15%, transparent);
     border-radius: 3px;
     padding: 1px 3px;
     flex-shrink: 0;
@@ -463,7 +463,7 @@
     justify-content: center;
     border-radius: 50%;
     border: 2px solid var(--item-rarity-color);
-    background: radial-gradient(circle, rgba(255,255,240,0.5) 0%, rgba(245,216,120,0.05) 100%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--p0) 50%, transparent) 0%, color-mix(in srgb, var(--gold3) 5%, transparent) 100%);
     cursor: pointer;
     overflow: hidden;
     transition: border-color 0.15s, box-shadow 0.15s;
@@ -504,7 +504,7 @@
     position: absolute;
     bottom: 1px;
     right: 1px;
-    text-shadow: 0 0 4px rgba(196,137,42,0.5);
+    text-shadow: 0 0 4px color-mix(in srgb, var(--gold1) 50%, transparent);
 }
 
 /* ANULAR: diagonal strike overlay */
@@ -516,7 +516,7 @@
     background: var(--blood1);
     transform: rotate(-45deg);
     opacity: 0.8;
-    box-shadow: 0 0 3px rgba(181,36,24,0.4);
+    box-shadow: 0 0 3px color-mix(in srgb, var(--blood2) 40%, transparent);
 }
 .item-raridade-glyph[data-estado="anular"] {
     opacity: 0.6;
@@ -552,11 +552,11 @@
 /* Highlight correct half when hovering/focusing the invisible select */
 .item-raridade-select:hover ~ .glyph-hover-zone--top,
 .item-raridade-select:focus ~ .glyph-hover-zone--top {
-    background: linear-gradient(to top, transparent, rgb(255, 0, 0,0.5));
+    background: linear-gradient(to top, transparent, color-mix(in srgb, var(--gold1) 50%, transparent));
 }
 .item-estado-select:hover ~ .glyph-hover-zone--bottom,
 .item-estado-select:focus ~ .glyph-hover-zone--bottom {
-    background: linear-gradient(transparent, rgba(0, 38, 255, 0.5));
+    background: linear-gradient(transparent, color-mix(in srgb, var(--gold1) 50%, transparent));
 }
 
 /* Hover hint labels — appear to the right on hover */
@@ -602,7 +602,7 @@
     font-size: 11.5px;
     line-height: 1.45;
     color: var(--ink1);
-    background: rgba(255,255,240,0.3);
+    background: color-mix(in srgb, var(--p0) 30%, transparent);
     border: 1px solid var(--p2);
     border-radius: 3px;
     padding: 5px 7px;
@@ -612,7 +612,7 @@
 .item-desc-textarea:focus {
     outline: none;
     border-color: var(--gold1);
-    background: rgba(247,236,212,0.6);
+    background: color-mix(in srgb, var(--p0) 60%, transparent);
 }
 .item-desc-textarea::placeholder { font-style: italic; color: var(--ink3); opacity: 0.4; }
 .item-desc-textarea::-webkit-scrollbar { width: 3px; }
@@ -711,7 +711,7 @@
     background: none;
     border: none;
     border-bottom: 1px solid transparent;
-    text-shadow: 0 0 10px rgba(245,216,120,0.4);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--gold3) 40%, transparent);
     transition: border-color 0.15s;
     padding: 0;
 }
@@ -806,7 +806,7 @@
 /* ── overrides style.css ──────────────────────────────────────── */
 .total-inv.inv-over-limit {
     border-color: var(--blood1);
-    background: linear-gradient(135deg, #2a0a08 0%, #3c1210 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--blood0) 45%, #000) 0%, color-mix(in srgb, var(--blood0) 65%, #000) 100%);
 }
 .total-inv.inv-over-limit input { color: var(--blood2); }
 
