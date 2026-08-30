@@ -21,6 +21,16 @@ export function atualizarInertidao() {
     if (input) input.value = nivel + bonus;
 }
 
+export function atualizarDtSab() {
+    if (!autoCalcEnabled) return;
+    if (manualOverrides.has('dt-sab')) return;
+    const nivel = getNivel();
+    const sab = getAtributoTotal('SAB');
+    const valor = 10 + Math.floor(nivel / 2) + sab;
+    const input = document.querySelector('[data-field="dt-sab"]');
+    if (input) input.value = valor;
+}
+
 const FORMULAS = {
     'coração': { pv: { base: 23, per: 4 }, pm: { base: 2, per: 1 }, pt: { base: 2, per: 1 }, inv: (f) => 7 + f, la: (s) => s, laPer: 0 },
     'arcanista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => 3 + s, laPer: (s) => 2 + (s / 2) },
@@ -268,6 +278,9 @@ export function calcStats() {
     // Reaplica classe de overflow (caso pt-total tenha mudado)
     verificarPtOverflow();
     refreshAllBars();
+
+    // DT SAB
+    atualizarDtSab();
 }
 
 // ========== INICIALIZAÇÃO ==========

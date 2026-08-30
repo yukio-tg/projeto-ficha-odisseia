@@ -128,7 +128,7 @@
 }
 
 .magic-card--teurgia {
-    border-left: 3px solid var(--tunic2);
+    border-left: 3px solid var(--magic-teurgia-color, #c026d3);
 }
 
 /* ── Header do card ── */
@@ -394,7 +394,7 @@
     color: #9eb0ff;
 }
 
-#tab-magias .total-pt input[data-field="pt-total"], #tab-magias .total-pt input[data-field="la-total"] {
+#tab-magias .total-pt input[data-field="pt-total"], #tab-magias .total-pt input[data-field="la-total"], #tab-magias .total-pt input[data-field="dt-sab"] {
     color: #9eb0ff;
 }
 

@@ -232,7 +232,10 @@ export function setInventarioState(cardsData) {
         atualizarPesoTotal();
         atualizarContadoresRaridade();
     } catch (e) { console.warn('Erro ao carregar inventário local', e); }
-    suppressEffects = false;
+    // Defer the reset: each criarCardItem queues a setTimeout(0) that calls onItemAdded.
+    // By deferring suppressEffects = false to ANOTHER setTimeout(0) (queued last), all of
+    // those callbacks fire while suppressEffects is still true, preventing duplicate effects.
+    setTimeout(() => { suppressEffects = false; }, 0);
 }
 
 // ========== Reordenação automática ==========
@@ -258,7 +261,9 @@ function getRaridadeGlyph(raridade) {
 
 // ========== Criação do card de item ==========
 function criarCardItem(itemData, nomeForcado = '', savedData = null) {
-    const cardId = `item_${Date.now()}_${cardCounter++}`;
+    // When restoring from saved data, reuse the original cardId so that
+    // activeWeapons/activeFontes lookups (which use cardId as key) still match.
+    const cardId = savedData?.id || `item_${Date.now()}_${cardCounter++}`;
     const card = document.createElement('div');
     card.className = 'item-card';
     card.dataset.cardId = cardId;

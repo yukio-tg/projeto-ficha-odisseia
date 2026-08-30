@@ -81,6 +81,34 @@ function deserializeRadar(radar) {
     });
 }
 
+// ─── Base values para campos modificados por armadura ────────────────────────
+// rd e deslocamento armazenam um dataset.baseValue em memória (o valor antes do
+// bônus de proteção). Sem persistência, a cada reload o bônus é aplicado sobre
+// si mesmo, causando drift. Serializamos e restauramos esses valores.
+
+const PROT_BASE_FIELDS = ['rd', 'deslocamento'];
+
+function serializeProtectionBases() {
+    const bases = {};
+    PROT_BASE_FIELDS.forEach(field => {
+        const el = document.querySelector(`[data-field="${field}"]`);
+        if (el?.dataset.baseValue != null && el.dataset.baseValue !== '') {
+            bases[field] = el.dataset.baseValue;
+        }
+    });
+    return Object.keys(bases).length ? bases : undefined;
+}
+
+function deserializeProtectionBases(bases) {
+    if (!bases) return;
+    PROT_BASE_FIELDS.forEach(field => {
+        if (bases[field] != null) {
+            const el = document.querySelector(`[data-field="${field}"]`);
+            if (el) el.dataset.baseValue = String(bases[field]);
+        }
+    });
+}
+
 // ─── API pública ─────────────────────────────────────────────────────────────
 
 export function serializeSheet() {
@@ -96,6 +124,7 @@ export function serializeSheet() {
         anotacoes: getAnotacoesState(),
         bestas: getBestasState(),
         manualOverrides: Array.from(manualOverrides),
+        protectionBases: serializeProtectionBases(),
     };
 }
 
@@ -110,6 +139,9 @@ export function deserializeSheet(data) {
     deserializeRadar(data.radar);
     if (data.pericias) setSkillsState(data.pericias);
     if (data.inventario) setInventarioState(data.inventario);
+    // Restore base values BEFORE setItemEffectsState calls recalcProtectionBonuses,
+    // so the bonus is applied on top of the correct base (not the already-modified value).
+    deserializeProtectionBases(data.protectionBases);
     if (data.itemEffects) setItemEffectsState(data.itemEffects);
     if (data.poderes) setPowersState(data.poderes);
     if (data.magias) setMagiasState(data.magias);

@@ -7,11 +7,11 @@ import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
 import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
 import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
-import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset } from './ui/combat.js';
+import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset, checkMorrendoCondition } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
 import { atualizarHeranca } from './core/heranca-logic.js';
 import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
-import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility } from './core/calculation.js';
+import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility, atualizarDtSab } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
 import { initMagias } from './ui/magias.js';
 import { initInventory } from './ui/inventory.js';
@@ -228,6 +228,7 @@ function setupRealtimeSync(sheetId) {
                 deserializeSheet(remoteData);
                 refreshHeader();
                 applyPortraitUrl(remoteData?.fields?.['retrato-url'] || '');
+                checkMorrendoCondition(); // re-check after remote sync
                 if (currentPermission !== 'read') showSaved();
             } finally {
                 // setTimeout garante que eventos síncronos do deserialize sejam
@@ -348,6 +349,7 @@ function wireCalculations() {
         document.querySelector('#secao-radar')?.addEventListener('input', (e) => {
             if (e.target.classList.contains('attr-input') || e.target.classList.contains('mod-input')) {
                 document.dispatchEvent(new Event('reacoes:atualizar-stats'));
+                if (autoCalcEnabled) atualizarDtSab();
             }
         });
 
@@ -365,6 +367,7 @@ function wireCalculations() {
 
         document.querySelector('[data-field="monstro"]')?.addEventListener('change', () => {
             if (autoCalcEnabled) calcStats();
+            checkMorrendoCondition();
         });
 
         document.querySelector('[data-field="tamanho"]')?.addEventListener('change', () => {
@@ -379,11 +382,13 @@ function wireCalculations() {
             classeInput.addEventListener('change', () => { if (autoCalcEnabled) calcStats(); });
         }
 
-        // Detect when user manually edits auto-calculated fields → preserve their values
+        // Detect when user manually edits auto-calculated/auto-protected fields → preserve their values
         const CALC_FIELDS = [
             'pv-total', 'pv-atual', 'mana-total', 'mana-atual',
             'pt-total', 'la-total', 'la-atual', 'inv-total',
-            'fe-total', 'fe-atual', 'inertidao-base'
+            'fe-total', 'fe-atual', 'inertidao-base', 'dt-sab',
+            // Protection-affected fields (overwritten by recalcProtectionBonuses)
+            'defesa', 'rd', 'deslocamento'
         ];
         CALC_FIELDS.forEach(field => {
             document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
@@ -391,6 +396,14 @@ function wireCalculations() {
                     // e.isTrusted = true only for real user interactions (not programmatic dispatches)
                     if (e.isTrusted) addManualOverride(field);
                 });
+            });
+        });
+
+        // Auto-Morrendo: listen for pv-atual / mana-atual changes
+        ['pv-atual', 'mana-atual'].forEach(field => {
+            document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
+                el.addEventListener('input',  checkMorrendoCondition);
+                el.addEventListener('change', checkMorrendoCondition);
             });
         });
 
@@ -402,6 +415,7 @@ function wireCalculations() {
         atualizarAcoesPorNivel();
         atualizarAvisoReacoes();
         atualizarAtaquesAcerto(false);
+        checkMorrendoCondition(); // initial check after load
     }, 600);
 }
 

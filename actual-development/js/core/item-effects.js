@@ -4,6 +4,7 @@
 import { uid } from './utils.js';
 import { getAtributoBase } from './radar-service.js';
 import { criarCardAtaque } from '../ui/combat.js';
+import { manualOverrides } from './state.js';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -68,6 +69,11 @@ function resolveDanoTokens(danoStr, finalAttr) {
 }
 
 export function onWeaponAdded(cardId, itemData) {
+    // Belt-and-suspenders guards: stop if already tracked in the Map OR
+    // if a DOM attack card linked to this inventory item already exists.
+    if (activeWeapons.has(cardId)) return;
+    if (document.querySelector(`[data-linked-item-id="${cardId}"]`)) return;
+
     const nome = itemData.nome || 'Ataque';
     const ataqueId = uid();
 
@@ -182,6 +188,9 @@ function storeBaseDeslocamento() {
 }
 
 export function onProtectionAdded(cardId, itemData) {
+    // Guard: skip if already tracked
+    if (activeProtections.has(cardId)) return;
+
     const defesa = parseInt(itemData.defesa || itemData.def || 0, 10);
     const rd = parseInt(itemData.rd || 0, 10);
     const deslocPct = parseFloat(itemData.deslocamento || itemData.desloc || 0);
@@ -211,31 +220,31 @@ function recalcProtectionBonuses() {
         totalDeslocReduction += data.deslocPct;
     }
 
-    // Apply to Defesa
+    // Apply to Defesa — skip if user has manually overridden it
     const defesaInput = document.querySelector('[data-field="defesa"]');
-    if (defesaInput) {
+    if (defesaInput && !manualOverrides.has('defesa')) {
         const baseDefesa = (getAtributoBase('DES') || 0) + 10;
         defesaInput.value = baseDefesa + totalDefBonus;
         defesaInput.dataset.protBonus = totalDefBonus;
         defesaInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Apply to RD
+    // Apply to RD — skip if user has manually overridden it
     const rdInput = document.querySelector('[data-field="rd"]');
-    if (rdInput) {
-        const baseRd = parseInt(rdInput.dataset.baseValue || 0, 10);
+    if (rdInput && !manualOverrides.has('rd')) {
+        // Use the persisted base (restored from saved data) or initialise from current value
         if (!rdInput.dataset.baseValue) rdInput.dataset.baseValue = rdInput.value;
+        const baseRd = parseInt(rdInput.dataset.baseValue, 10) || 0;
         rdInput.value = baseRd + totalRdBonus;
         rdInput.dataset.protBonus = totalRdBonus;
         rdInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Apply to Deslocamento (percentage reduction)
+    // Apply to Deslocamento (percentage reduction) — skip if user has manually overridden it
     const deslInput = document.querySelector('[data-field="deslocamento"]');
-    if (deslInput) {
+    if (deslInput && !manualOverrides.has('deslocamento')) {
         const baseDesl = getBaseDeslocamento();
         const reducedDesl = baseDesl * (1 - totalDeslocReduction);
-        // Round to 1 decimal place
         deslInput.value = Math.round(reducedDesl * 10) / 10;
         deslInput.dataset.protReduction = totalDeslocReduction;
         deslInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -262,6 +271,11 @@ function getFonteDisplayName(id) {
 }
 
 export function onFonteAdded(cardId, itemData) {
+    // Belt-and-suspenders guards: stop if already tracked in the Map OR
+    // if a fonte UI section for this cardId is already rendered in the DOM.
+    if (activeFontes.has(cardId)) return;
+    if (document.querySelector(`.fonte-item[data-fonte-id="${cardId}"]`)) return;
+
     const nome = itemData.nome || 'Fonte';
     const raridade = (itemData.raridade || 'comum').toLowerCase();
     const tableEntry = FONTE_LA_TABLE[raridade] || FONTE_LA_TABLE.comum;

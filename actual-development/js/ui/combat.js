@@ -290,7 +290,10 @@ function criarCardReacaoPreset(nome, id) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
     });
     card.querySelector('.combat-card__name-input').addEventListener('click', e => e.stopPropagation());
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => card.remove());
+    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
+        card.remove();
+        document.dispatchEvent(new Event('ficha:changed'));
+    });
 
     // Para Proteção Mágica: atualiza stats e descrição ao mudar gasto de PM
     if (preset.allowsInput) {
@@ -714,7 +717,8 @@ export function criarCardAtaque(id) {
     // — Delete
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
         card.remove();
-        atualizarAvisoReacoes();   // força atualização do aviso
+        atualizarAvisoReacoes();
+        document.dispatchEvent(new Event('ficha:changed'));
     });
 
     // Expose sync for external calls
@@ -811,6 +815,7 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false) {
         deleteBtn.addEventListener('click', () => {
             card.remove();
             atualizarAvisoReacoes();
+            document.dispatchEvent(new Event('ficha:changed'));
         });
     }
 
@@ -999,19 +1004,21 @@ function criarCardCondicao(id) {
             card.classList.add('combat-card--expiring');
             setTimeout(() => {
                 card.remove();
-                atualizarEfeitoGlobal(); // <-- adicione aqui também
+                atualizarEfeitoGlobal();
+                document.dispatchEvent(new Event('ficha:changed'));
             }, 350);
         } else {
             qtdInput.value = val - 1;
             qtdInput.classList.add('combat-input--flash');
             setTimeout(() => qtdInput.classList.remove('combat-input--flash'), 300);
-            atualizarEfeitoGlobal(); // <-- mesmo quando só diminui, o efeito pode mudar? Não, mas por segurança
+            atualizarEfeitoGlobal();
         }
     });
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
         card.remove();
-        atualizarEfeitoGlobal()
+        atualizarEfeitoGlobal();
         onCondicaoChange();
+        document.dispatchEvent(new Event('ficha:changed'));
     });
 
     return card;
@@ -1021,6 +1028,77 @@ function adicionarCondicao() {
     const id = uid();
     document.getElementById('condicoes-container').appendChild(criarCardCondicao(id));
     onCondicaoChange()
+}
+
+// ── Auto-Morrendo (sistema de condição de morte automática) ──────────────────
+
+// Flag para suprimir re-entrada durante a própria adição/remoção automática
+let _morrendoSuppressed = false;
+
+/**
+ * Verifica os valores de pv-atual / mana-atual e adiciona ou remove
+ * automaticamente a condição "Morrendo":
+ *  - personagem normal: baseado em pv-atual
+ *  - monstro (checkbox monstro=true): baseado em mana-atual
+ * Deve ser chamada sempre que pv-atual, mana-atual ou monstro mudar.
+ */
+export function checkMorrendoCondition() {
+    if (_morrendoSuppressed) return;
+
+    const pvAtual   = parseInt(document.querySelector('[data-field="pv-atual"]')?.value,   10);
+    const manaAtual = parseInt(document.querySelector('[data-field="mana-atual"]')?.value, 10);
+    const isMonstro = document.querySelector('[data-field="monstro"]')?.checked ?? false;
+
+    // Valor relevante de acordo com o tipo de personagem
+    const triggerVal     = isMonstro ? manaAtual : pvAtual;
+    const shouldMorrendo = Number.isFinite(triggerVal) && triggerVal < 1;
+
+    const container = document.getElementById('condicoes-container');
+    if (!container) return;
+
+    // Procura condição "Morrendo" existente (qualquer origem)
+    const existingCard = Array.from(container.querySelectorAll('.combat-card--condicao'))
+        .find(card => card.querySelector('.condicao-nome')?.value.trim().toLowerCase() === 'morrendo');
+
+    if (shouldMorrendo && !existingCard) {
+        // Adiciona a condição Morrendo com duração indefinida
+        _morrendoSuppressed = true;
+        try {
+            const id = uid();
+            const card = criarCardCondicao(id);
+            card.dataset.autoMorrendo = 'true';
+
+            const nomeInput = card.querySelector('.condicao-nome');
+            if (nomeInput) nomeInput.value = 'Morrendo';
+
+            const descTA = card.querySelector('.condicao-desc');
+            if (descTA) {
+                const desc = getCondicaoDesc('Morrendo');
+                if (desc) descTA.value = desc;
+            }
+
+            const tipoSelect = card.querySelector('.condicao-duracao-tipo');
+            if (tipoSelect) {
+                tipoSelect.value = 'indefinido';
+                // bubbles:false so this internal setup doesn't reach document-level listeners
+                tipoSelect.dispatchEvent(new Event('change', { bubbles: false }));
+            }
+
+            container.appendChild(card);
+            atualizarEfeitoGlobal();
+        } finally {
+            _morrendoSuppressed = false;
+        }
+    } else if (!shouldMorrendo && existingCard) {
+        // Remove a condição Morrendo
+        _morrendoSuppressed = true;
+        try {
+            existingCard.remove();
+            atualizarEfeitoGlobal();
+        } finally {
+            _morrendoSuppressed = false;
+        }
+    }
 }
 
 // Cria ou retorna o overlay global
@@ -1217,7 +1295,11 @@ function criarCardBonus(id) {
 
     setupAccordion(card);
 
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => card.remove(), atualizarEfeitoGlobal());
+    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
+        card.remove();
+        atualizarEfeitoGlobal();
+        document.dispatchEvent(new Event('ficha:changed'));
+    });
 
     return card;
 }
@@ -1333,6 +1415,7 @@ function serializeCardFields(card) {
 export function getCombatState() {
     const ataques = Array.from(document.querySelectorAll('#ataques-container .combat-card--ataque')).map(card => ({
         id: card.dataset.ataqueId,
+        linkedItemId: card.dataset.linkedItemId || null, // persist weapon→attack link
         fields: serializeCardFields(card),
     }));
     const reacoes = Array.from(document.querySelectorAll('#reacoes-container .combat-card--reacao:not([data-oportunidade])')).map(card => ({
@@ -1367,6 +1450,8 @@ export function setCombatState(data) {
             c.innerHTML = '';
             data.ataques.forEach(a => {
                 const card = criarCardAtaque(a.id);
+                // Restore the weapon→attack link so DOM-based guards can detect it
+                if (a.linkedItemId) card.dataset.linkedItemId = a.linkedItemId;
                 restoreFields(card, a.fields);
                 c.appendChild(card);
             });

@@ -12,12 +12,12 @@
       "alvo": "1 ser/objeto/você",
       "duracao": "instantânea",
       "resistencia": "Poder anula",
-      "descricao": "A magia abstrai o ambiente em um mapa palpável...",
+      "descricao": "A magia abstrai o ambiente em um mapa palpável à suas mãos, te concedendo +5 em testes de Perspicácia, Engenhosidade e Cultura quando neste ambiente, além de mapear caminhos já passados. A magia também pode ser utilizada para encontrar seres ou objetos perdidos, indicando a direção deles desde que estejam à até 1km de alcance.",
       "aprimoramentos": [
         { "custo": "+1 PM", "descricao": "Ao usar a função de busca da magia, ela indica a distância que o ser/objeto está.", "requisito": null },
-        { "custo": "+2 PM", "descricao": "Você pode usar isso para marcar quantos aliados quiser à alcance curto...", "requisito": null },
-        { "custo": "+2 PM", "descricao": "A magia revela criaturas hostis num raio de alcance longo...", "requisito": null },
-        { "custo": "+3 PM", "descricao": "Você marca um ser até alcance curto com essa magia...", "requisito": null }
+        { "custo": "+2 PM", "descricao": "Você pode usar isso para marcar quantos aliados quiser à alcance curto, todos sabem a direção de cada um por uma cena.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A magia revela criaturas hostis num raio de alcance longo. Mostrando suas direções. Criaturas com ciência mágica podem resistir ao teste através de um teste de Poder.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você marca um ser até alcance curto com essa magia, dali em diante ele não pode mais ocultar sua presença, exceto de maneira mágica. Você o enxerga através das paredes e pode perceber sua aproximação com facilidade. Um ser deste tem direito à um teste de Poder para resistir à magia uma vez por dia.", "requisito": null }
       ],
       "grau": 1
     },
@@ -39,6 +39,573 @@
       "grau": 1
     },
     {
+      "id": "fer_rastro_de_alma",
+      "tipo": "feromancia",
+      "nome": "Rastro de Alma",
+      "la": 1,
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "ambiente",
+      "area": "esfera 30m de raio",
+      "duracao": "1 dia",
+      "descricao_geral": "Você cria um rastro de efeito de alma, capaz de confundir seres e efeitos rastreadores. Esse teste de Inertidão é realizado pelo Cronista, dado que é mais interessante ocultar o resultado, só revelando o resultado quando o efeito for ativado.",
+      "descricao_sucesso": "O rastro é camuflado e confundido, criando impressões errôneas. Isso imputa -10 em testes de um ser que tente te rastrear. Alternativamente, o efeito pode providenciar Confuso por duas rodadas contra alguém que siga seu rastro.",
+      "descricao_fracasso": "O rastro é fortificado, oferecendo +5 para qualquer um que tente realizar testes para te rastrear. Se o efeito alternativo for usado, o rastro permite alguém identificar seu tamanho, nível, classe e PVs atuais.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "O efeito é aplicado sobre um grupo de seres que passaram a emitir uma mana esquisita e irrastreável. Para fins práticos, o efeito acompanha você e seu grupo por um raio de 500m durante um dia.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_adaga_mental",
+      "tipo": "feromancia",
+      "nome": "Adaga Mental",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você perfura a mente de seu alvo, infringindo dano psicológico.",
+      "descricao_sucesso": "Você desfere 4d6 pontos de dano mental.",
+      "descricao_fracasso": "Você sofre 4d6 pontos de dano mental.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você aumenta o dano em +6.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Além disso, deixa o alvo Alquebrado.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Além disso, deixa o alvo Abalado.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_aprimoramento_forcado",
+      "tipo": "feromancia",
+      "nome": "Aprimoramento Forçado",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "1 item",
+      "duracao": "cena",
+      "descricao_geral": "Você altera a forma de um item para atribuí-lo um aprimoramento.",
+      "descricao_sucesso": "O item recebe uma modificação à sua escolha.",
+      "descricao_fracasso": "O item sofre 4d10 pontos de dano mágico.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você atribui até 2 modificações.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A duração da magia torna-se sustentada por cena, 1 PM no fim de cada.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Você atribui até 3 modificações. Em Fracasso o item quebra.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_clivar",
+      "tipo": "feromancia",
+      "nome": "Clivar",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você encosta na alma de seu oponente desferindo diversos cortes que fragmentam seu alvo de dentro para fora.",
+      "descricao_sucesso": "O alvo sofre 3d6+2 pontos de dano de Corte.",
+      "descricao_fracasso": "Você sofre 1d6 pontos de dano de Corte.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumenta o dano em +1d6+1. Esse aprimoramento pode ser pego uma quantidade de vezes igual aos Graus Mágicos que você possui acesso (até 2x em Grau 2, 3x em Grau 3, 4x em Grau 4).", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Em Sucesso, o alvo fica Sangrando.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "O ataque tem dano máximo garantido.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_distorcer_aparencia",
+      "tipo": "feromancia",
+      "nome": "Distorcer Aparência",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você distorce sua própria aparência tomando as feições e características de quem desejar e imaginar.",
+      "descricao_sucesso": "Você recebe +10 em testes de Carisma contra quem possa conhecer seu novo rosto.",
+      "descricao_fracasso": "Você fica irreconhecível e distorcido, sofrendo -10 em testes de Carisma contra qualquer um. O efeito se mantém permanente até o fim da cena.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você pode tomar a forma de animais e monstros — isso não lhe garante nenhum atributo físico, apenas a aparência.", "requisito": "Requer Grau 2." },
+        { "custo": "+6 PM", "descricao": "Ao mudar de forma, você pode herdar os valores de Constituição, Destreza ou Força desse ser, usando deles em testes.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_contato",
+      "tipo": "feromancia",
+      "nome": "Contato",
+      "la": 2,
+      "execucao": "coesão",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você apazigua um ser enquanto mantém contato físico com ele.",
+      "descricao_sucesso": "Você recebe +10 em testes de Carisma enquanto tocando o alvo. Caso deixar de tocá-lo o bônus reduz para +5.",
+      "descricao_fracasso": "Você sofre -5 em testes de Carisma contra esse alvo.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A magia passa a te permitir conversar mentalmente com o ser que toca, desde que esse tenha mente. Pode ser usado para comunicação silenciosa ou com seres de outras línguas e animais.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Em Sucesso, o ser fica permanentemente amigável com você. Em Fracasso, o ser te detesta totalmente, ficando permanentemente hostil com você.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_mao_lamina",
+      "tipo": "feromancia",
+      "nome": "Mão-Lâmina",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você transforma sua mão numa arma.",
+      "descricao_sucesso": "Uma de suas mãos torna-se uma arma de até raridade Comum que pode ser utilizada para desferir ataques. A mão não pode empunhar objetos. A magia pode ser liberada com uma ação livre.",
+      "descricao_fracasso": "Sua mão é deformada, tornando-se incapaz de empunhar objetos. Esse efeito dura uma cena e não pode ser segurada.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A arma em sua mão sofre uma modificação extra.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Você torna sua mão uma arma de até raridade Incomum.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_transformar_objeto",
+      "tipo": "feromancia",
+      "nome": "Transformar Objeto",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "1 objeto",
+      "duracao": "cena",
+      "descricao_geral": "Você distorce um item em outro, alterando suas propriedades para outro uso. Isso pode ser usado para transformar um item em outro, desde que tenham a mesma raridade e peso.",
+      "descricao_sucesso": "A transformação do item é um sucesso.",
+      "descricao_fracasso": "A transformação falha e o item quebra.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A transformação ignora a diferença de peso.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A transformação passa a durar um dia.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "O item transformado pode possuir uma raridade aumentada em até 1 passo da original. Por exemplo, é possível transformar uma Espada Longa em um Rifle.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_voracidade",
+      "tipo": "feromancia",
+      "nome": "Voracidade",
+      "la": 2,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "1d4+2 rodadas",
+      "descricao_geral": "Você inflama um alvo sob um efeito de descontrole e voracidade. O alvo recebe +3 de Deslocamento base, +5 em testes de ataque e aumenta seu multiplicador de crítico em +0.5. Ele fica incapaz de utilizar efeitos que exijam concentração. Essa magia não pode ser dissipada.",
+      "descricao_sucesso": "Seu alvo parte descontroladamente contra o inimigo mais próximo.",
+      "descricao_fracasso": "Seu alvo sempre partirá para atacar o ser vivo mais próximo, independentemente se for aliado ou inimigo.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "O alvo recebe +2 em testes de Destreza, Força e Constituição, mas sofre -5 em testes de Sabedoria e Inteligência.", "requisito": "Requer Grau 2." },
+        { "custo": "+5 PM", "descricao": "A voracidade aumenta e o alvo passa a poder realizar uma ação protagonista extra.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_costurar_em_carne",
+      "tipo": "feromancia",
+      "nome": "Costurar em Carne",
+      "la": 3,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você costura o corpo de um aliado, fechando feridas através da manipulação de sua alma.",
+      "descricao_sucesso": "Recupera 2d8 PV.",
+      "descricao_fracasso": "Sofre 2d8 pontos de dano mágico.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumenta a vida recuperada em +2d8, mas atribui ao Fracasso a condição Fraco até o fim da cena.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A alma do ser se regenera aos poucos: recupera +2 PV por rodada até deixar de ser Machucado. Para funcionar, o alvo não pode estar Machucado nem levar dano enquanto se recupera. Em Fracasso o alvo fica Sangrando até alcançar 0 PV.", "requisito": "Requer Grau 2." },
+        { "custo": "+4 PM", "descricao": "Aumenta a cura/dano para 4d8+4.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_encantamento_forcado",
+      "tipo": "feromancia",
+      "nome": "Encantamento Forçado",
+      "la": 3,
+      "execucao": "protagonista",
+      "alvo": "1 item",
+      "duracao": "cena",
+      "descricao_geral": "Você imbui um item em mana caótica, florescendo um encantamento instável.",
+      "descricao_sucesso": "O item recebe um encantamento aleatório.",
+      "descricao_fracasso": "O portador do item é afetado pela condição negativa de um encantamento aleatório.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você escolhe o encantamento.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A duração da magia torna-se sustentada por cena, 1 PM no fim de cada.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Você atribui até 2 encantamentos. Em Fracasso, o portador sofre os malefícios de 2 encantamentos.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "fer_aposta_da_mana",
+      "tipo": "feromancia",
+      "nome": "Aposta da Mana",
+      "la": 4,
+      "execucao": "coesão",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você cria uma condição negativa para sua própria existência juntamente a um bônus. Este pacto não pode ser desfeito até o fim de uma cena. Essa magia não possui Sucesso ou Fracasso — apenas condição. Não é necessário o teste de Inertidão.\n\nMalefício (escolha 1): (1) Perde 1d8 PV ou PM por rodada; (2) Desfira apenas metade de todo o dano; (3) Fique com Sobrecarga; (4) Fique com 0 em 2 atributos à sua escolha.\n\nBônus (escolha 1): (1) Recupera 1d8 PV ou PM por rodada; (2) Desfere dano x1.5 maior; (3) Dobre o seu deslocamento; (4) Escolha 2 perícias para receberem +5.",
+      "descricao_sucesso": "",
+      "descricao_fracasso": "",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "Muda para 2 malefícios e 2 bônus.", "requisito": null },
+        { "custo": "+8 PM", "descricao": "Muda para 3 malefícios e 3 bônus.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_modificacao_oportuna",
+      "tipo": "feromancia",
+      "nome": "Modificação Oportuna",
+      "la": 4,
+      "execucao": "livre",
+      "alvo": "você",
+      "duracao": "instantânea",
+      "descricao_geral": "Você altera seu corpo momentaneamente para se adaptar melhor a uma tarefa específica. Essa magia só pode ser conjurada quando um teste de perícia estiver prestes a ser realizado.",
+      "descricao_sucesso": "Você recebe +2 no teste em questão.",
+      "descricao_fracasso": "Você sofre -2 no teste em questão.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Muda o alvo para 1 ser.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda a Execução para Protagonista e a Duração para Cena.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Aumenta o bônus e ônus para +5.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_reacao_explosao",
+      "tipo": "feromancia",
+      "nome": "Reação-Explosão",
+      "la": 4,
+      "execucao": "protagonista",
+      "alvo": "1 ser ou objeto",
+      "duracao": "instantânea",
+      "descricao_geral": "Você altera a alma do que toca para torná-la instável e vítima de uma explosão rápida. Pode ser usada de duas maneiras: tornando um objeto uma bomba (que explode ao ser arremessada) ou explodindo um ser (sofrendo 4d8 de dano de Fogo e ficando Atordoado por uma rodada — imune ao efeito até o fim da cena).",
+      "descricao_sucesso": "O efeito ocorre como normal.",
+      "descricao_fracasso": "A explosão ocorre antes do planejado. Na opção objeto: a Bomba explode em você. Na opção ser: explode próxima a você e ao alvo, ambos sofrendo 2d8 de dano de Fogo; o alvo não contrai Atordoado.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Na opção objeto, a bomba não explode automaticamente, tendo sua Duração aumentada para Cena. Desde que esteja em alcance curto, como ação livre você pode fazê-la explodir remotamente.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Aumenta o dano da explosão em +12.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Muda a execução da opção objeto para Coesão.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_rompe_tudo",
+      "tipo": "feromancia",
+      "nome": "Rompe-Tudo",
+      "la": 4,
+      "execucao": "protagonista",
+      "alvo": "1 objeto",
+      "duracao": "instantânea",
+      "descricao_geral": "Você desmaterializa um objeto que toque.",
+      "descricao_sucesso": "Você desfere 10d8 pontos de dano no objeto. Se este tiver seus Pontos de Vida reduzidos a 0 por essa magia, ele se desmantela e não pode mais ser consertado.",
+      "descricao_fracasso": "O objeto sofre 20 de dano.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "Em Sucesso, o dano desferido ignora RD.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_ruina",
+      "tipo": "feromancia",
+      "nome": "Ruína",
+      "la": 4,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você toca a alma de um ser e desfere uma lesão poderosa, que aumenta a cada vez que a magia é repetida.",
+      "descricao_sucesso": "O alvo sofre 2d8+1 pontos de dano mágico, aumentando em +1d8+1 para cada vez que o alvo sofrer do uso dessa magia na cena.",
+      "descricao_fracasso": "O acúmulo de dano reseta.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Execução torna-se Coesão.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "O aumento de dano aumenta para +2d8+2 durante esta conjuração.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_transfusao",
+      "tipo": "feromancia",
+      "nome": "Transfusão",
+      "la": 4,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você pode transferir Pontos de Vida ou Pontos de Mana entre você e um ser voluntário.",
+      "descricao_sucesso": "Os pontos são transferidos livremente.",
+      "descricao_fracasso": "Ambos os envolvidos no processo perdem 10 PV ou PM e a troca não funciona.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Você pode realizar a troca de pontos entre dois alvos voluntários.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você pode forçar a transição de pontos de um inimigo igual a até 20. Em Fracasso o ser fica imune a transfusões não voluntárias até o fim do dia.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Essa magia permite passar condições (desde que não permanentes) entre os alvos da magia.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_deformar",
+      "tipo": "feromancia",
+      "nome": "Deformar",
+      "la": 5,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "descricao_geral": "Você provoca alterações violentas e repulsivas no corpo de um ser, causando danos internos e deixando sequelas graves na aparência. Um alvo que sofra dessa magia não pode sofrê-la de novo, exceto o dano.",
+      "descricao_sucesso": "O alvo sofre 2d4 pontos de dano mágico, além de ficar impossibilitado de usar um dos braços, pernas (fica Lento) ou olhos (fica Cego). A mudança se mantém até o fim da cena e ainda deixa o alvo com -5 em testes de Carisma.",
+      "descricao_fracasso": "O efeito tem um chicote em você, te imputando o mesmo ônus do inimigo (exceto o dano).",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "A autoestima do indivíduo é ferida e o medo toma sua alma; sua Inertidão reduz em 5.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "A deformação provoca 4d4 pontos de dano e afeta até 2 membros.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Em Fracasso, o ônus não se aplicará a você, mas em troca você sofre o dobro do dano que o alvo sofreria por essa magia.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_hemomancia",
+      "tipo": "feromancia",
+      "nome": "Hemomancia",
+      "la": 5,
+      "execucao": "protagonista",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Essa magia te permite a manipulação da mana contida em seu sangue, podendo adaptar sua forma para até três benefícios distintos. Para conjurá-la você perde 2d8 pontos de Vida (em Sucesso). Em Fracasso, a manipulação não acontece como devido e você fica Sangrando.\n\nArma de Sangue: Seu sangue é projetado em formas pontiagudas usáveis como arma. Desfere 2d6 de dano de Perfuração, crítico 19/x2.\n\nAprimoramento Sanguíneo: Você fica imune a Sangrando até o fim da cena e recebe +2 em testes de Destreza, Força ou Constituição.\n\nDescarnar: Duração torna-se instantânea e alvo 1 ser. Você puxa o sangue do inimigo, desferindo 2d8+2 de dano Trevas.",
+      "descricao_sucesso": "Escolha um dos três benefícios acima e o aplique normalmente.",
+      "descricao_fracasso": "A manipulação falha e você fica Sangrando.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você reduz o dano recebido na conjuração à zero.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você pode como ação de Coesão mover um inimigo que já tenha sofrido de Descarnar até 3m em qualquer direção.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A Arma de Sangue tem seu crítico aumentado para 18/x2.5; o Descarnar deixa o alvo Sangrando; ou o Aprimoramento Sanguíneo te oferece 5 RD a dano.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_resgate_energetico",
+      "tipo": "feromancia",
+      "nome": "Resgate Energético",
+      "la": 5,
+      "execucao": "protagonista",
+      "alvo": "1 pessoa",
+      "duracao": "instantânea",
+      "descricao_geral": "Você altera o formato de uma alma para tentar resgatar o vigor da mesma. Diferente do normal, o custo está imbuído em seu efeito e não apresenta custo de conjuração. Você pode gastar 1 PM seu e 1 PM do alvo para recuperar 4 PV (ou 2 PM para 4 PV ao usar em si mesmo). Pode gastar até 10 PM no total para recuperar 40 PV.",
+      "descricao_sucesso": "A magia ocorre normalmente.",
+      "descricao_fracasso": "Você e seu alvo pagam o dobro de PM no efeito (2 PM de cada para cada 2 PV).",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "Você aumenta o limite para até 20 PM para 80 PV.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Muda a Execução para Coesão.", "requisito": null },
+        { "custo": "+0 PM", "descricao": "Seu aliado não paga PM nenhum na recuperação; em troca você deve pagar o dobro na conjuração.", "requisito": "Requer Grau 3." },
+        { "custo": "+0 PM", "descricao": "Você pode realizar o processo inverso, pagando com PVs um aumento de PM.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "fer_invadir_mente",
+      "tipo": "feromancia",
+      "nome": "Invadir Mente",
+      "la": 5,
+      "execucao": "protagonista",
+      "alvo": "1 pessoa",
+      "duracao": "sustentada 1 PM",
+      "descricao_geral": "Você merge seu contato sobre a mente de um ser inconsciente, dando acesso a seus pensamentos, sonhos e memórias.",
+      "descricao_sucesso": "A cada rodada você pode fazer uma pergunta a este ser, que deve realizar um teste de Poder contra sua DT de Sabedoria. Para cada falha, ele deve responder a verdade. Caso o alvo tenha sucesso em dois testes seguidos, a magia se desfaz e o alvo acorda.",
+      "descricao_fracasso": "O alvo acorda imediatamente e você sofre 2d8 pontos de dano mental.",
+      "aprimoramentos": [
+        { "custo": "+6 PM", "descricao": "Você troca de mente com o alvo, jogando com o corpo dele mas usando seus atributos de Sabedoria e Inteligência. Se um dos corpos morrer com uma mente que não lhe pertence, o sobrevivente fica permanentemente preso no novo receptáculo. A duração torna-se permanente.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "O efeito prende alguém dentro de uma abstração mental de seu controle. Você e o alvo ficam inconscientes. A cada rodada o ser sofre 1d8 de dano mental, só podendo sair ao encontrar um ponto fraco em suas barreiras mentais.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_rebanho",
+      "tipo": "feromancia",
+      "nome": "Rebanho",
+      "la": 6,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "descricao_geral": "Uma marca é imputada na alma de um ser, fazendo-o repartir condições e danos com alguém que também tenha a mesma marca. No fim de cada turno, alguém marcado pode resistir com um teste de Poder contra sua Magia; após 2 sucessos seguidos, o alvo fica imune até o fim do dia.",
+      "descricao_sucesso": "O alvo é marcado com sucesso. Caso outro apresentar a mesma marcação e estiverem a menos de alcance curto, eles compartilham metade do dano um com o outro e condições se espelham entre ambos. A magia suporta até 4 alvos marcados.",
+      "descricao_fracasso": "O alvo não pode ser marcado até o fim do dia, e todas as outras marcações da cena se desfazem.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Você marca a si mesmo como uma ação de Coesão.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você aumenta o raio de interação entre as marcas para 18m.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "O Rebanho pode ser conjurado através de um ataque. Acertar aplica o efeito de Sucesso; errar aplica o de Fracasso.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_alterar_ambiente",
+      "tipo": "feromancia",
+      "nome": "Alterar Ambiente",
+      "la": 7,
+      "execucao": "protagonista",
+      "alvo": "ambiente",
+      "area": "círculo de raio 18m",
+      "duracao": "cena",
+      "descricao_geral": "Você toca o chão de um ambiente alterando sua composição e forma entre 4 efeitos seletos. Em caso de Fracasso, o ambiente torna-se errôneo, alternando aleatoriamente entre os 4 efeitos a cada fim de rodada.\n\nPerigoso: Terreno difícil; alguém caído sofre 4d4 de dano de Perfuração.\nMovediço: Terreno difícil; ser que não se mova fica Imóvel até o fim da cena.\nDeslizante: Deslocamento +3, mas 50% de chance de ficar Caído ao se mover.\nTremendo: Todos os seres começam seu turno Caído.",
+      "descricao_sucesso": "Escolha um dos 4 efeitos de terreno e o aplique na área.",
+      "descricao_fracasso": "O ambiente alterna aleatoriamente entre os 4 efeitos a cada fim de rodada.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você fica imune às condições de terreno.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você pode alternar as condições de terreno como ação de coesão desde que esteja sobre ele.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Você e seus aliados ficam imunes a condições de terreno.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_alterar_tamanho",
+      "tipo": "feromancia",
+      "nome": "Alterar Tamanho",
+      "la": 7,
+      "execucao": "protagonista",
+      "alvo": "1 ser ou objeto",
+      "duracao": "cena",
+      "descricao_geral": "Você altera o formato de uma alma para expandi-la ao limite, aumentando ou reduzindo objetos ou seres.",
+      "descricao_sucesso": "Em ser: você aumenta ou reduz uma categoria de tamanho, adicionando +2 em Força (ao aumentar) ou Destreza (ao reduzir). Em objeto: pode alterar armas para versões maiores ou menores (espada curta ↔ longa; arco curto ↔ longo; besta leve ↔ pesada; flecha ↔ lança; revólver ↔ rifle).",
+      "descricao_fracasso": "A transformação falha, gerando o efeito oposto ao desejado: em ser, inverte a direção; em objeto, o torna inutilizavelmente enorme ou minúsculo.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "Você altera propositalmente o braço de um ser, mantendo-o maior e com alcance corpo-a-corpo de até 4.5m.", "requisito": null },
+        { "custo": "+7 PM", "descricao": "Um ser altera seu tamanho em até dois passos.", "requisito": null },
+        { "custo": "+10 PM", "descricao": "Um ser altera seu tamanho em até três passos.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_animacao_suspensa",
+      "tipo": "feromancia",
+      "nome": "Animação Suspensa",
+      "la": 8,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao_geral": "Você rege o limite entre a morte e a vida, podendo forçar um coração a bater ou uma mente funcional. Como uma simulação da vida, um corpo derrotado pode ser erguido para continuar em combate.",
+      "descricao_sucesso": "Você recupera 40 PV de um ser que esteja em Morrendo; além disso ele deixa de estar inconsciente, mesmo se ainda estiver em Morrendo.",
+      "descricao_fracasso": "Você desfere 40 de dano num alvo em Morrendo.",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "A magia pode ser conjurada em até alcance médio, desde que já tenha utilizado ao menos uma magia de Feromancia no alvo.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Torna a Execução Coesão.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_aprimoracao_intensa",
+      "tipo": "feromancia",
+      "nome": "Aprimoração Intensa",
+      "la": 9,
+      "execucao": "protagonista",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você distorce seu corpo para a criação de um novo membro totalmente funcional, podendo ignorar condições de membros decepados ou ter bônus abaixo. Em Fracasso sofre 2d8 de dano mágico e fica imune a essa magia até o fim do dia.\n\nBraços extras: Par de mãos extras que empunham até 2 itens + 1 ação protagonista extra.\nOlhos extras: +5 em testes de Perspicácia, Reflexos e resistência.\nPernas extras: +4.5m de deslocamento + vantagem em testes de manobras.\nTentáculos: Ataque corpo-a-corpo extra todo início de rodada contra ser em até alcance curto (Magia como teste, dano 2d10+FOR, crítico 19/x2).",
+      "descricao_sucesso": "Escolha um dos membros acima e receba seus benefícios.",
+      "descricao_fracasso": "Sofre 2d8 de dano mágico e fica imune a essa magia até o fim do dia.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "Você muda o alvo para 1 ser.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você pode se beneficiar de um bônus extra. Esse aprimoramento pode ser pego até 4 vezes. Um mesmo membro não pode ser escolhido mais de uma vez.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "fer_aberracao",
+      "tipo": "feromancia",
+      "nome": "Aberração",
+      "la": 12,
+      "execucao": "complexa",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao_geral": "Você altera sua forma a níveis perigosos tomando uma aparência grotesca e titânica.",
+      "descricao_sucesso": "Enquanto transformado, você é considerado Enorme e possui +5 de Deslocamento, Defesa, RD e +10 em testes baseados em atributos físicos (Força, Destreza e Constituição). Além disso possui os ataques básicos de uma Besta adequados para o seu nível.",
+      "descricao_fracasso": "Você é considerado Colossal, possui +10 de Deslocamento, Defesa, RD e +20 em testes baseados em atributos físicos. Possui 2 ataques à sua escolha entre os Ofensivos de uma Besta. Nessa forma, não pode realizar ações que exijam concentração. Você não poderá se destransformar, ficando permanentemente nessa forma e sendo considerado um Monstro faminto pela carne de sua raça.",
+      "aprimoramentos": [
+        { "custo": "+0 PM", "descricao": "Um ser posto em Morrendo por você é devorado, recuperando PV igual ao dano desferido ao matá-lo.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você regenera 10 PV por turno enquanto nessa forma.", "requisito": null },
+        { "custo": "+8 PM", "descricao": "Você recebe +80 PV máximos enquanto nessa forma.", "requisito": null },
+        { "custo": "+10 PM", "descricao": "Você recebe uma ação protagonista extra enquanto nessa forma.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "fer_fluidez_corporea",
+      "tipo": "feromancia",
+      "nome": "Fluidez Corpórea",
+      "la": 12,
+      "execucao": "reação simples",
+      "alvo": "você",
+      "duracao": "instantânea",
+      "descricao_geral": "Você é capaz de alterar seu corpo em instantes. Tamanha facilidade e agilidade no processo te concede a melhor defesa possível para os melhores momentos.",
+      "descricao_sucesso": "Você escolhe entre receber +10 na Defesa, +10 RD ou +5 em um teste de resistência.",
+      "descricao_fracasso": "Você não pode usar reações complexas até o fim da rodada.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "A magia muda sua execução para Coesão, duração para sustentada 1 PM e 1 PV, e passa a te oferecer +2d10 fixos na Defesa e RD, além de vantagem em testes de resistência. Enquanto ativo, não é possível realizar a conjuração padrão.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Os bônus aumentam em 5.", "requisito": null },
+        { "custo": "+8 PM", "descricao": "Você recebe +10 em um teste de ataque ou manobra.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "fer_ventriloquismo",
+      "tipo": "feromancia",
+      "nome": "Ventriloquismo",
+      "la": 12,
+      "execucao": "coesão",
+      "alvo": "1 ser",
+      "duracao": "campanha",
+      "descricao_geral": "Você puxa fios invisíveis de dentro da alma de um ser, sendo capaz de mantê-lo subjugado ao seu desejo enquanto a alcance longo dele. O alvo mantém a consciência mas não pode controlar o próprio corpo e mana. Mesmo morto, você pode usar o corpo até que atinja PV igual ao valor negativado. Um ser pode resistir a uma ordem que contrarie uma virtude indubitável, com teste de Poder contra sua Magia; sucesso garante imunidade ao feitiço até o fim da cena.",
+      "descricao_sucesso": "",
+      "descricao_fracasso": "O ser fica imune a magia até o fim do dia e permeabiliza um teste de resistência para todos que você esteja controlando.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você pode como reação complexa puxar um Ventríloquo a até alcance curto para adjacente, usando-o para bloquear um ataque como escudo humano.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você pode controlar a personalidade de um Ventríloquo, controlando falas e movimentos ao nível humano. Enquanto isso, você enxerga e ouve através dele, mas fica Atordoado.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você pode se alimentar de toda a energia restante em um de seus Ventríloquos, deixando-o com 1 PV e livre. Você recupera em PM o dano necessário para colocá-lo sob 1 PV.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "fer_ferida_espiritual",
+      "tipo": "feromancia",
+      "nome": "Ferida Espiritual",
+      "la": 13,
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "descricao_geral": "Você esfaqueia diretamente a essência de um ser.",
+      "descricao_sucesso": "Até o fim da cena, o ser torna-se incapaz de utilizar sua Individualidade. Além disso, sofre 3d8 pontos de dano mágico por rodada até ficar com 1 ponto de vida, depois o dano contínuo cessa.",
+      "descricao_fracasso": "O alvo sofre 1d8 pontos de dano mágico por rodada durante 4 rodadas.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Muda o dano em Sucesso para 24 pontos de dano mágico fixos.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A Ferida Espiritual pode ser conjurada através de um ataque. Acertar aplica Sucesso; errar aplica Fracasso.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Muda o dano em Sucesso para 0; ao invés disso, o alvo não pode recuperar PV de nenhuma maneira até o fim da cena.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "fer_fusao",
+      "tipo": "feromancia",
+      "nome": "Fusão",
+      "la": 13,
+      "execucao": "complexa",
+      "alvo": "1 ser e você",
+      "duracao": "cena",
+      "descricao_geral": "Você torna-se capaz de fundir-se a um alvo voluntário. Ambos tornam-se apenas um ser, somando PV, PM e Fé. Todo dano ou efeito que afetar um é aplicado aos dois. Nos testes, utilize o maior valor de perícia entre as duas fichas. A fusão possui duas ações protagonistas (uma por indivíduo). Habilidades, hábitos e magias não são compartilhados. A fusão só pode ser desfeita no fim da cena.",
+      "descricao_sucesso": "A fusão ocorre normalmente.",
+      "descricao_fracasso": "Fracasso >25%: Algo terrível acontece no meio do processo, a decidir pelo Cronista. Fracasso <25%: Ambos os indivíduos morrem.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Permite que a fusão seja desfeita como ação livre em qualquer ponto da cena.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você funde alvos que não sejam você. Ainda precisam ser voluntários.", "requisito": null },
+        { "custo": "+10 PM", "descricao": "Você se torna capaz de fundir até 3 indivíduos, recebendo uma ação protagonista extra respectiva ao terceiro ser.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "fer_voodoo",
+      "tipo": "feromancia",
+      "nome": "Voodoo",
+      "la": 13,
+      "execucao": "protagonista",
+      "alvo": "1 ser ou 1 objeto",
+      "duracao": "campanha",
+      "descricao_geral": "Você captura parte da essência da mana de um alvo a partir de um objeto íntimo ou dele mesmo, podendo conjurar magias de Feromancia contra este alvo a qualquer distância. Magias usadas através deste meio possuem alcance ilimitado.",
+      "descricao_sucesso": "A essência é capturada e pode ser usada livremente.",
+      "descricao_fracasso": "A essência se perde, sendo necessária outra para essa magia.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "Quando conjura magias de Feromancia através do voodoo você recebe +5 em testes de Inertidão.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você desfere um dano mortal no seu boneco de voodoo, desferindo dano equivalente à metade da vida de seu alvo original. Esse aprimoramento só pode ser usado uma vez por dia.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
       "id": "teu_aspecto_flamejante",
       "tipo": "teurgia",
       "nome": "Aspecto Flamejante",
@@ -48,7 +615,7 @@
       "alcance": "toque",
       "alvo": "1 arma",
       "duracao": "cena",
-      "descricao": "Ao ser invocada a bênção de Agni sobre uma arma, ela se tornará incandescente...",
+      "descricao": "Ao ser invocada a bênção de Agni sobre uma arma, ela se tornará incandescente até o fim da cena. A chama não queimará seu portador, mas aumentará o dano da arma em +2d6 de Fogo. Todo alvo que sofrer mais de 10 pontos de dano pela arma será deixado Em Chamas.",
       "aprimoramentos": [
         { "custo": "+2 PM", "descricao": "Aumentará os dados de dano em +2.", "requisito": null },
         { "custo": "+4 PM", "descricao": "Reduzirá a margem de crítico em 1 e o multiplicador de crítico em 0.5.", "requisito": null },
@@ -56,6 +623,834 @@
         { "custo": "+6 PM", "descricao": "Aumentará o alcance para curto e alternará o alvo para armas à sua escolha.", "requisito": "Requer Grau 3." }
       ],
       "grau": 1
+    },
+    {
+      "id": "teu_chama_viva",
+      "tipo": "teurgia",
+      "nome": "Chama-Viva",
+      "fe": 1,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "1 ser",
+      "area": "esfera raio de 4.5m",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos anula",
+      "descricao": "Uma pequena e calorosa chama flui de suas mãos, partindo vorazmente contra um inimigo no alcance, queimando-o em 2d10 pontos de dano de Fogo. Logo em seguida a chama parte para o inimigo mais próximo desde que esteja a até 4.5m do anterior. A reação continua em cadeia, nunca afetando o mesmo alvo mais de duas vezes. Todos têm direito a um teste de Reflexos para evitar a chama.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A resistência muda para 'Reflexos reduz à metade'.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Todos que falharem no teste de Resistência ficam Em Chamas.", "requisito": null },
+        { "custo": "+8 PM", "descricao": "O dano da chama aumenta em +2d10 e seu raio de alcance aumenta para 9m.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_combustao_espontanea",
+      "tipo": "teurgia",
+      "nome": "Combustão Espontânea",
+      "fe": 2,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Esforço reduz à metade e ignora condição",
+      "descricao": "Uma chama se expande do peito do alvo, queimando-o através de uma explosão interna. O alvo é acometido de 4d6+6 pontos de dano de Fogo e fica Em Chamas.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumenta o dano em +2d6+6.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A explosão se espalha, desferindo o mesmo dano e condição contra todo ser adjacente ao inimigo. Estes também fazem o teste de Resistência, porém usando Reflexos.", "requisito": "Requer Grau 2." },
+        { "custo": "+7 PM", "descricao": "Muda o alvo para seres à sua escolha.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_dobra_de_fogo",
+      "tipo": "teurgia",
+      "nome": "Dobra de Fogo",
+      "fe": 3,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "alvo": "1 chama",
+      "duracao": "instantânea",
+      "descricao": "Você altera a forma do fogo e faz as labaredas se dobrarem à sua vontade. Escolha um dos 4 efeitos dentro de uma chama no alcance:\n\nPuxar: Você move uma chama por até 9m. Caso atravesse um ser, este sofre 3d8 de Fogo (Reflexos anula).\nModelar: Aumenta ou reduz de tamanho uma chama em uma categoria (chamas maiores causam +1d de dano; menores, -1d; se chegar a 0, se extingue).\nExtinguir: A chama se extingue.\nEsquentar: O alvo torna-se um Objeto ardente. Quem o segurar deve fazer Esforço para não largá-lo, sofrendo 1d8 de Fogo.",
+      "aprimoramentos": [
+        { "custo": "+1 FE", "descricao": "Parte do efeito torna-se a ignição de uma chama de tamanho médio, não necessitando alterar apenas chamas pré-existentes.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Lança-chamas: Você transforma uma chama em uma rajada flamejante que avança contra um inimigo, desferindo 4d8 de Fogo e deixando-o Em Chamas. Reflexos reduz o dano à metade e ignora a condição. A chama se extingue ao fim da rajada.", "requisito": null },
+        { "custo": "+6 PM e +1 FE", "descricao": "Círculo de Fogo: Um círculo de chamas te rodeia. Todo ser a menos de 3m deve fazer Esforço ou sofrer 2d6 de Fogo. Você recebe +2 de Defesa contra ataques a distância vindos de fora do círculo. Sustentado com 1 FE por rodada.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_vinganca_do_fogo",
+      "tipo": "teurgia",
+      "nome": "Vingança do Fogo",
+      "fe": 3,
+      "divindade": "Agni",
+      "execucao": "reação complexa",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao": "Ao ser alvo de um ataque, você pode conjurar essa magia para retornar o mesmo dano que sofrer em dano de Fogo contra o inimigo.",
+      "aprimoramentos": [
+        { "custo": "+5 FE", "descricao": "O dano flui em retorno sob seu valor integral — ou seja, todo o dano do ataque e não apenas o que você sofreu.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_explosao",
+      "tipo": "teurgia",
+      "nome": "Explosão",
+      "fe": 4,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "alvo": "seres",
+      "area": "esfera com 1.5m de raio",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos reduz à metade e não voa",
+      "descricao": "Você impele uma explosão em um alvo no seu campo de visão. Os alvos no alcance sofrem 6d8 pontos de dano de Fogo e voam na direção oposta a você (3m para cada 10 pontos de dano sofridos).",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Aumenta o raio da explosão para 3m.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Aumenta o dano em +24 do mesmo tipo.", "requisito": null },
+        { "custo": "+6 FE e +2 PM", "descricao": "A execução torna-se complexa e a explosão é múltipla, atacando até 3 seres em alcance curto com 3 explosões diferentes.", "requisito": null },
+        { "custo": "+1 FE e +4 PM", "descricao": "Muda o alvo para seres à sua escolha, podendo escolher quem é afetado pela área.", "requisito": "Requer Grau 3." },
+        { "custo": "+2 FE", "descricao": "Reduz o alcance para toque e o alvo para 1 ser, área torna-se nula. Você toca no alvo e causa 8d8 de Fogo; a resistência não pode ignorar o voo.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_boca_do_vulcao",
+      "tipo": "teurgia",
+      "nome": "Boca do Vulcão",
+      "fe": 5,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "1 ser",
+      "area": "círculo de 1.5m de raio",
+      "duracao": "cena",
+      "resistencia": "Reflexos anula",
+      "descricao": "Você abre uma ruptura na terra fazendo um gêiser de magma explodir. Um inimigo sobre o efeito sofre 50 de dano de Fogo e fica Em Chamas (Reflexos anula). Uma poça de lava de 1.5m de raio passa a residir no local; qualquer ser que a tocar sofre o mesmo teste e efeito. Um ser afetado cai adjacente à poça após o dano.",
+      "aprimoramentos": [
+        { "custo": "+6 PM", "descricao": "A poça continua se espalhando em +1m de raio por rodada até alcançar 4m de raio. Caso a expansão alcançar um ser, este faz o teste de Reflexos.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Muda o alvo para 2 seres, conjurando duas poças de lava simultaneamente.", "requisito": "Requer Grau 3." },
+        { "custo": "+5 FE", "descricao": "Aumenta o dano para 100.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_chuva_de_meteoros",
+      "tipo": "teurgia",
+      "nome": "Chuva de Meteoros",
+      "fe": 6,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "longo",
+      "alvo": "até 10 seres",
+      "area": "1m de raio por meteoro",
+      "duracao": "instantânea",
+      "descricao": "Você invoca uma nuvem de meteoros a 70m acima do chão. Marque 10 pontos no alcance onde os meteoros cairão (raio 1m cada). Os meteoros caem no início do seu próximo turno, dando chance de reorganização. Um ser nos espaços marcados sofre 4d4×2 de dano de Fogo e fica Atordoado por uma rodada. O dano dos meteoros não se acumula em um mesmo ser.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A magia muda para uma rajada instantânea de meteoros que acerta tudo em 6m de raio, desferindo 4d10 de dano de Fogo (Reflexos reduz à metade). Não se acumula com outros aprimoramentos.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "A magia muda para apenas um grande meteoro com raio de 10m, causando 10d4×2 de dano de Fogo e deixando todos Atordoados e Em Chamas no alcance.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Os meteoros só atingem o solo no início da segunda rodada. Isso dobra o raio individual dos meteoros e aumenta o multiplicador de dano para ×3.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_raio_infernal",
+      "tipo": "teurgia",
+      "nome": "Raio Infernal",
+      "fe": 7,
+      "divindade": "Agni",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "alvo": "1 ser",
+      "duracao": "sustentada (2 FE)",
+      "resistencia": "Reflexos reduz à metade",
+      "descricao": "Você manifesta um feixe de laser fervente que derrete o alvo. O Raio Infernal desfere 8d8 de dano de Fogo todo início de rodada enquanto o ser estiver no alcance e em sua visão. Caso o ser não possa ser acertado, o efeito cessa.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Aumenta o dano do raio em +2d.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Mesmo que o ser não possa ser acertado pelo Raio, a magia não se desfaz, permitindo determinar outro alvo no alcance.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "A execução muda para Complexa, duração para cena e alcance para toque. Você cria uma torre com um globo ocular de fogo que pode disparar o feixe contra um inimigo em alcance longo por rodada. Dano: 6d6 de Fogo. A torre possui 40 PV, Defesa 15 e RD 10. Máximo de 2 torres por cena.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_inferno",
+      "tipo": "teurgia",
+      "nome": "Inferno",
+      "fe": 10,
+      "divindade": "Agni",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "alvo": "seres",
+      "area": "círculo (14m de raio)",
+      "duracao": "cena",
+      "resistencia": "Poder reduz à metade",
+      "descricao": "A terra grita, monólitos se erguem, dentes nascem do chão e lava borbulha entre fissuras. Todos na área (exceto você) sofrem 4d10 de dano de Fogo e ficam Em Chamas e Vulneráveis a dano de Fogo. Essas condições não podem ser retiradas por nenhum efeito — apenas ao ficar duas rodadas fora da área. Sobrepõe a magia Furacão de Zephyra. Só pode ser conjurada uma vez por dia.",
+      "aprimoramentos": [
+        { "custo": "+1 FE", "descricao": "Todo ser que entrar em Morrendo na área do Inferno sofre 60 de Fogo por turno que permanecer em Morrendo.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Essa magia afeta qualquer ser voando, nadando ou enterrado dentro ou sobre a área, sendo puxado se necessário.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Aumenta a área em +4m de raio.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Escolha até 3 seres para serem imunes aos efeitos de Em Chamas e ao dano.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "teu_fenix",
+      "tipo": "teurgia",
+      "nome": "Fênix",
+      "fe": 12,
+      "divindade": "Agni",
+      "execucao": "reação simples",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "instantânea",
+      "descricao": "As feridas se fecham em fogo, cinzas surgem e numa explosão de chamas o cadáver desperta. Essa magia revive um ser morto com 10 PV. O ser retorna Vulnerável a dano de Água e perde quaisquer Alinhamentos que não sejam o de Agni. Se morto novamente, torna-se uma criatura de Fogo de mesmo nível.",
+      "aprimoramentos": [
+        { "custo": "+2 FE", "descricao": "Muda o alcance para toque e o alvo para 1 pessoa. A execução muda para complexa.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "teu_sono_profundo",
+      "tipo": "teurgia",
+      "nome": "Sono Profundo",
+      "fe": 1,
+      "divindade": "Gaya",
+      "execucao": "complexa",
+      "alcance": "toque",
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "resistencia": "Poder anula",
+      "descricao": "Essa magia atribui ao alvo a condição Inconsciente, colocando-o dentro de um sonho elegido por você. O alvo tem direito a um teste de Poder todo turno para forçar o despertar; após dois sucessos acorda e fica imune ao Sono Profundo até o fim do dia. Sofrer dano concede bônus no teste de despertar igual ao valor do dano.",
+      "aprimoramentos": [
+        { "custo": "Truque", "descricao": "Coloca um alvo voluntário sob o efeito da magia.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Reduz a execução a protagonista.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Torna necessários dois sucessos consecutivos para despertar do sono.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta o alcance para curto.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_dobra_de_metal",
+      "tipo": "teurgia",
+      "nome": "Dobra de Metal",
+      "fe": 2,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "1 objeto com metal",
+      "duracao": "instantânea",
+      "descricao": "Você desperta sua vontade dentro de um objeto metálico, escolhendo um dos 4 efeitos:\n\nAtração: O objeto é atraído em sua direção (2d6 de Impacto contra ser no caminho; Trabalho vs DT SAB nega).\nRepulsão: O objeto é empurrado na direção oposta (+2d6 ao arremesso, com desvantagem no teste de ataque; Trabalho vs DT SAB nega).\nTransformação: Dobra o metal — reduz o dano de uma arma em 2 dados, aplica -5 em ataques com ela ou reduz 5 de Defesa de uma armadura. Também pode fundir metal em outras formas de mesma raridade e peso (2 ações complexas, alcance toque).\nLocalização: Percebe metais em até 100m, seus tipos e quantidades.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Aprimora 'Transformação', podendo usá-la a alcance curto em qualquer uma de suas fases.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você transforma um metal em outro; a transformação some após uma cena.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_extrato_da_seiva",
+      "tipo": "teurgia",
+      "nome": "Extrato da Seiva",
+      "fe": 2,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao": "Requer vegetação no ambiente ou uma planta viva consigo. De uma planta, você extrai um composto luminoso de Mana natural que, ao ser aplicado sobre um ser, recupera 2d8 PV ou PM. A planta morre ao fim do processo.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A seiva passa a recuperar +1d8+4.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você armazena a seiva em um recipiente (alvo passa a ser o pote). Quem consumir recupera PV ou PM. Máximo de 3 recipientes por vez.", "requisito": "Requer Grau 2." },
+        { "custo": "+6 PM", "descricao": "Você recupera 6d8+4 PV ou PM de um ser dentro de uma floresta (mata todas as plantas ao redor). A execução torna-se ação complexa.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_manipulacao_de_terreno",
+      "tipo": "teurgia",
+      "nome": "Manipulação de Terreno",
+      "fe": 3,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "seres à sua escolha",
+      "area": "círculo de raio de 18m",
+      "duracao": "cena",
+      "resistencia": "Reflexos reduz à metade",
+      "descricao": "O chão molda-se à sua vontade. Escolha um dos 4 efeitos:\n\nPerigoso: Terreno difícil; alguém caído sofre 4d4 de Perfuração.\nMovediço: Terreno difícil; ser que não se mova fica Imóvel até o fim da cena.\nCriar Obstáculo: Ergue até 4 pedregulhos que oferecem cobertura (parcial ou total se adjacentes).\nQuebrar: (Ação complexa) Rompe parede, chão ou teto — desaba causando 10d6 de Terra (Reflexos reduz à metade).",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Fortificação: Você imbui uma pedra em magia resistente, que recebe +10 RD contra danos mundanos.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Permite conjurar Criar Obstáculo como Reação Simples.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Catapulta: Se o terreno estiver perigoso, quebrado ou com obstáculos de pedregulho, você lança uma rocha contra um inimigo em alcance curto — 4d6 de Terra e Atordoado por uma rodada (Reflexos anula).", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Modelar: Usa pedra ou argila para criar um ou mais objetos simples de tamanho Enorme ou menor.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Construção: Com duas ações complexas, ergue um quarto de 4 paredes (cada uma 3×9m), com 30 PV e RD 5.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_armadura_de_pedra",
+      "tipo": "teurgia",
+      "nome": "Armadura de Pedra",
+      "fe": 3,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao": "Uma armadura de pedra e solo é formada ao seu redor. Todo dano físico acerta a armadura primeiro, que possui 50 PV e 10 RD a danos normais. Não pode ser recuperada ou aprimorada de nenhuma maneira; é imune a Em Chamas. Enquanto ativa, é tratada como um item de 10 de peso (provavelmente causando Sobrecarga).",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Muda a execução para reação complexa, reduzindo os PV da armadura para 25.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Enquanto com a armadura, ao realizar um ataque desarmado, utilize o dano de Manoplas.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Aumenta a RD da armadura em +5.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Enquanto com a armadura você recebe +2 em testes baseados em Constituição e Força.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Reduz o peso da armadura para 5, mas também reduz sua RD para 2.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Aumenta os PV da armadura em +50.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda o alvo para 1 ser e o alcance para toque.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_envenenar",
+      "tipo": "teurgia",
+      "nome": "Envenenar",
+      "fe": 4,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos anula",
+      "descricao": "De sua fonte, vinhas e raízes saltam em direção ao alvo, espetando-o e envenenando-o. Se falhar no teste de Reflexos, fica Envenenado e deve fazer Esforço por rodada — se falhar, sofre 5 de dano de Terra. Com dois sucessos seguidos no Esforço o dano reduz para 2; com mais dois sucessos seguidos, o alvo se livra da condição.",
+      "aprimoramentos": [
+        { "custo": "Truque", "descricao": "Muda o efeito para um antídoto contra o Envenenar, podendo curar um ser em alcance toque.", "requisito": null },
+        { "custo": "+1 PM", "descricao": "Permite que o veneno se acumule: para cada nova aplicação dessa magia no mesmo alvo, o dano do veneno aumenta em +5.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Dobra o dano do veneno.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Muda o efeito para uma nuvem de esporos em esfera de 6m de raio. Ser que iniciar a rodada na nuvem deve segurar a respiração (ficando voluntariamente Asfixiado). Ao atingir o limite da Asfixia fica Envenenado. A nuvem dura cena.", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_criar_golem",
+      "tipo": "teurgia",
+      "nome": "Criar Golem",
+      "fe": 5,
+      "divindade": "Gaya",
+      "execucao": "complexa",
+      "alcance": "curto",
+      "duracao": "cena",
+      "descricao": "Você imbui a terra de energia, trazendo à vida um Golem que te obedece. O Golem possui 30 PV, 20 RD a dano, +5 em testes de Constituição/Força, +2 em Sabedoria, 0 em Inteligência/Destreza, tamanho Grande, nível 4 e deslocamento 6m. Possui 2 ataques: Marretada (4d8 de dano Terra) e Rolar (investida de 6m em linha, derruba e 2d8 de dano Terra). Máximo de 2 Golens por cena.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Os bônus do Golem aumentam em +2 (nível +1).", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A vida do Golem aumenta em +20 (nível +1).", "requisito": null },
+        { "custo": "+4 PM", "descricao": "O dano e ataque do Golem aumentam num valor igual ao dado-modificador de Magia (ex.: Magia III = +1d8 no ataque e dano; nível +2).", "requisito": null },
+        { "custo": "+1 FE", "descricao": "O Golem recupera 2 PV todo início de rodada e a duração muda para 1 dia (nível +1).", "requisito": null },
+        { "custo": "+4 FE", "descricao": "O Golem torna-se Enorme, deslocamento 9m, bônus +2, PV +20, dano +2d6 (nível +3).", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_invocar_jardim_vivo",
+      "tipo": "teurgia",
+      "nome": "Invocar Jardim-Vivo",
+      "fe": 6,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "seres",
+      "area": "8m de raio",
+      "duracao": "cena",
+      "descricao": "Você sumona ervas e raízes que tornam o terreno difícil por trepadeiras. Além disso, você invoca plantas carnívoras com custo limite total de 5:\n\nOportunista (+1): Planta armadilha — ao ter inimigo adjacente, tenta prender (Reflexos ou Agarrado + 2d8 Perfuração; preso faz Lutar contra 1d20+5+1d6 para escapar, sofrendo +1d8 por falha).\nDisparadora (+2): Planta que dispara projétil em alcance curto (ataque 1d20+5+1d6, dano 4d6 Perfuração, crítico 19).\nMordedora (+2): Planta que abocanha adjacentes (ataque 1d20+5+1d6, dano 4d6+6 Perfuração, crítico ×2).\n\nTodas as plantas possuem 30 PV e Defesa 10. A Oportunista só é percebida com Perspicácia (DT SAB).",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "O terreno deixa de ser difícil; o custo limite total de plantas aumenta em +2.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Aumenta a área do raio para 12m.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "O dano das plantas é dobrado (assim como seus custos).", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A vida das plantas é dobrada (assim como seus custos).", "requisito": null },
+        { "custo": "+3 PM", "descricao": "As plantas têm bônus de ataques aumentados em +5 e seus custos em +1.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "A duração torna-se indefinida.", "requisito": null },
+        { "custo": "+4 FE", "descricao": "O custo limite total de plantas aumenta para 8.", "requisito": null },
+        { "custo": "+8 FE", "descricao": "O custo limite total de plantas aumenta para 12.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_caixao_de_areia",
+      "tipo": "teurgia",
+      "nome": "Caixão de Areia",
+      "fe": 7,
+      "divindade": "Gaya",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "1 ser",
+      "duracao": "cena",
+      "resistencia": "Reflexos evita",
+      "descricao": "Se o alvo tocar o chão, você prende suas pernas num caixão de areia (Reflexos evita). O alvo fica Imóvel e só escapa com sucesso num teste de Trabalho (DT SAB+5) ou causando mais de 40 de dano contra a terra. Como ação protagonista, provoque até 2 efeitos em um alvo preso:\n\nAumentar Alcance do Caixão: +30 PV de terra e +2 na DT de escape (até 2 vezes; sucesso no teste reduz o alcance em um passo).\nEsmacar: 8d8 de Terra (Esforço DT SAB reduz à metade); multiplicado ×2 ou ×3 por cada alcance aumentado. Após o dano o alvo se liberta.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Um ser em caixão de alcance 2 ou 3 tem desvantagem em testes de ataque e não pode sacar/guardar itens.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Um alvo preso começa no segundo estágio do caixão ao invés do primeiro.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Aumentar o alcance ou Esmagar pode ser feito como ação de coesão.", "requisito": null },
+        { "custo": "+4 FE", "descricao": "Aplica até 3 caixões simultâneos em alvos diferentes; uma ação protagonista já altera os 3 ao mesmo tempo.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_estrondo",
+      "tipo": "teurgia",
+      "nome": "Estrondo",
+      "fe": 10,
+      "divindade": "Gaya",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "alvo": "seres",
+      "area": "círculo (20m de raio)",
+      "duracao": "cena",
+      "resistencia": "Poder reduz à metade",
+      "descricao": "A terra ruge em ódio, seus passos quebram a terra e formam cânions. Todos na área (exceto você) sofrem 4d10 de dano de Terra e ficam Vulneráveis a dano de Terra. Essas condições não podem ser retiradas — apenas quando o Estrondo encerrar. A cada 3m que você se mover, todos dentro devem fazer Esforço (DT SAB) ou sofrer 1d10 de Terra e ficar Caídos. Sobrepõe o Tsunami de Thalasya. Uma vez por dia. Seu deslocamento é reduzido em 3m durante o efeito.",
+      "aprimoramentos": [
+        { "custo": "+1 FE", "descricao": "Seres que ficarem Caídos enquanto já Caídos ficam Vulneráveis a todos os tipos de dano até se levantarem.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Afeta qualquer ser voando, nadando ou enterrado dentro ou sobre a área, sendo puxado se necessário.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Ao invés de Caídos, seres ficam Abalados.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Escolha até 3 seres para serem imunes aos efeitos de seus passos.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "teu_gravitacao",
+      "tipo": "teurgia",
+      "nome": "Gravitação",
+      "fe": 12,
+      "divindade": "Gaya",
+      "execucao": "coesão",
+      "alcance": "curto",
+      "alvo": "1 ser",
+      "duracao": "sustentada",
+      "resistencia": "Esforço reduz à metade",
+      "descricao": "Você aplica uma força gravitacional extremamente elevada ao alvo. Este fica imediatamente Caído, Pasmo e Imóvel — nenhum efeito pode locomovê-lo. Enquanto isso sofre 3d20 + peso do inventário em dano de Terra. Esforço reduz o dano à metade e ignora Pasmo; refaça o teste a cada rodada. Um ser posto em Morrendo nesse estado é imediatamente esmagado e não pode ser curado.",
+      "aprimoramentos": [
+        { "custo": "+10 PM", "descricao": "Um ser sob este efeito tem qualquer RD reduzida em 20.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "O efeito muda para uma gravidade localizada. Alcance muda para médio e área para 9m de raio. Todos ficam Caídos e sofrem 1d20 + peso do inventário em dano de Terra, com deslocamento reduzido a 1m. Esforço (DT SAB) reduz dano à metade e evita Caído.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "teu_cardume",
+      "tipo": "teurgia",
+      "nome": "Cardume",
+      "fe": 1,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "area": "esfera 2m de raio",
+      "duracao": "cena",
+      "descricao": "Um cardume de peixes de mana passa a te rodear. Ele oferece +10 de Defesa contra ataques vindos de fora e imunidade a Ataques de Oportunidade e Desprevenido. Ser que tente atravessá-lo faz Luta (DT SAB) para passar, caso contrário não pode passar até o início de seu próximo turno. O cardume pode ser atacado (Defesa 0, 30 PV), sofrendo metade do dano de ataques individuais e dobro de ataques em área.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Os peixes tornam-se piranhas sanguinárias. Todo ser que tente a travessia (bem ou mal sucedida) sofre 3d8 de Água.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A execução torna-se coesão e a duração instantânea. O cardume forma um túnel de até 12m de extensão; você atravessa o túnel com a conjuração, ficando imune a ataques durante o deslocamento.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Os peixes são imbuídos de magia, concedendo +2 em testes de resistência contra efeitos mágicos.", "requisito": "Requer Grau 2." },
+        { "custo": "+5 PM", "descricao": "Você cria peixes espalhados em 18m de raio imóvel. Você conhece a localização de todos os seres ali dentro e recebe camuflagem parcial. PV do cardume aumentam para 50. Não se acumula com piranhas.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_laminas_de_gelo",
+      "tipo": "teurgia",
+      "nome": "Lâminas de Gelo",
+      "fe": 2,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "até 3 seres",
+      "duracao": "instantânea",
+      "resistencia": "Reflexos anula",
+      "descricao": "Você conjura 3 estalagmites de gelo puro disparadas contra até 3 inimigos. Cada Lâmina desfere 1d8 de dano de Água. Um único teste de Reflexos por alvo — em falha sofre todas as lâminas direcionadas a ele. Se as 3 lâminas forem contra um só alvo, Reflexos reduz apenas à metade.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumenta o número de lâminas para 5 e o número de alvos para até 5 seres.", "requisito": "Requer Grau 2." },
+        { "custo": "+5 PM", "descricao": "Aumenta o número de lâminas para 8 e o número de alvos para até 8 seres.", "requisito": "Requer Grau 3." },
+        { "custo": "+10 PM", "descricao": "Aumenta o número de lâminas para 15 e o número de alvos para até 15 seres.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_jato_perfurante",
+      "tipo": "teurgia",
+      "nome": "Jato Perfurante",
+      "fe": 3,
+      "divindade": "Thalasya",
+      "execucao": "complexa",
+      "alcance": "médio",
+      "alvo": "1 ser",
+      "duracao": "sustentado (1 FE)",
+      "resistencia": "Reflexos anula",
+      "descricao": "Ao espremer suas palmas, água condensada cria um jato comprimido de altíssima precisão. Você desfere 3d8+8 de dano de Água. O jato pode continuar sendo disparado enquanto você o sustentar, gastando uma ação complexa a cada uso.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "O alcance aumenta para longo.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A DT da magia aumenta em +2.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "O dano aumenta para 5d8+14, mas aumenta o custo de sustentação para 2 FE.", "requisito": "Requer Grau 2." },
+        { "custo": "+5 FE", "descricao": "O dano aumenta para 8d8+24, mas aumenta o custo de sustentação para 3 FE.", "requisito": "Requer Grau 3." },
+        { "custo": "+8 FE", "descricao": "O dano aumenta para 8d12+36, mas aumenta o custo de sustentação para 4 FE.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_dobra_dagua",
+      "tipo": "teurgia",
+      "nome": "Dobra d'Água",
+      "fe": 3,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "12m de um corpo d'água",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao": "Você altera corpos d'água próximos (requer estar a até 12m de um corpo d'água). Escolha um dos 4 efeitos:\n\nOnda: Empurra todos numa linha de 4.5m horizontal 9m para trás e os deixa Caídos (Reflexos reduz deslocamento à metade e ignora condição).\nCachoeira: Erguê uma parede de água corrente que reduz danos que a atravessam em até 30 pontos. Ser que tentar atravessá-la faz Esforço (DT SAB) ou é empurrado 3m. Sustentada (1 PM).\nGeleira: Parede de gelo com 30 PV, 10 RD, até 3m de altura e 6m de largura — oferece cobertura.\nAfundar: Captura um ser de até tamanho médio e o submerge (Asfixiado; Luta vs Magia para escapar; sucesso a cada rodada dura enquanto o alvo não escapar).",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A cachoeira absorve até 40 pontos e empurra inimigos a até 6m.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "A geleira passa a ter 50 PV, 15 RD, até 9m de largura ou 6m de altura.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Arremesso D'água: Lança uma bola aquática contra um inimigo a até 12m, causando 2d6 de Água e Atordoado por uma rodada (Reflexos reduz dano à metade e muda condição para Lento).", "requisito": "Requer Grau 2." },
+        { "custo": "+1 PM", "descricao": "Você pode Afundar propositalmente e manipular sob a água, triplicando o deslocamento de nado e dobrando o fôlego dentro d'água.", "requisito": "Requer Grau 2." },
+        { "custo": "+3 PM", "descricao": "Se usando Arremesso D'água, você pode congelar a água, aumentando o dano para 3d6 Água + 3d6 Impacto. Reflexos anula dano e condição.", "requisito": "Requer Grau 2." },
+        { "custo": "+4 PM", "descricao": "Você surfa em cima de uma onda, movendo-se por 18m em qualquer direção (mantendo até 12m do corpo d'água). Seres adjacentes durante o movimento podem ser puxados para a Onda.", "requisito": "Requer Grau 2." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_fluxo",
+      "tipo": "teurgia",
+      "nome": "Fluxo",
+      "fe": 3,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "1 ser",
+      "duracao": "sustentada (1 FE)",
+      "descricao": "Você se embebeda de magia d'água, tornando seus movimentos contínuos e inerciais. Você recebe uma ação extra que deve ser usada como método de repetição — ações similares e contínuas entre si (ex.: atacar duas vezes, mover-se duas vezes, conjurar duas magias). Não pode misturar tipos de ação (ex.: atacar e conjurar, mover e atacar).",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "A cada ataque acertado no mesmo alvo, +5 de dano e +1 no teste de ataque. A contagem cessa se acertar alvo diferente ou sofrer dano.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Se a segunda ação usar o mesmo teste de perícia que a primeira, você recebe +2 nesse segundo teste.", "requisito": null },
+        { "custo": "+5 FE", "descricao": "Muda o alvo para 1 ser e o alcance para curto.", "requisito": "Requer Grau 3." },
+        { "custo": "+8 FE", "descricao": "Você recebe uma terceira ação.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_liquidificar",
+      "tipo": "teurgia",
+      "nome": "Liquidificar",
+      "fe": 4,
+      "divindade": "Thalasya",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "sustentado (20 PV)",
+      "descricao": "Você transforma seu corpo em água. Deslocamento reduz para 3m, altura para 2mm, largura para grande. Não pode causar dano corpo-a-corpo nem manipular itens ou magias; fica imune a dano mundano. Pode atravessar qualquer fresta. Perde 12 PV a cada 3m percorridos e 20 PV a cada fim de rodada. Destransformar-se é uma ação complexa.",
+      "aprimoramentos": [
+        { "custo": "+6 PM", "descricao": "Muda a execução para reação simples e a duração para instantânea. Você se torna líquido por uma fração de segundo, recebendo RD 30 a danos mundanos.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Você mantém o formato do corpo (forma gelatinosa), podendo manipular itens e conjurar magias. Danos físicos seus desferem apenas metade. Danos mundanos são reduzidos à metade (não sendo imune).", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_palco_de_neve",
+      "tipo": "teurgia",
+      "nome": "Palco de Neve",
+      "fe": 5,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "seres",
+      "area": "círculo de 9m de raio",
+      "duracao": "cena",
+      "resistencia": "Esforço reduz à metade",
+      "descricao": "Você congela o ambiente, causando 4d4 de dano de Água em todos os seres no Palco (Esforço reduz à metade). A partir disso, todos no palco recebem +3 de deslocamento e -5 em testes de Reflexos e resistência a magias de Thalasya. Se adjacente a qualquer parte do Palco, você pode realizar modificações como ação de Coesão:\n\nEstacas de Gelo: Estacas surgem aos pés de até 3 alvos (Reflexos ou 4d6 de Água).\nSopro Frio: Nevasca assola todos — Esforço ou Lentos por duas rodadas.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Aumenta a área para 18m de raio.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Ergue um muro nas bordas do Palco, requerendo Acrobacia (DT SAB) e uma ação protagonista para atravessá-lo.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Todo deslocamento maior que 6m deve fazer Reflexos no fim da movimentação ou ficar Caído.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Quaisquer efeitos negativos são ignorados por você e seus aliados.", "requisito": "Requer Grau 3." },
+        { "custo": "+10 PM", "descricao": "Seres que sofrerem de Sopro Frio ficam Vulneráveis a dano de Água.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_toque_frio",
+      "tipo": "teurgia",
+      "nome": "Toque Frio",
+      "fe": 5,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "toque",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Esforço reduz à metade",
+      "descricao": "Seu toque penetra as defesas térmicas do alvo fazendo-o desabar em frio congelante. Ele sofre 6d8+20 de dano de Água e fica Lento, Fraco e Vulnerável a dano de Impacto até o fim da cena. Esforço reduz à metade e deixa apenas Lento.",
+      "aprimoramentos": [
+        { "custo": "+0 PM", "descricao": "O efeito muda para estancar feridas ou controlar metabolismo por Frio: tira Sangrando, reduz danos de Veneno à metade, retira Em Chamas ou cessa a perda de PV por rodada de Morrendo.", "requisito": null },
+        { "custo": "+1 PM", "descricao": "Muda a resistência para nenhuma e a execução para coesão. Para executar a magia você precisa desferir um ataque; se acertar o efeito é aplicado.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Caso o alvo falhe, fica Vulnerável até o fim da cena.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O efeito muda para área de 4.5m de raio, mas reduz o dano em -(1d8+10).", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Caso o alvo falhe, fica Imóvel por uma rodada.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Aumenta o dano em +2d8+20.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_rainha_do_mar",
+      "tipo": "teurgia",
+      "nome": "Rainha do Mar",
+      "fe": 6,
+      "divindade": "Thalasya",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "duracao": "sustentada",
+      "descricao": "Você invoca um ser marinho capaz de nadar pelo ar. Só pode invocar novamente quando todos os seres marinhos morrerem. Dois seres possíveis:\n\nÁgua-Viva: 20 PV, Defesa 10, RD 20. +2 em atributos, +5 SAB. Ataque 1d20+1d6+2 (crítico 20), dano 4d6+2 Água. Crítico deixa o alvo Envenenado (10 de dano Água ao entrar em Morrendo pela 1ª vez). Fica adjacente a você e pode absorver um golpe em seu lugar.\nEspírito Tartaruga: 40 PV, Defesa 0, RD 40. +5 em todos os atributos. Não ataca; todo ataque contra você acerta a tartaruga primeiro. Concede +5 em testes de resistência.",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "Enguia: 30 PV, Defesa 15, +2 em atributos, +5 SAB. Uma vez por rodada lança um choque elétrico em raio de 4.5m (4d6 Água, Esforço reduz à metade). Você aumenta a DT dos seus efeitos em +5 se estiver a menos de 4.5m dela.", "requisito": null },
+        { "custo": "+7 PM", "descricao": "Tubarão: 50 PV, Defesa 15, +5 em atributos (+7 FOR, +2 SAB). Ataque 1d20+1d8+7 (crítico 18), dano 2d10+2d8 Água. Avança contra o inimigo mais próximo.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Você invoca até dois seres marinhos diferentes.", "requisito": null },
+        { "custo": "+4 FE", "descricao": "Você invoca até três seres marinhos diferentes.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_tsunami",
+      "tipo": "teurgia",
+      "nome": "Tsunami",
+      "fe": 10,
+      "divindade": "Thalasya",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "alvo": "seres",
+      "area": "círculo (25m de raio)",
+      "duracao": "cena",
+      "resistencia": "Poder reduz à metade",
+      "descricao": "Um mar repentino alaga o ambiente em cascatas de água. Tudo na área é Terreno Difícil e todos ficam Vulneráveis a dano de Água — condições não removíveis até o Tsunami encerrar. A cada duas rodadas (a partir da inicial) uma onda gigantesca desfere 4d10 de dano de Água e deixa todos Caídos e Asfixiados (Esforço DT SAB reduz dano à metade e evita Asfixiado). Para sair de Asfixiado/Caído: Trabalho DT SAB+2 por onda passada. Sobrepõe o Inferno de Agni. Uma vez por dia. Você é imune a todos os efeitos negativos desta magia.",
+      "aprimoramentos": [
+        { "custo": "+0 FE", "descricao": "Um ser Inconsciente sob o Tsunami é movido 10m em direção aleatória.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Afeta qualquer ser voando, nadando ou enterrado dentro ou sobre a área, sendo puxado se necessário.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Escolha até 3 seres para serem imunes aos danos e condições desta magia.", "requisito": null },
+        { "custo": "+4 FE", "descricao": "Reduz o intervalo das ondas para toda rodada.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "teu_invocacao_besta_atlanta",
+      "tipo": "teurgia",
+      "nome": "Invocação da Besta de Atlanta",
+      "fe": 12,
+      "divindade": "Thalasya",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "alvo": "seres à sua escolha",
+      "area": "círculo de raio de 16m",
+      "duracao": "sustentada",
+      "descricao": "Uma água fina se eleva do nada, escura como um abismo. Das sombras surge uma sombra colossal com aparência de uma moça de cabelos longos — apenas seus olhos brilham. A sombra desfere 2 ataques por turno com suas garras nos inimigos mais próximos (ataque 1d20+1d8+12, dano 4d8+10 Água). Todo início de rodada, todos os inimigos fazem Reflexos ou são agarrados por tentáculos sombrios (ficam Imóveis e Vulneráveis; podem gastar ação protagonista para escapar com Poder vs DT SAB+5). Um ser agarrado que comece a rodada preso é puxado para dentro da poça fina e fica Asfixiado — só é salvo se a magia encerrar.",
+      "aprimoramentos": [],
+      "grau": "S"
+    },
+    {
+      "id": "teu_levitacao",
+      "tipo": "teurgia",
+      "nome": "Levitação",
+      "fe": 1,
+      "divindade": "Zephyra",
+      "execucao": "reação simples",
+      "alcance": "curto",
+      "alvo": "até 2 objetos",
+      "duracao": "cena",
+      "descricao": "Você levita até dois objetos de peso 2 dentro do alcance. Para fins mecânicos eles são considerados empunhados (mas não podem realizar ataques).",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A duração muda para instantânea e você realiza uma manobra Desarmar contra um ser em alcance curto, podendo usar Magia como perícia base.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A magia levita objetos de até peso 5.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A magia levita até 5 objetos de uma vez.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "A magia levita um ser de até tamanho médio em alcance curto por 4.5m (Poder anula).", "requisito": null },
+        { "custo": "+6 PM", "descricao": "É possível atacar com objetos que estejam levitando.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_lufada",
+      "tipo": "teurgia",
+      "nome": "Lufada",
+      "fe": 1,
+      "divindade": "Zephyra",
+      "execucao": "reação simples",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "instantânea",
+      "descricao": "Uma lufada de vento te empurra na direção oposta a um ataque. O efeito concede +10 de Defesa e +5 em testes de Reflexos, mas você deve se mover 3m na direção oposta ao ataque.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "A lufada muda o alcance para curto, alvo para 1 ser e execução para coesão. Um ser é empurrado 9m para trás e fica Caído ao fim do deslocamento (Reflexos evita condição).", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Se um ser falhar no teste de lufada, ele também pode ser Desarmado de um item em suas mãos.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "O efeito passa a conceder +20 de Defesa e +10 em testes de Reflexos.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_manipulacao_do_clima",
+      "tipo": "teurgia",
+      "nome": "Manipulação do Clima",
+      "fe": 2,
+      "divindade": "Zephyra",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "area": "500m de raio",
+      "duracao": "1d6×2 horas",
+      "descricao": "Você invoca um clima para afetar o cenário. Escolha entre Chuva, Granizo, Neve ou Vento Forte. O efeito não pode ser dissipado antes de seu fim.",
+      "aprimoramentos": [
+        { "custo": "+4 PM", "descricao": "Muda a duração para a cena.", "requisito": "Requer Grau 2." },
+        { "custo": "+8 PM", "descricao": "Você se torna imune às condições de um ambiente.", "requisito": "Requer Grau 3." },
+        { "custo": "+16 PM", "descricao": "Você torna quantos seres quiser em alcance longo imunes às condições de um ambiente.", "requisito": "Requer Grau 3." },
+        { "custo": "+2 FE", "descricao": "Pode invocar Tempestade ou Vendaval.", "requisito": "Requer Grau 3." },
+        { "custo": "+6 FE", "descricao": "Pode transformar climas existentes: Chuva/Granizo/Neve ↔ Tempestade (ou remover); Vento Forte ↔ Vendaval; Vendaval → Furacão (desde que não tenha sido invocado por você); Furacão → Tornado.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_dobrar_vento",
+      "tipo": "teurgia",
+      "nome": "Dobrar Vento",
+      "fe": 3,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "duracao": "instantânea",
+      "descricao": "Ao alterar o caminho dos ventos, você conjura até 3 efeitos diferentes:\n\nConjurar Névoa: Uma névoa de 12m de raio desce dos céus, deixando todos dentro Cegos (exceto você). Dissipa-se em 1d4+2 rodadas.\nCorte de Vento: Ar comprimido avança contra um inimigo em alcance curto — 3d6 de dano de Vento sem chance de redução.\nCorrente de Ar: Define um corredor de vento de até 2.5m de largura e 18m de extensão dentro de 36m. A favor: deslocamento dobrado. Contra: deslocamento pela metade. Atravessar lateralmente: Reflexos (DT SAB) ou Caído. Pode erguer seres pequenos ou itens de peso 5 (corrente para cima). Dura Cena ou pode ser desfeita como ação de coesão.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Amortecer Queda: Execução muda para reação complexa, alcance para curto, alvo para 1 ser. Oferece RD 30 contra um dano de queda.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "A névoa permite eleger seres imunes ao efeito de cegueira e expande seu alcance para 16m de raio.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "O Corte de Vento tem seu dano aumentado para 6d6 (Reflexos reduz à metade).", "requisito": null },
+        { "custo": "+8 PM", "descricao": "A corrente de ar se intensifica: a favor triplica o deslocamento; contra torna-se impossível atravessar. Pode mover seres médios ou itens de peso 10.", "requisito": null }
+      ],
+      "grau": 1
+    },
+    {
+      "id": "teu_asas_de_zephyra",
+      "tipo": "teurgia",
+      "nome": "Asas de Zephyra",
+      "fe": 3,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "sustentada (1 PM)",
+      "descricao": "Asas enormes abrem-se em suas costas, te permitindo voar. Você gasta 1 PM por rodada para se manter no ar, podendo voar até 20m acima do chão. Você possui deslocamento de voo igual ao dobro do seu deslocamento padrão.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você pode usar suas asas para atacar: Destreza com Lutar+2, dano 3d6 de Vento, crítico 19/×2.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Enquanto no ar recebe +5 de Defesa.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "Enquanto no ar recebe +5 em testes baseados em Destreza.", "requisito": "Requer Grau 3." },
+        { "custo": "+2 PM", "descricao": "Enquanto no ar gasta -1 FE para conjurar magias de Zephyra.", "requisito": "Requer Grau 3." },
+        { "custo": "+2 PM", "descricao": "Aumenta o custo de sustentação para 2 PM, mas permite voar até 40m acima do chão e o deslocamento de voo aumenta em +4.5m.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_redemoinho",
+      "tipo": "teurgia",
+      "nome": "Redemoinho",
+      "fe": 4,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "area": "6m de raio",
+      "duracao": "cena",
+      "resistencia": "Reflexos evita ser puxado",
+      "descricao": "É invocado um redemoinho de tamanho grande. Todos em raio de 6m fazem Reflexos ou são movidos 4.5m na direção do redemoinho. Um ser que comece seu turno no centro não pode sair sozinho (Trabalho DT SAB para ser puxado por aliado). Dentro: duas desvantagens em ataques e proibido de realizar ações de concentração. A cada fim de rodada o redemoinho move-se 3m em direção aleatória. Pode ser desfeito como ação livre.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Muda a duração para instantânea e o alcance para 12m. Cria um ponto de sucção que move todos no alcance até 9m em direção ao ponto, Caídos e Atordoados (Reflexos reduz para 4.5m e ignora condições).", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O redemoinho desfere 3d6 de dano de Vento para qualquer um que comece sua rodada dentro dele.", "requisito": null },
+        { "custo": "+5 FE", "descricao": "Conjura até 3 redemoinhos em pontos diferentes de uma vez.", "requisito": "Requer Grau 3." }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_vulto",
+      "tipo": "teurgia",
+      "nome": "Vulto",
+      "fe": 5,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "alvo": "você",
+      "duracao": "cena",
+      "descricao": "Seu corpo se move a uma velocidade sobrenatural, tornando-se instável. Você recebe +5 em testes de resistência e em testes baseados em Destreza, +10 de Defesa e tem seu deslocamento dobrado. Enquanto sob o efeito, fica Vulnerável a todo tipo de dano. Pode desfazer a magia todo início ou final de turno.",
+      "aprimoramentos": [
+        { "custo": "+2 FE", "descricao": "Você recebe uma ação protagonista extra. Isso torna a duração Sustentada (2 FE).", "requisito": null }
+      ],
+      "grau": 2
+    },
+    {
+      "id": "teu_conduite",
+      "tipo": "teurgia",
+      "nome": "Conduíte",
+      "fe": 6,
+      "divindade": "Zephyra",
+      "execucao": "reação complexa",
+      "alcance": "médio",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao": "Você veicula a condução da energia mágica quando um ser no alcance estiver invocando uma magia. Escolha um dos 3 efeitos:\n\nRedirecionamento: Se você suprir as condições da magia, você é considerado o alvo de seu efeito (teste de Magia do oponente para ver se consegue redirecionar).\nFortalecimento: Para uma magia em alcance curto, aumenta o dano/cura em +1d e a DT em +3. Alternativamente, reduz o custo da magia em 2.\nDecaimento: Para uma magia em alcance curto, reduz o dano/cura em -1d e a DT em -3. Alternativamente, aumenta as ações necessárias (livre→coesão→protagonista→complexa; o ser escolhe se prossegue). Requer teste de Magia para Decaimento.",
+      "aprimoramentos": [
+        { "custo": "-2 FE", "descricao": "Você tem desvantagem no teste de Magia, mas Redirecionamento ou Decaimento custam -2 FE.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Em Redirecionamento, você pode mudar o alvo para outro ser em alcance curto ao seu e dentro do alcance da magia (não pode ser o próprio conjurador).", "requisito": null },
+        { "custo": "+2 FE", "descricao": "Em Fortalecimento ou Decaimento, aumenta os dados para 2d e as DT para 5.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_tempestade_final",
+      "tipo": "teurgia",
+      "nome": "Tempestade Final",
+      "fe": 8,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "alvo": "seres",
+      "duracao": "instantânea",
+      "resistencia": "Esforço reduz à metade",
+      "descricao": "Ao acumular nuvens e intensificar a agitação de partículas elétricas, você dispara 4 feixes de raios que podem acertar aleatoriamente qualquer ser dentro de alcance médio (exceto você). Cada raio desfere 6d6+14 de dano de Vento. Além disso, o som ensurdecedor deixa todos em alcance curto Surdos (exceto você e seus aliados).",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Caso um afetado seja um ser que você não queira acertar, você pode re-jogar os dados para escolher outro alvo para aquele raio. Isso reduz o dano de todos os raios em 1d8. Pode ser feito quantas vezes quiser.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Aumenta o número de raios em +2.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Muda a execução para duas rodadas, aumentando o número de raios em +2 e o dano em +2d6+7.", "requisito": "Requer Grau 4." }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "teu_furacão",
+      "tipo": "teurgia",
+      "nome": "Furacão",
+      "fe": 10,
+      "divindade": "Zephyra",
+      "execucao": "complexa",
+      "alcance": "médio",
+      "alvo": "seres",
+      "area": "círculo (10m de raio)",
+      "duracao": "cena",
+      "resistencia": "Reflexos reduz à metade",
+      "descricao": "O céu se enfurece e um enorme Furacão é formado. Todo início de rodada, todos na cena fazem Reflexos ou são puxados 4.5m na direção do Furacão. Seres que comecem seu turno a menos de 10m ficam Vulneráveis a dano de Vento, sofrem 2d10 de Vento e voam 4.5m para cima (Reflexos DT SAB reduz à metade e ignora voo). Como ação de Coesão você pode mover o Furacão 10m em qualquer direção. Sobrepõe o Estrondo de Gaya. Uma vez por dia. Você é imune a todos os efeitos negativos desta magia.",
+      "aprimoramentos": [
+        { "custo": "+1 FE", "descricao": "Um ser a mais de 18m acima do chão pode ser derrubado imediatamente, sofrendo 6d6 de Vento.", "requisito": null },
+        { "custo": "+1 FE", "descricao": "Aumenta a área do Furacão em +2m de raio.", "requisito": null },
+        { "custo": "+2 FE", "descricao": "O Furacão é imbuído em tempestades, aumentando o dano base para 4d10.", "requisito": null },
+        { "custo": "+3 FE", "descricao": "Escolha até 3 seres para serem imunes aos danos e puxões do Furacão.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "teu_dobra_do_vacuo",
+      "tipo": "teurgia",
+      "nome": "Dobra do Vácuo",
+      "fe": 12,
+      "divindade": "Zephyra",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "descricao": "Ao entender os limites do céu e o nada além, você domina a Dobra do Vácuo em 3 maneiras:\n\nReter Oxigênio: Duração muda para sustentada (2 PM). Você extrai o oxigênio dos pulmões do alvo — considerado sob Asfixia enquanto você sustentar.\nEmpuxo por Pressão: Alvo muda para seres à sua escolha e o custo reduz em 4. Você move alvos até 4.5m em qualquer direção (Esforço anula).\nVéu Preto: Expande o nada criando uma camada negra de até 3m de largura e altura. Qualquer coisa que a toque sofre 75 de dano Trevas e destrói o Véu.",
+      "aprimoramentos": [
+        { "custo": "+2 FE", "descricao": "Nulificação: O alvo é 1 ser ou objeto. Você recorta um espaço pequeno da realidade — 75 pontos de dano Trevas (Poder anula; se objeto, quem o empunha pode fazer o teste).", "requisito": null }
+      ],
+      "grau": "S"
     },
     {
       "id": "arc_ilusao",
@@ -106,7 +1501,7 @@
       "area": "linha",
       "alvo": "seres",
       "duracao": "instantânea",
-      "resistencia": "Reflexos reduz à metade",
+      "resistencia": "Reflexos anula",
       "descricao": "Você dispara um feixe mágico que perfura tudo em seu caminho. Seres que estiverem na área sofrem 2d6 pontos de dano Mágico.",
       "aprimoramentos": [
         { "custo": "+1 PM", "descricao": "O alcance aumenta para médio.", "requisito": null },
@@ -128,7 +1523,7 @@
       "area": null,
       "alvo": "1 ser",
       "duracao": "instantânea",
-      "resistencia": "Reflexos reduz à metade",
+      "resistencia": "Reflexos anula",
       "descricao": "Você desfere um corte de magia que avança em linha reta. A magia desfere 2d6 pontos de dano de Corte contra o primeiro alvo que for atingido. Caso o ser esteja a alcance curto o dano aumenta para 2d10.",
       "aprimoramentos": [
         { "custo": "+1 PM", "descricao": "Aumenta o dano em +6.", "requisito": null },
@@ -467,6 +1862,245 @@
         { "custo": "+3 PM", "descricao": "Você torna o canhão automático, não pode mais suportar tiros de mana, então ele desfere um ataque todo final de turno. O dano do canhão neste caso é 2d8.", "requisito": null }
       ],
       "grau": 2
+    },
+    {
+      "id": "arc_invisibilidade",
+      "tipo": "arcanismo",
+      "nome": "Invisibilidade",
+      "la": 5,
+      "custo": "10 PM",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "Você se envolve em uma película de magia, que esconde qualquer evidência visual de sua presença. Isso te concede +10 em testes de Quietude e significa que todo inimigo é considerado Cego quando tenta realizar uma ação contra você. Entretanto, a magia se dissipa se for acertado por qualquer ataque ou sofrer dano.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "Você lança a película de invisibilidade sobre um alvo de até tamanho médio, ele ficará invisível até que se mova ou realize uma ação protagonista. Isso também pode ser utilizado para objetos, os escondendo.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você envolve a película ao redor de aliados adjacentes, enquanto em alcance corpo-a-corpo um do outro, todos recebem o bônus. Entretanto, caso algum dos indivíduos falhe num teste de Quietude, seja acertado ou sofra dano, todos perdem a Invisibilidade.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_barreira",
+      "tipo": "arcanismo",
+      "nome": "Barreira",
+      "la": 6,
+      "custo": "12 PM",
+      "execucao": "protagonista",
+      "alcance": "curto",
+      "area": "linha 6m",
+      "alvo": "área",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "Você ergue um muro de mana de até 6m de largura e 3m de altura, esse muro oferece cobertura parcial quando nas bordas e total quando totalmente coberto. O muro possui 60 PV e 15 RD a dano.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "O muro é usado de maneira criativa para oferecer obstáculos aos inimigos, tornando uma área de até 6m de raio em terreno dificil.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "O muro é usado de maneira criativa para facilitar escaladas ou construir atalhos, oferecendo +5 em testes de Acrobacia.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "O muro aumenta em mais 12m para serem distribuídos entre altura e largura.", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Esse aprimoramento pode ser usado desde que esteja adjacente ao muro, pois restaura a vida dele completamente em troca dos PM deste aprimoramento e uma ação protagonista.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Os PV e a RD do muro dobram.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você transforma o muro numa jaula cubica trancada de 3x3m. Ela é capaz de conter até 9 seres dentro dela. Para prender um ser, basta com que ele esteja no alcance da magia. O alvo ainda tem direito à um teste de Reflexos para evitar com que seja preso, caso tenha sucesso, ele foge antes da jaula se fechar.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_dano_espelho",
+      "tipo": "arcanismo",
+      "nome": "Dano Espelho",
+      "la": 6,
+      "custo": "12 PM",
+      "execucao": "protagonista",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "sustentada",
+      "resistencia": null,
+      "descricao": "Você se cobre de uma película refletora agressiva, fazendo com que seus inimigos vejam seus próprios reflexos no seu rosto. Apartir do momento que é ativada, essa magia reflete metade de todo o dano que você sofrer de volta contra seu inimigo. É importante citar que isso se aplica apenas a dano que você diretamente sofrer, perder em PV, dano resistido ou ignorado por poderes não serão refletidos. O dano volta na mesma fonte, se sofrer 10 pontos de dano de Corte, o inimigo sofre 5 pontos de dano corte.",
+      "aprimoramentos": [
+        { "custo": "+1 PM", "descricao": "A execução se torna Reação Complexa.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A execução se torna Reação Simples.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "O alcance muda para curto e o alvo para 1 ser.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_dissipar_magia",
+      "tipo": "arcanismo",
+      "nome": "Dissipar Magia",
+      "la": 6,
+      "custo": "12 PM",
+      "execucao": "reação complexa",
+      "alcance": "médio",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "magia",
+      "descricao": "Essa magia sincroniza em oposição à outro efeito mágico, provocando uma força inversa que neutraliza o agressor. Essa magia tem como alvo outra magia, por isso, ao conjurá-la você deve gastar uma quantidade de mana maior ou igual ao do agressor, e vocês também precisam estar a alcance médio um do outro ou você com efeito. Quando conjurada você deve realizar um teste de Poder contra a Magia do alvo, se você tiver sucesso, a magia dele falha e não conjura nenhum de seus efeitos. Você também pode fazer isso contra magias de duração maior que instantânea, apenas apontando ela como seu alvo. Nesses casos, quando se tem um sucesso, a magia se dissipa instantâneamente, mas conservar quaisquer efeitos que deixou para trás, como condições e danos.",
+      "aprimoramentos": [
+        { "custo": "+3 PM", "descricao": "Você recebe +2 no teste de Poder.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "As condições de uma magia dissipada se encerram com ela.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_ilusao_viva",
+      "tipo": "arcanismo",
+      "nome": "Ilusão Viva",
+      "la": 7,
+      "custo": "14 PM",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "perspicácia desacredita",
+      "descricao": "Você projeta uma constructo de mana físico que se assemelha à uma ilusão, mas esta é palpável e moldável ao seu bel dispor, desde que estejam ao alcance médio um do outro. A ilusão viva possui apenas 1 PV, e por isso pode ser dissipada com o mais fraco dos ataques, mas enquanto presente pode provocar 1 de 3 efeitos diferentes.\n\n* A ilusão funciona como uma cópia ou réplica de um ser, capaz de imitar seus movimentos e traços. Usando seus atributos e perícias como bases para testes. Ainda assim, ela não é capaz de atribuir-se muita força física devido a falta de consistência. Portanto, possui Constituição e Força 0 para testes. Você sabe tudo o que a ilusão percebe.\n* A ilusão pode desferir ataques, desferindo um ataque por rodada com seu teste de Magia, se acertar desfere 4d6 pontos de dano mágico.\n* A ilusão é uma cópia de sacrifício, que te acompanha e atordoa inimigos, oferecendo +5 de Defesa.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Aumenta o número de ilusão em +1. Esse mesmo aprimoramento pode ser pego até 3x.", "requisito": null },
+        { "custo": "+2 PM", "descricao": "A ilusão é aprimorada: o dano aumenta para 6d6, a defesa aumenta para +7 ou em testes de Carisma recebe +5. Se tiver mais de uma ilusão, esse aprimoramento só se dirá a respeito de uma deles. Este mesmo aprimoramento pode ser pego até 3x para ilusões diferentes.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_precisao_absoluta",
+      "tipo": "arcanismo",
+      "nome": "Precisão Absoluta",
+      "la": 8,
+      "custo": "16 PM",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "sustentada",
+      "resistencia": null,
+      "descricao": "Essa magia concede uma ação protagonista extra por turno para você.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "Muda a execução para ação livre.", "requisito": null },
+        { "custo": "+5 PM", "descricao": "Muda o alcance para curto e o alvo para 1 ser.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Ao invés de uma ação protagonista, lhe é entregue uma ação complexa.", "requisito": null },
+        { "custo": "+12 PM", "descricao": "Muda o alcance para curto, duração para cena e o alvo para seres à sua escolha.", "requisito": null }
+      ],
+      "grau": 3
+    },
+    {
+      "id": "arc_hipnose",
+      "tipo": "arcanismo",
+      "nome": "Hipnose",
+      "la": 9,
+      "custo": "18 PM",
+      "execucao": "protagonista",
+      "alcance": "médio",
+      "area": null,
+      "alvo": "1 ser",
+      "duracao": "instantânea",
+      "resistencia": "Poder contra sua Magia",
+      "descricao": "A técnica suprema da magia de controle mental, a hipnose penetra as barreira do indivíduo às substituindo pela sua presença. Para essa magia funcionar, o alvo deve ter mente, e ser capaz de ouvir ou fazer contato visual com você. Se essas condições forem sanadas, o alvo deve fazer um teste de Poder contra sua Magia, se falar fica sob seu controle até o final da cena. Isso o obriga a acatar qualquer ordem sua. A magia se mantém presente desde que estejam a menos de alcance longo um do outro. Todo começo de rodada o ser manipulado tem a chance de resistir, fazendo um teste de Poder novamente, contra o seu primeiro sucesso no teste de Magia. Se tiver 2 sucessos seguidos, se libera da hipnose. Se o ser, tiver nível menor que você, ele não tem direito a resistir ao efeito depois de ativo.",
+      "aprimoramentos": [
+        { "custo": "0 PM", "descricao": "Você recebe +2 em um teste de Carisma contra um ser em alcance curto.", "requisito": null },
+        { "custo": "+0 PM", "descricao": "Ao invés do normal, você lê os pensamentos de 1 ser até o fim da cena.", "requisito": null },
+        { "custo": "+1 PM", "descricao": "muda o alvo para você e alcance pessoal e torna a duração sustentada. A magia ao invés do normal, é usada como um meio de retro-hipnotização, mantendo-te presente independentemente de forçar externas. Para meios práticos, você fica imune a efeitos que te forcem a tomar ações contra sua vontade.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "muda o alvo para “seres à sua escolha”.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "arc_teletransporte",
+      "tipo": "arcanismo",
+      "nome": "Teletransporte",
+      "la": 10,
+      "custo": "20 PM",
+      "execucao": "coesão",
+      "alcance": "longo",
+      "area": null,
+      "alvo": "você",
+      "duracao": "instantânea",
+      "resistencia": null,
+      "descricao": "Você pode se teletransportar para qualquer espaço que consiga enxergar em até alcance longo. Caso se teletransportar e atacar um inimigo no mesmo turno, ele é considerado Desprevenido.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "Você faz um selo num ambiente que esteja, tornando aquele ponto um marco que poderá ser teletransportado independentemente da distância como uma ação complexa. O teletransporte de longas distâncias se mantém livre, desde que o selo ou o ambiente em que este esteja não seja mudado drasticamente e que nem você e nem o selo estejam separados por uma barreira de inibição mágica.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você conjura a magia como reação complexa, se for alvo de um ataque enquanto faz isso, o ataque tem 50% de chance de pegar em um ser adjacente a você.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você pode deslocar qualquer ser que esteja te tocando com o teleporte.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "arc_avatar_de_mana",
+      "tipo": "arcanismo",
+      "nome": "Avatar de Mana",
+      "la": 11,
+      "custo": "22 PM",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "sustentada",
+      "resistencia": null,
+      "descricao": "Uma redoma de energia plasmática em formato humanóide se forma ao redor, constituindo um corpo titânico que aumenta todas as suas capacidades físicas ao limite. Este corpo é enorme e possui 20 de Força e Constituição, ele também possui um total de 100 PV e 10 RD a dano, Defesa 10 e Deslocamento de 20m. Todo ataque físico desferido por você tem o dano dobrado, além de +5 em testes de ataque. Enquanto dentro do corpo, você é considerado sobre cobertura total, se o corpo ficar machucado, é considerado sobre cobertura parcial. Entretanto, manter este ser enorme de pé, é extremamente custoso, custando 5 PV e PM por rodada.",
+      "aprimoramentos": [
+        { "custo": "+10 PM", "descricao": "Aumenta o tamanho do corpo para Colossal, aumenta os PV para 150 e a RD para 20.", "requisito": null },
+        { "custo": "+10 PM", "descricao": "Esse aprimoramento é feito enquanto a magia é sustentada, pois dobra o dano de uma magia conjurada enquanto no avatar.", "requisito": null }
+      ],
+      "grau": 4
+    },
+    {
+      "id": "arc_tecnica_suprema",
+      "tipo": "arcanismo",
+      "nome": "Técnica Suprema",
+      "la": 12,
+      "custo": "24 PM",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "area": "esfera 12m raio",
+      "alvo": "você",
+      "duracao": "sustentada",
+      "resistencia": null,
+      "descricao": "Você gasta uma quantia exacerbada de mana ao redor de você, construindo uma nuvem de essencial invisível que aprimora suas magias e capacidades ao limite. Enquanto você e o alvo estiverem dentro do raio de efeito, ninguém pode resistir à uma DT sua e você recebe +10 em todos os testes que realizar. Caso alguém utilize essa magia sobre a sua, ambas são canceladas.",
+      "aprimoramentos": [
+        { "custo": "+5 PM", "descricao": "A técnica recorta uma barreira na borda de seu alcance, impedindo que qualquer ser saia, apenas entre. A barreira pode ser quebrada por alguém do lado de fora, tendo em si 100 PV e 10 RD.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Suas magias desferem dano dobrado.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você conjura a técnica em uma forma reduzida, em conjunto com alguma outra magia. A execução torna-se livre e a duração torna-se instantânea, dobrando o dano de uma magia que esteja conjurando ou garantindo que o alvo falhe no teste de resistência.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "arc_pilares_da_constituicao",
+      "tipo": "arcanismo",
+      "nome": "Pilares da Constituição",
+      "la": 13,
+      "custo": "26 PM",
+      "execucao": "complexa",
+      "alcance": "pessoal",
+      "area": null,
+      "alvo": "você",
+      "duracao": "cena",
+      "resistencia": null,
+      "descricao": "Você divide a sua própria essência e alma em 4 construções perfeitas, 4 pilares que se erguem ao redor de você, 9m um do outro com você no meio deles. Estes pilares lançam raios constantes em direção ao seu corpo te tornando extremamente poderoso enquanto à alcance médio de todos eles. Você é imune a todos os tipos de dano e gasta metade de seus PM ao usar habilidades e magias. Além de possuir +5 em todo o tipo de teste de perícia. Cada pilar possui 60 PV e 10 RD a dano e você deve protegê-los com sua vida, a cada pilar destruído você é danificado em resposta. Ainda assim, você pode desfazer a magia com uma ação complexa.\n\n1. Ao ter 1 Pilar destruído: Você perde metade de seus PV atuais.\n2. Ao ter 2 Pilares destruídos: Você perde metade de seus PM atuais.\n3. Ao ter 3 Pilares destruídos: Seus PM são reduzidos a 0.\n4. Ao ter 4 Pilares destruídos: Seus PV são reduzidos a 0 e todos os bônus cessam.",
+      "aprimoramentos": [
+        { "custo": "+8 PM", "descricao": "Aumenta a vida dos pilares para 100 PV.", "requisito": null }
+      ],
+      "grau": "S"
+    },
+    {
+      "id": "arc_fim_absoluto",
+      "tipo": "arcanismo",
+      "nome": "Fim Absoluto",
+      "la": 14,
+      "custo": "28 PM",
+      "execucao": "complexa",
+      "alcance": "longo",
+      "area": "esfera",
+      "alvo": "seres",
+      "duracao": "sustentada",
+      "resistencia": "reflexos",
+      "descricao": "Você conjura tanta mana em um único ponto de maneira tão nanometricamente precisa que acaba invertendo as propriedades da existência e as regras da magia. O efeito é uma massa imaginária impossível que atrai toda a matéria e energia para um campo gravitacional massivo, em direção à essa pequena esfera negra. Todos em um raio de alcance longo devem fazer um teste de Reflexos para não serem puxados em direção ao seu fim, caso falharem são movidos 18m em direção à magia. Caso um ser comece seu turno dentro da magia, ele sofre 12d10+24 pontos de dano Trevas. Você pode se mover livremente mesmo nessas condições, pois não será puxado e só sofrerá dano caso se encontrar no centro da magia.",
+      "aprimoramentos": [
+        { "custo": "+2 PM", "descricao": "A massa imaginária pode ser movida, em até 6m como ação de coesão.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Você concentra a mana de maneira estratégica e as mantém sob inércia, tornando a massa imaginária um disparo que pode ser arremessado a até alcance extremo. Neste caso, a magia tem sua duração instantânea, faça um teste de ataque com Magia como perícia base, caso acerte seu alvo, ele sofre 12d20+44 de dano Trevas.", "requisito": null },
+        { "custo": "+10 PM", "descricao": "Aliados não são puxados pelo efeito mágico.", "requisito": null }
+      ],
+      "grau": "S"
     }
   ]
 }

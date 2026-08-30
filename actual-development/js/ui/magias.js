@@ -141,6 +141,26 @@ function renderAprimoramentos(aprimoramentos, tipo, editMode = false) {
     return `<ol class="aprimoramentos-list">${items}</ol>`;
 }
 
+// ========== Cor por Divindade (Teurgia) ==========
+const CORES_DIVINDADE = {
+    'thalasya':  '#1a3a5c',
+    'agni':      '#b91c1c',
+    'gaya':      '#166534',
+    'zephyra':   '#a16207',
+    'nixya':     '#374151',
+    'aurorya':   '#c9b99a',
+};
+
+function getCorDivindade(divindade) {
+    if (!divindade) return null;
+    return CORES_DIVINDADE[divindade.toLowerCase().trim()] || '#c026d3';
+}
+
+function aplicarCorDivindade(card, divindade) {
+    const cor = getCorDivindade(divindade);
+    if (cor) card.style.setProperty('--magic-teurgia-color', cor);
+}
+
 // ========== Construção do card ==========
 function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
     const cardId = `magia_${Date.now()}_${cardMagiaCounter++}`;
@@ -178,6 +198,9 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
     }
 
     const aprimoramentos = magiaData ? (magiaData.aprimoramentos || []) : [];
+
+    // Cor por divindade (teurgia)
+    if (isTeurgia) aplicarCorDivindade(card, divindade);
 
     // ---- Info fields (oculta se null e não editando) ----
     function infoField(label, value, dataKey) {
@@ -490,6 +513,7 @@ function salvarEdicaoMagia(overlay, card, tipo) {
         const divField = card.querySelector('[data-info-key="divindade"]');
         if (divEl) divEl.textContent = divindade;
         if (divField) divField.style.display = divindade ? '' : 'none';
+        aplicarCorDivindade(card, divindade);
 
         const novaFonteId = overlay.querySelector('.edit-fonte')?.value || '';
         const velhaFonteId = card.dataset.fonteId || '';
