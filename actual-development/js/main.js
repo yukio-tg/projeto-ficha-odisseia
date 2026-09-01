@@ -1,6 +1,6 @@
 import './config/classes.js';
 import './config/herancas.js';
-import { initRadar, updateRadarTheme } from './core/radar-service.js';
+import { initRadar, updateRadarTheme, adjustRadarMaxPoints } from './core/radar-service.js';
 import { initAutocomplete } from './ui/autocomplete.js';
 import { initBars } from './ui/vitals.js';
 import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
@@ -9,7 +9,7 @@ import { initTabs } from './ui/tabs.js';
 import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
 import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset, checkMorrendoCondition } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
-import { atualizarHeranca } from './core/heranca-logic.js';
+import { atualizarHeranca, herancaAttrBonusAplicado } from './core/heranca-logic.js';
 import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility, atualizarDtSab } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
@@ -18,6 +18,7 @@ import { initInventory } from './ui/inventory.js';
 import { initItemEffects } from './core/item-effects.js';
 import { initBesta } from './ui/besta.js';
 import { initAnotacoes } from './ui/anotacoes.js';
+import { initClassCrest, refreshCrest } from './ui/class-crest.js';
 import {
     initFirebase, waitForAuth, getSheetId,
     loadSheetDoc, saveSheetData, saveSheetDataOnly,
@@ -37,6 +38,14 @@ let saveTimer = null;
 let currentUser = null;
 let currentSheetId = null;
 let currentPermission = null; // 'owner' | 'edit' | 'read'
+let hasActiveCollaborators = false;
+// Flag explícita de alterações pendentes — mais confiável que checar o DOM
+let _hasUnsavedChanges = false;
+// Flag para suprimir o aviso beforeunload quando navegando programaticamente
+let _suppressBeforeUnload = false;
+
+const AUTO_SAVE_IDLE_MS = 30_000;
+const AUTO_SAVE_COLLABORATIVE_MS = 1_500;
 
 // Controle de realtime
 let snapshotUnsubscribe = null;
@@ -112,6 +121,7 @@ async function performSave() {
             await saveSheetDataOnly(currentSheetId, name, data);
         }
         showSaved();
+        _hasUnsavedChanges = false;
     } catch (e) {
         console.error('[Save] Erro ao salvar:', e);
         if (e.code === 'permission-denied') {
@@ -124,12 +134,13 @@ async function performSave() {
 
 function triggerAutoSave() {
     if (suppressSave || !autoSaveEnabled) return;
+    _hasUnsavedChanges = true;
     showNonSaved();
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
         saveTimer = null;
         performSave();
-    }, 1500);
+    }, hasActiveCollaborators ? AUTO_SAVE_COLLABORATIVE_MS : AUTO_SAVE_IDLE_MS);
 }
 
 // ── Lógica de permissão ──────────────────────────────────────────────────────
@@ -228,6 +239,7 @@ function setupRealtimeSync(sheetId) {
                 deserializeSheet(remoteData);
                 refreshHeader();
                 applyPortraitUrl(remoteData?.fields?.['retrato-url'] || '');
+                refreshCrest(); // atualiza crest com a classe recebida remotamente
                 checkMorrendoCondition(); // re-check after remote sync
                 if (currentPermission !== 'read') showSaved();
             } finally {
@@ -271,6 +283,9 @@ function setupPresence(sheetId, user) {
                 others.push(d.data().email || d.id);
             }
         });
+        const presenceChanged = hasActiveCollaborators !== (others.length > 0);
+        hasActiveCollaborators = others.length > 0;
+        if (presenceChanged && saveTimer !== null) triggerAutoSave();
         renderPresenceIndicator(others);
     });
 
@@ -322,6 +337,7 @@ async function initAllModules() {
     initItemEffects();
     await Promise.all([initPowers(), initMagias(), initInventory(), initBesta()]);
     initAnotacoes();
+    initClassCrest();
 }
 
 function wireCalculations() {
@@ -332,6 +348,11 @@ function wireCalculations() {
                 if (autoCalcEnabled) {
                     atualizarInertidao();
                     atualizarHeranca();
+                    // Após mudança de nível, o RadarRPG reseta maxPoints para o valor base.
+                    // atualizarHeranca faz remove + re-apply (net 0 em maxPoints).
+                    // É necessário re-adicionar o bônus de herança ao novo maxPoints de nível.
+                    const herancaBonus = Object.values(herancaAttrBonusAplicado).reduce((a, b) => a + b, 0);
+                    if (herancaBonus > 0) adjustRadarMaxPoints(herancaBonus);
                     updateVisibilityByLevel();
                     calcStats();
                     atualizarAcoesPorNivel();
@@ -489,6 +510,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         refreshHeader(); // atualiza header-title e header-eyebrow com os dados carregados
         // Aplica a imagem do retrato (o campo foi preenchido mas nenhum evento input foi disparado)
         applyPortraitUrl(sheetDoc.data?.fields?.['retrato-url'] || '');
+        refreshCrest(); // atualiza crest com a classe carregada (deserialize não dispara eventos)
     } catch (e) {
         console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);
@@ -510,6 +532,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Inicia realtime sync e presença (para todos os usuários)
     setupRealtimeSync(sheetId);
     setupPresence(sheetId, user);
+
+    // ── Crest mobile: clique redireciona para index.html apenas em telas pequenas ─
+    document.querySelector('.header-crest')?.addEventListener('click', () => {
+        if (window.matchMedia('(max-width: 600px)').matches) {
+            _suppressBeforeUnload = true;
+            window.location.href = '/index.html';
+        }
+    });
+
+    // ── Atalhos de troca de aba (todos os usuários, incluindo leitura) ───────
+    document.addEventListener('keydown', (e) => {
+        if (!e.ctrlKey) return;
+        const tabKeys = ['1','2','3','4','5','6','7','8'];
+        if (!tabKeys.includes(e.key)) return;
+        e.preventDefault();
+        if (e.key === '7') {
+            const bestaTab = document.querySelector('#tabs li[data-tab="besta"]');
+            const bestaVisible = bestaTab && bestaTab.style.display !== 'none';
+            const tabId = bestaVisible ? 'besta' : 'anotacoes';
+            document.querySelector(`#tabs li[data-tab="${tabId}"]`)?.click();
+            return;
+        }
+        const tabMap = {
+            '1': 'geral', '2': 'pericias', '3': 'combate', '4': 'habilidades',
+            '5': 'magias', '6': 'inventario', '8': 'anotacoes'
+        };
+        const targetTab = tabMap[e.key];
+        if (targetTab) document.querySelector(`#tabs li[data-tab="${targetTab}"]`)?.click();
+    });
 
     // Aplica UI de acordo com a permissão
     if (perm === 'read') {
@@ -566,4 +617,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('input', triggerAutoSave);
     document.addEventListener('change', triggerAutoSave);
     document.addEventListener('ficha:changed', triggerAutoSave);
+
+    // ── Atalho ctrl+s → salvar manualmente (apenas editores/donos) ───────────
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            clearTimeout(saveTimer);
+            saveTimer = null;
+            atualizarPericias(true);
+            performSave();
+        }
+    });
+
+    // ── Aviso antes de fechar aba com alterações não salvas ─────────────────
+    window.addEventListener('beforeunload', (e) => {
+        if (_suppressBeforeUnload) return; // navegação programática, não avisa
+        if (_hasUnsavedChanges || saveTimer !== null) {
+            e.preventDefault();
+            e.returnValue = 'Há alterações não salvas. Deseja sair sem salvar?';
+        }
+    });
+
+    // ── Salvar ao clicar no link para index.html ────────────────────────────
+    document.querySelectorAll('a[href="/index.html"], a[href="index.html"]').forEach(link => {
+        link.addEventListener('click', async (e) => {
+            // Só intercepta se houver alterações pendentes
+            if (!_hasUnsavedChanges && saveTimer === null) return;
+            e.preventDefault();
+            clearTimeout(saveTimer);
+            saveTimer = null;
+            _suppressBeforeUnload = true; // suprime o dialog de "não salvo"
+            try {
+                atualizarPericias(true);
+                await performSave();
+            } catch { /* ignora erros de save — navega mesmo assim */ }
+            window.location.href = '/index.html';
+        });
+    });
 });

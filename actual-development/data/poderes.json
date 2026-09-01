@@ -101,7 +101,7 @@
   { "nome": "Inventário por Tamanho", "ptCost": 4, "otherCosts": "", "descricao": "Você soma seu atributo de Constituição no seu cálculo de Inventário.", "cor": "Laranja" },
   { "nome": "A Prática Supera a Teoria", "ptCost": 5, "otherCosts": "", "descricao": "Você é concedido com +8 PV máximos e +5 PM máximos.", "cor": "Laranja" },
   { "nome": "Treinamento de Perícia", "ptCost": 6, "otherCosts": "", "descricao": "Você pode aumentar o grau de uma perícia em 1. Esse poder pode ser pego várias vezes.", "cor": "Laranja" },
-  { "nome": "A Disciplina Cria o Hábito", "ptCost": 7, "otherCosts": "", "descricao": "Você recebe um poder de Hábito no qual tenha acesso.", "cor": "Laranja" },
+  { "nome": "Hábito Forçado", "ptCost": 7, "otherCosts": "", "descricao": "Você recebe um poder de Hábito no qual tenha acesso. Esse poder pode ser pego várias vezes.", "cor": "Laranja" },
   { "nome": "Afortunado", "ptCost": 8, "otherCosts": "(-1 PM)", "descricao": "Pelo custo de 1 PM, quando rolar um dado de resultado 1 pode re-jogar o mesmo dado.", "cor": "Laranja" },
   { "nome": "Carismático", "ptCost": 9, "otherCosts": "", "descricao": "Você recebe vantagem no primeiro teste de Carisma que realizar numa cena.", "cor": "Laranja" },
   { "nome": "Movimento Tático", "ptCost": 10, "otherCosts": "", "descricao": "Seu movimento não é afetado por terreno difícil e possui +5 para resistir à efeitos provenientes do chão.", "cor": "Laranja" },

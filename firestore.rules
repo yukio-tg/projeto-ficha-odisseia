@@ -3,10 +3,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Qualquer usuário autenticado pode ler perfis (necessário para lookup email→uid).
-    // Apenas o próprio usuário pode escrever no seu perfil.
+    // O próprio usuário pode escrever em qualquer campo do seu perfil.
+    // Qualquer autenticado pode atualizar apenas sharedSheetIds (para registrar fichas compartilhadas).
     match /users/{uid} {
       allow read:  if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data)
+                                           .affectedKeys()
+                                           .hasOnly(['sharedSheetIds']);
     }
 
     match /sheets/{sheetId} {

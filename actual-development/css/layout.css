@@ -226,6 +226,30 @@ a span:hover {
         0 0 20px color-mix(in srgb, var(--gold1) 30%, transparent);
     color: var(--gold2);
     text-shadow: 0 0 16px color-mix(in srgb, var(--gold2) 70%, transparent);
+    overflow: hidden;
+    padding: 6px;
+}
+
+/* Mobile: crest é clicável e redireciona para o início */
+@media (max-width: 600px) {
+    .header-crest {
+        cursor: pointer;
+        user-select: none;
+    }
+    .header-crest:active {
+        opacity: 0.75;
+        transform: scale(0.95);
+    }
+}
+
+/* Ícone SVG de classe injetado inline no header-crest */
+.header-crest svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    /* currentColor herda var(--gold2) definido no .header-crest */
+    color: inherit;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gold2) 70%, transparent));
 }
 
 .header-text {

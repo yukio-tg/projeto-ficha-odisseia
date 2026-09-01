@@ -1,5 +1,5 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
-import { autoCalcEnabled } from '../core/state.js';
+import { autoCalcEnabled, manualOverrides } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
 let afterSkillsUpdate = null;
 export function setAfterSkillsUpdate(fn) {
@@ -228,9 +228,9 @@ export function atualizarPericias(force = false) {
         }
     });
 
-    // Atualizar Defesa (Destreza + 10)
+    // Atualizar Defesa (Destreza + 10) — respeita override manual
     const defesaInput = document.querySelector('[data-field="defesa"]');
-    if (defesaInput) {
+    if (defesaInput && !manualOverrides.has('defesa')) {
         const destrezaVal = valoresAttr['DES'] || 0;
         defesaInput.value = destrezaVal + 10;
     }

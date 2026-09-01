@@ -23,6 +23,9 @@ function cacheCheckboxes() {
 }
 
 let currentChoiceValue = null;
+// Rastreia o último nome de herança usado para calcular A$ (dinheiro).
+// Só atualiza dinheiro se o nome realmente mudou.
+let _lastHerancaNomeParaDinheiro = null;
 
 function adjustRadarBaseAttribute(attr, delta) {
     const wrap = getRadarAttrWrap(attr);
@@ -179,13 +182,16 @@ export function atualizarFortuna() {
         }
     });
 
-    // Update ALL dinheiro elements
-    document.querySelectorAll('[data-field="dinheiro"]').forEach(el => {
-        if (el.value !== String(data.dinheiro)) {
-            el.value = data.dinheiro;
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-    });
+    // Só atualiza A$ (dinheiro) se o nome da herança mudou — bônus/checkboxes/nível não devem alterá-lo
+    if (herancaNome !== _lastHerancaNomeParaDinheiro) {
+        _lastHerancaNomeParaDinheiro = herancaNome;
+        document.querySelectorAll('[data-field="dinheiro"]').forEach(el => {
+            if (el.value !== String(data.dinheiro)) {
+                el.value = data.dinheiro;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    }
 
     document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
 }

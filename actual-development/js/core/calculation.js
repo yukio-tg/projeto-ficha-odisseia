@@ -38,8 +38,8 @@ const FORMULAS = {
     'terrível': { pv: { base: 18, per: 3 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 },
     'feromântico': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 4 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
     'teurgista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
-    'engenhoso': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 7 + f, la: (s) => s, laPer: (s) => s / 2 },
-    'treinador': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s) => s / 2 }
+    'engenhoso': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 7 + f, la: (s) => s, laPer: (s) => s / 2 },
+    'treinador': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 }
 };
 
 export const calculatedLimits = { pt: 0, inv: 0, la: 0 };

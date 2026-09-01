@@ -404,6 +404,13 @@ function addSpecialRow(listId) {
 
 export function atualizarAcoesPorNivel() {
     const nivel = getNivelAtual();
+
+    // Mostra/esconde a seção "Ações por Rodada" (visível apenas a partir do nível 8)
+    const acoesSection = document.getElementById('acoes-por-rodada-section');
+    if (acoesSection) {
+        acoesSection.style.display = nivel >= 8 ? '' : 'none';
+    }
+
     // Define valores padrão baseados no nível
     let protagonistas = 1;
     let coesao = 1;
@@ -411,7 +418,7 @@ export function atualizarAcoesPorNivel() {
 
     if (nivel >= 19) protagonistas = 2;
     if (nivel >= 13) coesao = 2;
-    if (nivel >= 5) reacoes = 2; // exemplo, ajuste conforme regras do sistema
+    if (nivel >= 8) reacoes = 2;
 
     // Aplica nos campos
     const protInput = document.querySelector('[data-field="acoes-protagonistas"]');
@@ -732,6 +739,87 @@ export function criarCardAtaque(id) {
 function adicionarAtaque() {
     const id = uid();
     document.getElementById('ataques-container').appendChild(criarCardAtaque(id));
+}
+
+// ============================================================
+// PORRADA — Ataque padrão dinâmico (desarmado)
+// ============================================================
+
+/** Cria um card de ataque "Porrada" com cálculos dinâmicos de Lutar + max(FOR,DES). */
+export function criarCardPorrada(id) {
+    const card = criarCardAtaque(id);
+    card.dataset.isPorrada = 'true';
+
+    // Campos estáticos
+    const nomeInput = card.querySelector('.combat-card__name-input');
+    if (nomeInput) nomeInput.value = 'Porrada';
+
+    const ameacaInput = card.querySelector(`[data-field="ataque-ameaca-${id}"]`);
+    if (ameacaInput) ameacaInput.value = '20';
+
+    const multiInput = card.querySelector(`[data-field="ataque-multi-${id}"]`);
+    if (multiInput) multiInput.value = '1.5';
+
+    const tipoInput = card.querySelector(`[data-field="ataque-tipo-${id}"]`);
+    if (tipoInput) tipoInput.value = 'Impacto';
+
+    const alcanceInput = card.querySelector(`[data-field="ataque-alcance-${id}"]`);
+    if (alcanceInput) alcanceInput.value = 'Corpo-a-corpo';
+
+    const descInput = card.querySelector(`[data-field="ataque-desc-${id}"]`);
+    if (descInput) descInput.value = 'Golpe desarmado';
+
+    // Seleciona a perícia Lutar
+    const periciaSelect = card.querySelector('.ataque-pericia');
+    if (periciaSelect) {
+        periciaSelect.value = 'Lutar';
+    }
+
+    // Override de _sincronizarAcerto para calcular dinamicamente
+    const acertoInput = card.querySelector('.ataque-acerto');
+    const danoInput = card.querySelector('.ataque-dano');
+    const attrSelect = card.querySelector('.ataque-attr');
+
+    card._sincronizarAcerto = function syncPorrada() {
+        const forVal = getAtributoBase('FOR');
+        const desVal = getAtributoBase('DES');
+        const melhorAttr = forVal >= desVal ? 'FOR' : 'DES';
+        const melhorVal = Math.max(forVal, desVal);
+
+        // Atualiza o atributo selecionado
+        if (attrSelect) attrSelect.value = melhorAttr;
+
+        // Acerto: Lutar + melhor atributo
+        if (acertoInput) {
+            const total = getTotalPericia('Lutar', melhorAttr);
+            acertoInput.value = total != null ? String(total) : '';
+            acertoInput.readOnly = true;
+            acertoInput.classList.add('combat-input--readonly');
+        }
+
+        // Dano: 1d4 + melhor atributo
+        if (danoInput) {
+            danoInput.value = melhorVal > 0 ? `1d4+${melhorVal}` : '1d4';
+        }
+
+        // Atualiza o summary
+        const summaryAcerto = card.querySelector('[data-summary="acerto"]');
+        const summaryDano = card.querySelector('[data-summary="dano"]');
+        const critSpan = card.querySelector('.combat-card__summary-crit');
+        if (summaryAcerto) summaryAcerto.textContent = acertoInput?.value || '—';
+        if (summaryDano) summaryDano.textContent = danoInput?.value || '—';
+        if (critSpan) critSpan.textContent = '20/×1.5';
+    };
+
+    // Calcula imediatamente
+    card._sincronizarAcerto();
+
+    return card;
+}
+
+function adicionarPorrada() {
+    const id = uid();
+    document.getElementById('ataques-container').appendChild(criarCardPorrada(id));
 }
 
 // ============================================================
@@ -1345,11 +1433,18 @@ function initCombatExtras() {
 // ============================================================
 
 function atualizarTodasStatsBars() {
-    document.querySelectorAll('#reacoes-container .combat-card[data-preset]').forEach(card => {
-        const nome = card.dataset.preset;
+    document.querySelectorAll('#reacoes-container .combat-card').forEach(card => {
         const id = card.dataset.reacaoId;
+        if (!id) return;
         const statsBar = card.querySelector(`[data-stats-bar="reacao-${id}"]`);
         if (!statsBar) return;
+
+        // Obtém o nome: de data-preset (cards preset) ou do input de nome (cards comuns)
+        const nome = card.dataset.preset
+            || card.querySelector(`[data-field="reacao-nome-${id}"]`)?.value?.trim()
+            || '';
+        if (!nome || !REACOES_PRESET[nome]) return;
+
         const inputGasto = card.querySelector(`[data-field="reacao-input-${id}"]`);
         const valoresInput = inputGasto ? { gastoPM: parseInt(inputGasto.value, 10) || 0 } : {};
         const chips = gerarStatsChips(nome, valoresInput);
@@ -1384,12 +1479,10 @@ export function initCombat() {
     if (document.getElementById('ataques-container').dataset.initialized) return;
     document.getElementById('ataques-container').dataset.initialized = 'true';
 
-    // Seed initial cards
-    for (let i = 0; i < 2; i++) adicionarAtaque();
+    // Seed initial cards — Porrada como ataque padrão, sem cards vazios de template
+    adicionarPorrada();
     inicializarReacoes();
-    adicionarCondicao();
-    adicionarBonus();
-    onCondicaoChange()
+    onCondicaoChange();
 
     // Wire add buttons
     document.getElementById('add-ataque-btn')?.addEventListener('click', adicionarAtaque);
@@ -1417,6 +1510,7 @@ export function getCombatState() {
     const ataques = Array.from(document.querySelectorAll('#ataques-container .combat-card--ataque')).map(card => ({
         id: card.dataset.ataqueId,
         linkedItemId: card.dataset.linkedItemId || null, // persist weapon→attack link
+        isPorrada: card.dataset.isPorrada === 'true' || false,
         fields: serializeCardFields(card),
     }));
     const reacoes = Array.from(document.querySelectorAll('#reacoes-container .combat-card--reacao:not([data-oportunidade])')).map(card => ({
@@ -1450,7 +1544,8 @@ export function setCombatState(data) {
         if (c) {
             c.innerHTML = '';
             data.ataques.forEach(a => {
-                const card = criarCardAtaque(a.id);
+                // Restaura Porrada com seu comportamento dinâmico especial
+                const card = a.isPorrada ? criarCardPorrada(a.id) : criarCardAtaque(a.id);
                 // Restore the weapon→attack link so DOM-based guards can detect it
                 if (a.linkedItemId) card.dataset.linkedItemId = a.linkedItemId;
                 restoreFields(card, a.fields);

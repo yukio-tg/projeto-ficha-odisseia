@@ -641,6 +641,12 @@ option:hover {
     margin: 0;
 }
 
+.vital-bar-inputs input.calc-mode {
+    text-shadow: 0 0 10px color-mix(in srgb, var(--gold2) 70%, transparent);
+    font-style: italic;
+    width: 90px;
+}
+
 .vital-bar-inputs .separator {
     color: #ffffff;
     font-size: 18px;

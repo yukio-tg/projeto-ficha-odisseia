@@ -119,25 +119,37 @@ export async function getUserDoc(uid) {
 }
 
 /** Busca um usuário pelo email (case-insensitive via normalização no cliente).
- *  Retorna { uid, email } ou null. */
+ *  Retorna { uid, email } ou null se não encontrado.
+ *  Lança erro descritivo se a query falhar. */
 export async function getUserByEmail(email) {
     const normalized = email.trim().toLowerCase();
     const colRef = collection(db, 'users');
-    // Busca pela versão normalizada armazenada
-    const q = query(colRef, where('email', '==', normalized), limit(1));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-        const d = snap.docs[0];
-        return { uid: d.id, email: d.data().email };
+    try {
+        // Busca pela versão normalizada armazenada
+        const q = query(colRef, where('email', '==', normalized), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+            const d = snap.docs[0];
+            return { uid: d.id, email: d.data().email };
+        }
+        // Fallback: busca pelo email sem normalização (contas criadas antes da padronização)
+        const q2 = query(colRef, where('email', '==', email.trim()), limit(1));
+        const snap2 = await getDocs(q2);
+        if (!snap2.empty) {
+            const d = snap2.docs[0];
+            return { uid: d.id, email: d.data().email };
+        }
+        return null;
+    } catch (err) {
+        console.error('[Firebase] getUserByEmail error:', err);
+        if (err.code === 'permission-denied') {
+            throw new Error('Sem permissão para buscar usuários. Verifique as regras do Firestore.');
+        }
+        if (err.message && err.message.includes('requires an index')) {
+            throw new Error('Índice de busca não configurado. Contate o administrador do sistema.');
+        }
+        throw new Error(`Falha ao buscar usuário: ${err.message || err.code || 'erro desconhecido'}`);
     }
-    // Fallback: busca pelo email sem normalização (contas criadas antes da padronização)
-    const q2 = query(colRef, where('email', '==', email.trim()), limit(1));
-    const snap2 = await getDocs(q2);
-    if (!snap2.empty) {
-        const d = snap2.docs[0];
-        return { uid: d.id, email: d.data().email };
-    }
-    return null;
 }
 
 /** Adiciona um sheetId à lista de fichas compartilhadas do usuário (idempotente). */

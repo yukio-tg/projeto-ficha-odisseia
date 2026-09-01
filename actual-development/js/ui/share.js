@@ -206,7 +206,16 @@ async function handleAddUser() {
         renderSharePopup();
     } catch (err) {
         console.error('[Share] Erro ao adicionar:', err);
-        status.textContent = 'Erro ao adicionar usuário. Tente novamente.';
+        const msg = err?.message || '';
+        if (msg.includes('permissão') || msg.includes('permission')) {
+            status.textContent = 'Sem permissão para realizar esta operação.';
+        } else if (msg.includes('índice') || msg.includes('index')) {
+            status.textContent = 'Erro de configuração do servidor. Contate o suporte.';
+        } else if (msg.includes('Falha ao buscar')) {
+            status.textContent = `Não foi possível verificar o e-mail. ${msg}`;
+        } else {
+            status.textContent = `Erro: ${msg || 'Tente novamente em instantes.'}`;
+        }
     } finally {
         document.getElementById('share-add-btn').disabled = false;
     }

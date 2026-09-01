@@ -18,7 +18,8 @@ const RARIDADES = [
     { nome: 'Incomum', cor: '#2e7d32', ordem: 2, limiteChave: 'incomum' },
     { nome: 'Raro', cor: '#1565c0', ordem: 3, limiteChave: 'raro' },
     { nome: 'Épico', cor: '#6a1b9a', ordem: 4, limiteChave: 'epico' },
-    { nome: 'Lendário', cor: '#f9a825', ordem: 5, limiteChave: 'lendario' }
+    { nome: 'Lendário', cor: '#f9a825', ordem: 5, limiteChave: 'lendario' },
+    { nome: 'Desconhecido', cor: '#424242', ordem: -1, limiteChave: 'desconhecido' }
 ];
 
 // Tabela de limites por hierarquia (conforme especificação)
@@ -255,6 +256,7 @@ function reordenarItems() {
 
 // ========== Glyph helper para raridade ==========
 function getRaridadeGlyph(raridade) {
+    if (raridade === 'desconhecido') return '?';
     const obj = RARIDADES.find(r => r.limiteChave === raridade) || RARIDADES[0];
     return obj.nome.charAt(0);
 }

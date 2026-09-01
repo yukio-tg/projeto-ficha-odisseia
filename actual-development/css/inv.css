@@ -467,6 +467,10 @@
     cursor: pointer;
     overflow: hidden;
     transition: border-color 0.15s, box-shadow 0.15s;
+    isolation: isolate;
+    transform: translateZ(0);
+    will-change: opacity;
+    flex-shrink: 0;
 }
 .item-raridade-glyph:hover {
     box-shadow: 0 0 8px color-mix(in srgb, var(--item-rarity-color) 40%, transparent);
@@ -535,16 +539,26 @@
 .glyph-hover-zone--top { top: 0; }
 .glyph-hover-zone--bottom { bottom: 0; }
 
-/* Selects hidden over glyph */
+/* Selects hidden over glyph — sem inset: 0 para evitar conflito de coordenadas */
 .item-raridade-glyph select {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     height: 50%;
     opacity: 0;
     cursor: pointer;
     font-size: 11px;
     z-index: 3;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
 }
 .item-raridade-glyph .item-raridade-select { top: 0; }
 .item-raridade-glyph .item-estado-select { top: 50%; }
