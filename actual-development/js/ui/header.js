@@ -1,5 +1,17 @@
 let _updateHeader = null;
 
+/** Extrai o primeiro nome (primeira palavra antes de espaço) do nome completo. */
+function primeiroNome(nomeCompleto) {
+    const partes = (nomeCompleto || '').trim().split(/\s+/);
+    return partes[0] || '';
+}
+
+/** Atualiza o título da aba do navegador com o primeiro nome do personagem. */
+function atualizarTituloPagina(nomeCompleto) {
+    const primeiro = primeiroNome(nomeCompleto);
+    document.title = primeiro ? `${primeiro} — FICHA ODISSEIA` : 'Odisseia — Ficha de Personagem';
+}
+
 export function initHeaderSync() {
     const nomeInput = document.querySelector('[data-field="personagem-nome"]');
     const tituloInput = document.querySelector('[data-field="personagem-titulo"]');
@@ -7,8 +19,10 @@ export function initHeaderSync() {
     const headerEyebrow = document.querySelector('.header-eyebrow');
 
     function updateHeader() {
-        if (headerTitle) headerTitle.textContent = nomeInput?.value.trim() || 'Nome';
+        const nome = nomeInput?.value.trim() || '';
+        if (headerTitle) headerTitle.textContent = nome || 'Nome';
         if (headerEyebrow) headerEyebrow.textContent = tituloInput?.value.trim() || 'Título';
+        atualizarTituloPagina(nome);
     }
 
     _updateHeader = updateHeader;

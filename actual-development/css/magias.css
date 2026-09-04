@@ -167,11 +167,11 @@
 
 /* LA input no header */
 .magic-la-input {
-    font-family: geor   gia;
+    font-family: 'Cinzel', serif;
     width: 44px;
     min-width: 38px;
     padding: 0.15rem 0.3rem;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 700;
     text-align: center;
     border-radius: 4px;
@@ -179,6 +179,17 @@
     flex-shrink: 0;
     appearance: textfield;
     -moz-appearance: textfield;
+    /* Garante visibilidade mesmo em pergaminhos claros */
+    background: color-mix(in srgb, hsl(220, 80%, 90%) 20%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mana1) 30%, transparent);
+}
+
+/* Em fundo escuro (dark paper), mana1 (#1c108a) fica invisível —
+   usa azul claro legível em vez disso */
+body.theme-dark-paper .magic-la-input {
+    color: hsl(220, 80%, 75%);
+    background: color-mix(in srgb, hsl(220, 80%, 75%) 12%, transparent);
+    border-color: color-mix(in srgb, hsl(220, 80%, 75%) 35%, transparent);
 }
 
 .magic-la-input::-webkit-outer-spin-button,

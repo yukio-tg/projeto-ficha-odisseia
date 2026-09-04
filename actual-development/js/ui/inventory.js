@@ -5,7 +5,7 @@ import { normalizar, escapeHtml, capitalize } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { verificarOverflow, syncFieldToDisplay } from '../core/dom-helpers.js';
-import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged } from '../core/item-effects.js';
+import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged, onFonteNomeChanged } from '../core/item-effects.js';
 
 // ========== Configuração ==========
 const itensLoader = createDataLoader('/data/itens.json', 'Inventário', 'itens');
@@ -440,6 +440,11 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
         salvarInventarioLocal();
         clearTimeout(reorderTimeout);
         reorderTimeout = setTimeout(reordenarItems, 800);
+        // Se for uma fonte, atualiza o nome exibido no tab de Magias
+        const currentCat = card.querySelector('.item-categoria-select')?.value || categoria;
+        if (currentCat === 'fonte') {
+            onFonteNomeChanged(cardId, nomeInput.value.trim());
+        }
     });
     const valor1Input = card.querySelector('.item-valor1');
     const valor2Input = card.querySelector('.item-valor2');

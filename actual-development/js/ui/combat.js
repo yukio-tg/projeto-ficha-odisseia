@@ -287,6 +287,7 @@ function criarCardReacaoPreset(nome, id) {
         toggleAccordion();
     });
     header.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
     });
     card.querySelector('.combat-card__name-input').addEventListener('click', e => e.stopPropagation());
@@ -623,6 +624,7 @@ export function criarCardAtaque(id) {
         toggleAccordion();
     });
     header.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
     });
 
@@ -887,6 +889,7 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false) {
     });
 
     header.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             toggleAccordion();
@@ -939,6 +942,15 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false) {
 
         // Também dispara na criação, caso o nome já venha preenchido (ex: quando for carregado do storage)
         updatePresetClass();
+
+        // Se o card é criado com um nome de preset já preenchido, renderiza os chips imediatamente
+        if (nome && REACOES_PRESET[nome]) {
+            const statsBar = card.querySelector(`[data-stats-bar="reacao-${id}"]`);
+            if (statsBar) {
+                const chips = gerarStatsChips(nome);
+                renderizarStatsChips(statsBar, chips);
+            }
+        }
     }
     // ... dentro de criarCardReacao, após a criação do innerHTML e antes do return
 
@@ -1005,6 +1017,24 @@ function inicializarReacoes() {
 // ============================================================
 // CONDITION CARDS
 // ============================================================
+
+// Estado global: efeitos visuais de condição ativados (padrão: true)
+let _conditionEffectsEnabled = true;
+
+/** Retorna se os efeitos visuais de condição estão ativos. */
+export function getConditionEffectsEnabled() { return _conditionEffectsEnabled; }
+
+/** Define o estado do toggle de efeitos visuais de condição e atualiza a UI. */
+export function setConditionEffectsEnabled(enabled) {
+    _conditionEffectsEnabled = !!enabled;
+    atualizarEfeitoGlobal();
+    // Sincroniza o botão de toggle se existir
+    const btn = document.getElementById('btn-toggle-condition-effects');
+    if (btn) {
+        btn.classList.toggle('active', _conditionEffectsEnabled);
+        btn.title = _conditionEffectsEnabled ? 'Efeitos visuais de condição: ligado' : 'Efeitos visuais de condição: desligado';
+    }
+}
 
 const CONDICOES_DATA = CONDICOES_LISTA;
 
@@ -1225,6 +1255,15 @@ function getCondicoesAtivas() {
 // Aplica o efeito combinado ao overlay
 function atualizarEfeitoGlobal() {
     const overlay = getGlobalOverlay();
+
+    if (!_conditionEffectsEnabled) {
+        // Efeitos desligados: limpa overlay completamente
+        overlay.style.background = '';
+        overlay.style.backdropFilter = '';
+        atualizarPopupCondicao();
+        return;
+    }
+
     const condicoesAtivas = getCondicoesAtivas();
     const efeitos = condicoesAtivas
         .map(nome => EFEITOS_CONDICOES[nome])
@@ -1232,9 +1271,7 @@ function atualizarEfeitoGlobal() {
 
     const { background, filter } = combinarEfeitos(efeitos);
     overlay.style.background = background;
-    overlay.style.backdropFilter = filter; // se quiser aplicar filtro no fundo, melhor usar backdrop-filter
-    // Caso queira filter direto na camada (menos comum):
-    // overlay.style.filter = filter;
+    overlay.style.backdropFilter = filter;
     atualizarPopupCondicao();
 }
 
@@ -1246,19 +1283,22 @@ function onCondicaoChange() {
 // Mapa de cores para cada condição (usado no pop-up)
 const COR_PADRAO = '#6b1616';
 
-// Cria ou retorna o pop-up
+// Cria ou retorna o pop-up de condição ativa
 function getPopupCondicao() {
     let popup = document.getElementById('popup-condicao');
     if (!popup) {
         popup = document.createElement('div');
         popup.id = 'popup-condicao';
+        // Posicionado em relação ao .page-wrap (área de conteúdo) usando sticky/fixed com offset correto
         popup.style.position = 'fixed';
-        popup.style.bottom = '20px';
-        popup.style.right = '20px';
+        popup.style.bottom = '16px';
+        popup.style.left = '50%';
+        popup.style.transform = 'translateX(-50%)';
+        popup.style.maxWidth = 'min(320px, 90vw)';
         popup.style.zIndex = '1002';
-        popup.style.backgroundColor = 'rgba(0,0,0,0.75)';
+        popup.style.backgroundColor = 'rgba(0,0,0,0.80)';
         popup.style.color = '#ffdede';
-        popup.style.padding = '8px 14px';
+        popup.style.padding = '8px 16px';
         popup.style.borderRadius = '8px';
         popup.style.fontFamily = 'IM Fell English, serif';
         popup.style.fontSize = '13px';
@@ -1268,8 +1308,8 @@ function getPopupCondicao() {
         popup.style.pointerEvents = 'auto';
         popup.style.border = '1px solid rgba(255, 255, 255, 0.2)';
         popup.style.cursor = 'default';
-        popup.style.marginRight = '10vh';
-        // Hover: fica mais transparente
+        popup.style.textAlign = 'center';
+        // Hover: fica mais transparente para não obstruir conteúdo
         popup.addEventListener('mouseenter', () => { popup.style.opacity = '0.2'; });
         popup.addEventListener('mouseleave', () => { popup.style.opacity = '0.85'; });
         document.body.appendChild(popup);
@@ -1490,6 +1530,17 @@ export function initCombat() {
     document.getElementById('add-condicao-btn')?.addEventListener('click', adicionarCondicao);
     document.getElementById('add-bonus-onus-btn')?.addEventListener('click', adicionarBonus);
 
+    // Wire toggle de efeitos visuais de condição
+    const btnToggleEfeitos = document.getElementById('btn-toggle-condition-effects');
+    if (btnToggleEfeitos) {
+        btnToggleEfeitos.classList.toggle('active', _conditionEffectsEnabled);
+        btnToggleEfeitos.title = _conditionEffectsEnabled ? 'Efeitos visuais de condição: ligado' : 'Efeitos visuais de condição: desligado';
+        btnToggleEfeitos.addEventListener('click', () => {
+            setConditionEffectsEnabled(!_conditionEffectsEnabled);
+            document.dispatchEvent(new Event('ficha:changed'));
+        });
+    }
+
     atualizarAcoesPorNivel();
     atualizarAvisoReacoes();
     atualizarAtaquesAcerto(false);
@@ -1526,7 +1577,7 @@ export function getCombatState() {
         id: card.dataset.bonusId,
         fields: serializeCardFields(card),
     }));
-    return { ataques, reacoes, condicoes, bonus };
+    return { ataques, reacoes, condicoes, bonus, conditionEffectsEnabled: _conditionEffectsEnabled };
 }
 
 function restoreFields(card, fields) {
@@ -1539,6 +1590,10 @@ function restoreFields(card, fields) {
 
 export function setCombatState(data) {
     if (!data) return;
+    // Restaura toggle de efeitos visuais (padrão: ligado se não estiver no dado)
+    if (typeof data.conditionEffectsEnabled === 'boolean') {
+        setConditionEffectsEnabled(data.conditionEffectsEnabled);
+    }
     if (data.ataques) {
         const c = document.getElementById('ataques-container');
         if (c) {
@@ -1561,7 +1616,10 @@ export function setCombatState(data) {
             data.reacoes.forEach(r => {
                 const nome = (r.fields && r.fields[`reacao-nome-${r.id}`]) || '';
                 const desc = (r.fields && r.fields[`reacao-desc-${r.id}`]) || '';
-                const card = criarCardReacao(r.id, nome, desc);
+                // Se a reação foi criada como preset, restaura como preset para preservar as stats chips
+                const card = (r.preset && REACOES_PRESET[r.preset])
+                    ? criarCardReacaoPreset(r.preset, r.id)
+                    : criarCardReacao(r.id, nome, desc);
                 restoreFields(card, r.fields);
                 c.appendChild(card);
             });

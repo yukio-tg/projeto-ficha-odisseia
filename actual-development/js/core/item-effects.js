@@ -307,6 +307,18 @@ export function onFonteRaridadeChanged(cardId, newRaridade) {
     saveItemEffectsState();
 }
 
+/**
+ * Atualiza o nome de uma Fonte rastreada quando o nome do item é alterado pelo usuário.
+ * Isso garante que o display no tab de Magias (Teurgia) reflita o novo nome.
+ */
+export function onFonteNomeChanged(cardId, newNome) {
+    const fonte = activeFontes.get(cardId);
+    if (!fonte) return;
+    fonte.nome = newNome || 'Fonte';
+    renderFonteUI();
+    saveItemEffectsState();
+}
+
 /** Move a spell's capacity tracking from one Fonte to another. */
 export function transferSpellBetweenFontes(oldFonteId, newFonteId, spellFe, spellGrau, spellNome, cardEl) {
     if (oldFonteId === newFonteId) return;

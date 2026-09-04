@@ -2,6 +2,7 @@
 // Substitui o ⚜ do header-crest pelo ícone SVG da classe escolhida.
 // O SVG é carregado inline com fill="currentColor" para herdar var(--gold2)
 // do .header-crest e receber o mesmo glow/efeito do símbolo original.
+// Também atualiza o favicon da guia do navegador dinamicamente.
 
 /** Mapeia slug normalizado da classe → nome do arquivo SVG (sem extensão). */
 const CLASS_SVG_MAP = {
@@ -17,6 +18,7 @@ const CLASS_SVG_MAP = {
 
 const SVG_BASE_PATH = '/image/';
 const FALLBACK_HTML = '⚜';
+const FAVICON_DEFAULT = '/image/odisseia-logo.ico';
 
 /** Cache de conteúdo SVG já transformado, indexado pelo slug. */
 const _cache = {};
@@ -57,7 +59,25 @@ async function carregarSVG(nome) {
 }
 
 /**
+ * Atualiza o favicon do navegador.
+ * @param {string|null} icoPath - Caminho do .ico; null = padrão
+ */
+function atualizarFavicon(icoPath) {
+    const href = icoPath || FAVICON_DEFAULT;
+    let link = document.getElementById('page-favicon');
+    if (!link) {
+        link = document.createElement('link');
+        link.id = 'page-favicon';
+        link.rel = 'icon';
+        link.type = 'image/x-icon';
+        document.head.appendChild(link);
+    }
+    if (link.href !== href) link.href = href;
+}
+
+/**
  * Atualiza o .header-crest com o SVG da classe ou volta ao ⚜ se vazio/inválido.
+ * Também atualiza o favicon da aba do navegador.
  */
 async function atualizarCrest(crest, nomeClasse) {
     const key = slug(nomeClasse);
@@ -65,16 +85,19 @@ async function atualizarCrest(crest, nomeClasse) {
 
     if (!nome) {
         crest.innerHTML = FALLBACK_HTML;
+        atualizarFavicon(null);
         return;
     }
 
     const svgHTML = await carregarSVG(nome);
     if (!svgHTML) {
         crest.innerHTML = FALLBACK_HTML;
+        atualizarFavicon(null);
         return;
     }
 
     crest.innerHTML = svgHTML;
+    atualizarFavicon(`/image/${nome}.ico`);
 }
 
 /**

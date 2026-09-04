@@ -1079,6 +1079,47 @@
     flex-wrap: wrap;
 }
 
+/* ── Cabeçalho de seção com botão inline ── */
+.sh-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 22px 0 14px;
+}
+
+.sh-row .sh {
+    flex: 1;
+    margin: 0; /* margem controlada pelo .sh-row */
+}
+
+/* ── Botão de toggle de efeitos visuais de condição ── */
+.condition-effects-toggle {
+    background: none;
+    border: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
+    border-radius: 5px;
+    color: var(--ink3);
+    padding: 3px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0.5;
+    transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+
+.condition-effects-toggle.active {
+    color: var(--gold1);
+    border-color: color-mix(in srgb, var(--gold1) 55%, transparent);
+    opacity: 0.9;
+}
+
+.condition-effects-toggle:hover {
+    opacity: 1;
+    border-color: var(--gold1);
+    color: var(--gold2);
+}
+
 /* ── CONDITION cards ── */
 .condicoes-grid {
     display: grid;

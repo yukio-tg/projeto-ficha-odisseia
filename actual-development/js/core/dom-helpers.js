@@ -116,6 +116,10 @@ export function setupAccordion(card, options = {}) {
         toggle();
     });
     header.addEventListener('keydown', (e) => {
+        // Ignora Space/Enter se o foco estiver em um input, textarea ou select dentro do header
+        // (evita que digitar espaço em campos de texto acione o toggle)
+        if (ignoreSelectors.some(sel => e.target.closest(sel))) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
 
