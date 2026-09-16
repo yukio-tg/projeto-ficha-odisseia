@@ -679,9 +679,11 @@ function mostrarAutocompleteMagias(inputEl, query) {
             <span class="autocomplete-magia-la">${escapeHtml(String(laVal))}</span>
             <strong class="autocomplete-magia-nome">${escapeHtml(m.nome)}</strong>
             <span class="autocomplete-magia-tipo">${escapeHtml(tipoLabel)}</span>`;
+        item.addEventListener('mousedown', e => e.preventDefault());
         item.addEventListener('click', () => {
             inputEl.value = m.nome;
             fecharAutocompleteMagias();
+            inputEl.focus();
         });
         dropdown.appendChild(item);
     });
@@ -700,7 +702,7 @@ function setupAutocompleteKeyboardMagias(inputEl) {
         const items = visible ? dropdown.querySelectorAll('.autocomplete-item-magia') : [];
 
         if (visible && items.length) {
-            if (e.key === 'ArrowDown') {
+            if (e.key === 'ArrowDown' || e.key === 'Tab') {
                 e.preventDefault();
                 currentIndex = (currentIndex + 1) % items.length;
                 items.forEach((it, i) => it.classList.toggle('autocomplete-item-magia--active', i === currentIndex));
@@ -909,6 +911,7 @@ function adicionarMagia(inputEl) {
 
     inputEl.value = '';
     fecharAutocompleteMagias();
+    inputEl.focus();
 }
 
 // ========== Inicialização ==========

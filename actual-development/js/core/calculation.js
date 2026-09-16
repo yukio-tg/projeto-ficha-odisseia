@@ -35,8 +35,8 @@ const FORMULAS = {
     'coração': { pv: { base: 23, per: 4 }, pm: { base: 2, per: 1 }, pt: { base: 2, per: 1 }, inv: (f) => 7 + f, la: (s) => s, laPer: 0 },
     'arcanista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => 3 + s, laPer: (s) => 2 + (s / 2) },
     'certeiro': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 2 + f, la: (s) => s, laPer: (s) => s / 2 },
-    'terrível': { pv: { base: 18, per: 3 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 },
-    'feromântico': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 4 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
+    'terrível': { pv: { base: 18, per: 3 }, pm: { base: 5, per: 2 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 },
+    'feromântico': { pv: { base: 18, per: 3 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
     'teurgista': { pv: { base: 13, per: 2 }, pm: { base: 8, per: 3 }, pt: { base: 4, per: 2 }, inv: (f) => 5 + f, la: (s) => 3 + s, laPer: (s) => 1 + (s / 2) },
     'engenhoso': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 7 + f, la: (s) => s, laPer: (s) => s / 2 },
     'treinador': { pv: { base: 13, per: 2 }, pm: { base: 5, per: 2 }, pt: { base: 6, per: 3 }, inv: (f) => 5 + f, la: (s) => s, laPer: (s) => s / 2 }

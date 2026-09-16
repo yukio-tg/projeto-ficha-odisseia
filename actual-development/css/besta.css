@@ -753,22 +753,22 @@
     font-size: 9px;
     font-weight: 700;
     padding: 1px 6px;
-    border: 1px solid rgba(192,57,43,.4);
+    border: 1px solid color-mix(in srgb, var(--hab-bio-color) 45%, transparent);
     border-radius: 3px;
     background: transparent;
-    color: #c0392b;
+    color: var(--hab-bio-color);
     cursor: pointer;
     transition: background .1s, color .1s;
     line-height: 1.6;
 }
 
 .besta-nivel-btn.active {
-    background: #c0392b;
+    background: var(--hab-bio-color);
     color: #fff;
-    border-color: #c0392b;
+    border-color: var(--hab-bio-color);
 }
 
-.besta-nivel-btn:hover:not(.active) { background: rgba(192,57,43,.12); }
+.besta-nivel-btn:hover:not(.active) { background: color-mix(in srgb, var(--hab-bio-color) 12%, transparent); }
 
 /* ── Treino PT group ─────────────────────────────────── */
 .besta-treino-pt-group {
@@ -781,7 +781,7 @@
     font-family: 'Cinzel', serif;
     font-size: 11px;
     font-weight: 700;
-    color: #2e7d32;
+    color: var(--hab-treino-color);
     letter-spacing: .05em;
 }
 
@@ -1032,3 +1032,190 @@
     transition: background .15s;
 }
 .besta-add-new-btn:hover { background: var(--p1); }
+
+/* ════════════════════════════════════════════════════
+   DARK PAPER THEME FIXES FOR BESTA
+   ════════════════════════════════════════════════════ */
+
+/* Fix hardcoded white backgrounds */
+.besta-indiv-desc,
+.besta-indiv-val1,
+.besta-indiv-val2 {
+    background: color-mix(in srgb, var(--p0) 60%, transparent);
+}
+
+/* Fix besta-instance: no border/background for cleaner look */
+.besta-instance {
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0 0 4px 0;
+}
+
+/* Remove gap in besta notes header */
+.besta-anotacoes-section .notes-header {
+    margin-bottom: 0;
+    border-radius: 4px 4px 0 0;
+    border: 1px solid var(--gold0);
+    border-bottom: none;
+}
+
+.besta-anotacoes-section .besta-anotacoes {
+    border-radius: 0 0 4px 4px;
+    margin-top: 0;
+}
+
+/* ── New unified aspects card ─────────────────────────── */
+.besta-aspects-card {
+    border: 1px solid var(--gold0);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+/* Aspect searcher at top of unified card */
+.besta-aspects-searcher {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, var(--leath1) 0%, var(--leath2) 60%, var(--leath1) 100%);
+    border-bottom: 1px solid var(--leath3);
+    position: relative;
+}
+
+.besta-aspects-search-input {
+    flex: 1;
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    background: var(--p0);
+    padding: 4px 8px;
+    color: var(--ink1);
+}
+
+.besta-aspects-search-input::placeholder { color: var(--ink3); }
+
+.besta-aspects-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 12px;
+    right: 12px;
+    background: var(--p0);
+    border: 1px solid var(--gold1);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 300;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+}
+
+.besta-aspects-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    color: var(--ink1);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 13%, transparent);
+    transition: background .1s;
+}
+
+.besta-aspects-dropdown-item:hover,
+.besta-aspects-dropdown-item--active { background: var(--p1); }
+
+.besta-aspects-dd-custo {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--gold1);
+    min-width: 28px;
+    text-align: center;
+}
+
+.besta-aspects-dd-nome {
+    flex: 1;
+    font-weight: 700;
+}
+
+.besta-aspects-dd-tipo {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: 1px 6px;
+    border-radius: 3px;
+}
+
+/* Sub-section dividers inside aspects card */
+.besta-aspect-subsection {
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 25%, transparent);
+    padding: 8px 12px 10px;
+}
+
+.besta-aspect-subsection:last-child { border-bottom: none; }
+
+.besta-aspect-sub-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--gold0) 35%, transparent);
+}
+
+.besta-aspect-sub-title {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--aspect-color, var(--gold1));
+    text-transform: uppercase;
+    flex: 1;
+}
+
+.besta-aspect-sub-counter {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    color: var(--ink3);
+}
+
+/* Bio card type selector */
+.besta-bio-tipo-select {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    background: transparent;
+    border: 1px solid var(--gold0);
+    border-radius: 3px;
+    color: var(--ink2);
+    padding: 1px 3px;
+    cursor: pointer;
+    max-width: 100px;
+}
+
+/* Bio counter overflow styling */
+.besta-bio-used[style*="blood2"],
+.besta-bio-used.over-limit {
+    color: var(--blood2) !important;
+}
+
+/* onus-dd-item hover highlight */
+.onus-dd-item--active {
+    background: var(--p2) !important;
+    color: var(--ink0) !important;
+}
+
+/* Acerto d20 prefix for besta attacks - always visible */
+.besta-atk-acerto-wrap {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.besta-atk-acerto-wrap .besta-atk-acerto {
+    flex: 1;
+}

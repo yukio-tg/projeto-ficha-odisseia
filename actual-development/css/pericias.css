@@ -409,7 +409,7 @@
 
 /* Fix table column widths for alignment */
 .stbl .col-nome {
-    width: auto;
+    width: 150px;
 }
 
 .stbl .col-attr {
@@ -432,28 +432,79 @@
 }
 
 .stbl .col-total {
-    width: 70px;
+    width: 60px;
     text-align: center;
 }
 
 /* ── Perícias: esconde colunas Atrib. e Base em telas pequenas ── */
 @media (max-width: 600px) {
-    .stbl .col-attr,
-    .stbl thead th:nth-child(2) {
+    /* Esconde coluna Atributo (th + td) */
+    .stbl thead th:nth-child(2),
+    .stbl tbody td:nth-child(2) {
         display: none;
     }
-    .stbl .col-base,
-    .stbl thead th:nth-child(3) {
+    /* Esconde coluna Base (th + td) */
+    .stbl thead th:nth-child(3),
+    .stbl tbody td:nth-child(3) {
         display: none;
     }
-    /* Ajusta largura dos pips para caber melhor */
-    .stbl .col-prof {
+    /* Ajusta larguras para caber no mobile */
+    .stbl .col-nome {
         width: auto;
     }
-    /* Aumenta área de toque dos pips */
-    .prof-pip {
-        width: 20px;
-        height: 20px;
+    .stbl .col-prof {
+        width: 90px;
     }
+    .stbl .col-bonus {
+        width: 52px;
+    }
+    .stbl .col-total {
+        width: 44px;
+    }
+    /* Reduz tamanho dos pips para caber em telas pequenas */
+    .prof-pip {
+        width: 16px;
+        height: 16px;
+    }
+    /* Ajusta input de bônus */
+    .pericia-bonus {
+        width: 46px;
+        font-size: 11px;
+    }
+    /* Garante que a linha de descrição ocupe toda a largura mesmo com colunas ocultas */
+    .pericia-desc-row td {
+        display: table-cell !important;
+    }
+}
+
+/* ── D20 icon replaced by "d20+" text ── */
+.d20-icon {
+    display: none; /* substituído por texto "d20+" */
+}
+
+/* Static d20 prefix before readonly acerto input */
+.acerto-d20-prefix {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    white-space: nowrap;
+    color: inherit;
+    opacity: 0.85;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.acerto-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+}
+
+.acerto-input-wrap .combat-input {
+    flex: 1;
+    min-width: 0;
 }
 

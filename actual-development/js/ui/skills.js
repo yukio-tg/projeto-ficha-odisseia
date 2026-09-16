@@ -2,6 +2,17 @@ import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
 import { autoCalcEnabled, manualOverrides } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
 let afterSkillsUpdate = null;
+
+const D20_TEXT = 'd20+';
+
+/** Returns HTML string: "d20+" prefix + value */
+export function buildD20Html(val) {
+    if (!val || val === '—') return val || '—';
+    // Don't show d20++0 (redundant)
+    if (val === '0' || val === '+0') return D20_TEXT;
+    const sep = (val.startsWith('+') || val.startsWith('-')) ? '' : '+';
+    return D20_TEXT + sep + val;
+}
 export function setAfterSkillsUpdate(fn) {
     afterSkillsUpdate = fn;
 }
@@ -52,7 +63,7 @@ export function renderizarTabelaPericias() {
 
         // Nome
         const nomeTd = document.createElement('td');
-        nomeTd.style.cssText = 'white-space:nowrap; border-left: 2.5px solid ' + attrColor + '30;';
+        nomeTd.style.cssText = 'white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-left: 2.5px solid ' + attrColor + '30;';
         const infoBtn = document.createElement('button');
         infoBtn.className = 'pericia-info-btn material-symbols-outlined';
         infoBtn.textContent = 'arrow_right';
@@ -287,7 +298,7 @@ export function atualizarPericias(force = false) {
 
         const totalCell = row.querySelector('.pericia-total');
         if (totalCell) {
-            totalCell.textContent = totalStr;
+            totalCell.innerHTML = buildD20Html(totalStr);
             const ac = attrColors[pericia.attr];
             if (ac) totalCell.style.color = ac;
         }

@@ -2,9 +2,129 @@ import { HERANCA_DATA, HIERARQUIA_ORDEM } from '../config/herancas.js';
 import { getNivel, getRadarAttrWrap, adjustRadarMaxPoints } from './radar-service.js';
 import { autoCalcEnabled } from './state.js';
 
+// ── Estado de bônus aplicado ──────────────────────────────────────────────────
+
 export let herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
 
-// Lazy DOM references — queried on first use, not at module load time
+/**
+ * Flag explícita: indica se o bônus de Aprendizado de Vida já foi somado
+ * aos atributos do personagem E ainda está correto para a herança atual.
+ *
+ * Enquanto true, atualizarHeranca() retorna antecipadamente sem modificar
+ * os atributos — impedindo que o bônus seja somado novamente ao recarregar
+ * a ficha (o save já contém os atributos com o bônus incluído).
+ *
+ * Ciclo de vida:
+ *  • Ativada (true)  → quando aplicarNovoBonus() ou aplicarBonusPorEscolha()
+ *                       efetivamente somam o bônus no DOM.
+ *  • Desativada (false) → quando removerBonusAtuais() remove o bônus do DOM
+ *                         (ocorre ao trocar herança ou desmarcar o checkbox).
+ *  • Restaurada do save  → setBonusAprendizadoRestaurado() em deserializeSheet.
+ */
+let _bonusAprendizadoFlag = false;
+
+/**
+ * Chave (lowercase) da herança que estava ativa quando o bônus foi aplicado.
+ * Usada para invalidar a flag quando a herança muda.
+ */
+let _herancaNomeAplicado = '';
+
+// ── Exportações de estado de flag ─────────────────────────────────────────────
+
+/** Retorna o valor atual da flag (para serialização). */
+export function getBonusAprendizadoFlag() { return _bonusAprendizadoFlag; }
+
+/**
+ * Restaura a flag a partir dos dados do save.
+ *
+ * Aceita `flagVal` explícito (saves novos com bonusAprendizadoFlag) ou
+ * inferência via `fields` (saves antigos sem o campo, mas com herança e
+ * checkbox corretos no Firestore — retrocompatibilidade total).
+ *
+ * Também sincroniza herancaAttrBonusAplicado imediatamente, para que
+ * removerBonusAtuais() funcione corretamente caso o usuário troque de
+ * herança antes de atualizarHeranca() ter rodado pela primeira vez.
+ *
+ * @param {boolean|undefined} flagVal  - Valor salvo da flag (ou undefined para inferir)
+ * @param {Object}            fields   - data.fields do save (para inferência e herança-nome)
+ */
+export function setBonusAprendizadoRestaurado(flagVal, fields) {
+    // Determina o valor da flag: explícito no save, ou inferido dos campos
+    const ativo = (flagVal !== undefined && flagVal !== null)
+        ? !!flagVal
+        : inferHerancaBonusFromFields(fields) !== null;
+
+    _bonusAprendizadoFlag = ativo;
+    _herancaNomeAplicado  = ativo
+        ? String(fields?.['heranca-nome'] || '').trim().toLowerCase()
+        : '';
+
+    if (ativo) {
+        // Sincroniza herancaAttrBonusAplicado via inferência para que
+        // removerBonusAtuais() saiba o que desfazer em mudanças futuras.
+        const bonus = inferHerancaBonusFromFields(fields);
+        setHerancaAttrBonusAplicado(bonus);
+    }
+}
+
+/**
+ * Restaura herancaAttrBonusAplicado a partir de um objeto de bônus explícito.
+ * Mantido para retrocompatibilidade e uso interno.
+ */
+export function setHerancaAttrBonusAplicado(obj) {
+    herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
+    if (obj && typeof obj === 'object') {
+        Object.keys(herancaAttrBonusAplicado).forEach(k => {
+            if (obj[k] != null) herancaAttrBonusAplicado[k] = Number(obj[k]) || 0;
+        });
+    }
+}
+
+/**
+ * Infere o bônus de Aprendizado de Vida a partir dos campos brutos salvos
+ * (data.fields), sem precisar que herancaAttrBonus exista no save.
+ * Usado para retrocompatibilidade com saves anteriores ao fix.
+ *
+ * @param {Object} fields - Objeto data.fields do save
+ * @returns {Object|null} Mapa atributo → delta, ou null se sem bônus
+ */
+export function inferHerancaBonusFromFields(fields) {
+    if (!fields) return null;
+    if (!fields['aprendizadoDaVida']) return null;
+
+    const herancaNome = String(fields['heranca-nome'] || '').trim().toLowerCase();
+    const data = HERANCA_DATA[herancaNome];
+    if (!data) return null;
+
+    if (data.bonus.type === 'fixed') {
+        return { [data.bonus.attr]: data.bonus.value };
+    }
+    if (data.bonus.type === 'choice') {
+        const chosen = fields['aprendizadoEscolha'];
+        if (chosen) return { [chosen]: 1 };
+        if (data.bonus.choices?.length) return { [data.bonus.choices[0]]: 1 };
+    }
+    return null;
+}
+
+/**
+ * Sincroniza herancaAttrBonusAplicado com o bônus esperado para `chave`,
+ * SEM modificar o DOM. Garante que removerBonusAtuais() funcione
+ * corretamente numa futura chamada (ex.: troca de herança após reload).
+ */
+function _syncHerancaAttrBonus(chave) {
+    herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
+    const data = HERANCA_DATA[chave];
+    if (!data) return;
+    if (data.bonus.type === 'fixed') {
+        herancaAttrBonusAplicado[data.bonus.attr] = data.bonus.value;
+    } else if (data.bonus.type === 'choice' && currentChoiceValue) {
+        herancaAttrBonusAplicado[currentChoiceValue] = 1;
+    }
+}
+
+// ── Lazy DOM references ───────────────────────────────────────────────────────
+
 let _checkFortuna = null;
 let _checkAprendizado = null;
 let _checkHabilidade = null;
@@ -27,6 +147,8 @@ let currentChoiceValue = null;
 // Só atualiza dinheiro se o nome realmente mudou.
 let _lastHerancaNomeParaDinheiro = null;
 
+// ── Funções de atributo ───────────────────────────────────────────────────────
+
 function adjustRadarBaseAttribute(attr, delta) {
     const wrap = getRadarAttrWrap(attr);
     if (!wrap) return;
@@ -46,7 +168,12 @@ export function removerBonusAtuais() {
         if (val !== 0) adjustRadarBaseAttribute(attr, -val);
     }
     herancaAttrBonusAplicado = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 };
+    // Limpa a flag: o bônus foi removido do DOM, próxima chamada deve reaplicar
+    _bonusAprendizadoFlag = false;
+    _herancaNomeAplicado  = '';
 }
+
+// ── Escolha de atributo (heranças tipo 'choice') ──────────────────────────────
 
 function inicializarSelectEscolha(data) {
     let select = document.querySelector('[data-field="aprendizadoEscolha"]');
@@ -96,8 +223,13 @@ function aplicarBonusPorEscolha(attr) {
         adjustRadarBaseAttribute(attrKey, val);
         herancaAttrBonusAplicado[attrKey] = (herancaAttrBonusAplicado[attrKey] || 0) + val;
     }
+    // Ativa a flag: bônus somado ao DOM
+    _bonusAprendizadoFlag = true;
+    _herancaNomeAplicado  = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim().toLowerCase();
     return true;
 }
+
+// ── Aplicação do bônus ────────────────────────────────────────────────────────
 
 export function aplicarNovoBonus() {
     const herancaNome = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
@@ -120,6 +252,9 @@ export function aplicarNovoBonus() {
         }
         const container = document.getElementById('aprendizado-escolha-container');
         if (container) container.style.display = 'none';
+        // Ativa a flag: bônus somado ao DOM
+        _bonusAprendizadoFlag = true;
+        _herancaNomeAplicado  = chave;
         return true;
     }
 
@@ -128,13 +263,18 @@ export function aplicarNovoBonus() {
         if (!select) return false;
 
         if (!currentChoiceValue && select.options.length) {
-            currentChoiceValue = select.options[0].value;
+            // Prefere o valor já restaurado pelo deserialize; cai para a primeira opção
+            // somente se o select ainda não tiver um valor válido selecionado.
+            currentChoiceValue = select.value || select.options[0].value;
             select.value = currentChoiceValue;
         }
+        // Nota: aplicarBonusPorEscolha() ativa a flag internamente
         return aplicarBonusPorEscolha(currentChoiceValue);
     }
     return false;
 }
+
+// ── Checkboxes / Fortuna ──────────────────────────────────────────────────────
 
 export function limitarCheckboxes() {
     const nivel = getNivel();
@@ -214,10 +354,37 @@ function _dispararPoderHeranca() {
     }));
 }
 
+// ── Ponto de entrada principal ────────────────────────────────────────────────
+
 export function atualizarHeranca() {
     if (!autoCalcEnabled) return;
     limitarCheckboxes();
     atualizarFortuna();
+
+    const herancaNome      = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
+    const chave            = herancaNome.toLowerCase();
+    const checkAprendizado = getCheckAprendizado();
+    const aprendizadoAtivo = checkAprendizado?.checked;
+
+    // ── VERIFICAÇÃO DA FLAG ───────────────────────────────────────────────────
+    // Se a flag indica que o bônus já foi somado para ESTA herança específica
+    // e o checkbox ainda está marcado, o DOM já contém os valores corretos.
+    // Saída antecipada: não remover nem somar novamente — sem empilhamento.
+    //
+    // Também sincroniza herancaAttrBonusAplicado (sem tocar no DOM) para que
+    // removerBonusAtuais() funcione corretamente numa troca de herança futura.
+    if (_bonusAprendizadoFlag && aprendizadoAtivo && chave && chave === _herancaNomeAplicado) {
+        _syncHerancaAttrBonus(chave);
+        // Para heranças tipo 'choice': mantém o container de seleção visível
+        const data = HERANCA_DATA[chave];
+        if (data?.bonus.type === 'choice') inicializarSelectEscolha(data);
+        _dispararPoderHeranca();
+        return; // DOM intocado — bônus já estava correto
+    }
+
+    // ── CICLO NORMAL ──────────────────────────────────────────────────────────
+    // Remove o bônus anterior (se houver) e reaplica conforme estado atual.
+    // Ocorre quando: herança mudou, checkbox foi alterado, ou primeira aplicação.
     removerBonusAtuais();
     aplicarNovoBonus();
     _dispararPoderHeranca();

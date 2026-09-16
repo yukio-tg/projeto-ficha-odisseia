@@ -37,4 +37,8 @@
     --attr-int: #d4a800;
     --attr-sab: #3a8a5c;
     --attr-car: #8a4ab5;
+    /* Cores dos Aspectos da Besta — adaptáveis ao tema */
+    --hab-bio-color: #c0392b;
+    --hab-treino-color: #2e7d32;
+    --hab-indiv-color: #1565c0;
 }

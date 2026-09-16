@@ -2,8 +2,9 @@ import { getRadarAttrWrap, getAtributoBase } from '../core/radar-service.js';
 import { periciasEstado, getTotalPericia } from './skills.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
-import { uid } from '../core/utils.js';
+import { uid, normalizar, escapeHtml } from '../core/utils.js';
 import { setupAccordion } from '../core/dom-helpers.js';
+import { ONUS_LISTA } from '../config/onus.js';
 
 function normalizePresetClass(nome) {
     if (!nome) return '';
@@ -527,11 +528,14 @@ export function criarCardAtaque(id) {
 
                 <div class="ataque-field-group">
                     <label class="combat-label">Acerto</label>
-                    <input type="text"
-                        class="ataque-acerto combat-input"
-                        data-field="ataque-acerto-${id}"
-                        placeholder="+6"
-                        aria-label="Bônus de acerto">
+                    <div class="acerto-input-wrap">
+                        <span class="acerto-d20-prefix" aria-hidden="true" style="display:none">d20+</span>
+                        <input type="text"
+                            class="ataque-acerto combat-input"
+                            data-field="ataque-acerto-${id}"
+                            placeholder="+6"
+                            aria-label="Bônus de acerto">
+                    </div>
                 </div>
 
                 <div class="ataque-field-group">
@@ -655,13 +659,21 @@ export function criarCardAtaque(id) {
         headerSummary.appendChild(critSpan);
     }
 
+    const D20_TEXT = 'd20+';
+    function buildAcertoDisplay(val) {
+        if (!val || val === '—') return '—';
+        if (val === '0' || val === '+0') return D20_TEXT;
+        const sep = (val.startsWith('+') || val.startsWith('-')) ? '' : '+';
+        return D20_TEXT + sep + escapeHtml(val);
+    }
+
     function atualizarSummary() {
         const acerto = acertoInput.value.trim() || '—';
         const dano = danoInput.value.trim() || '—';
         const ameaca = ameacaInput.value || '20';
         const multi = multiInput.value || '1.5';
 
-        summaryAcerto.textContent = acerto;
+        summaryAcerto.innerHTML = buildAcertoDisplay(acerto);
         summaryDano.textContent = dano;
 
         // Crit com pipe e espaço antes
@@ -703,14 +715,18 @@ export function criarCardAtaque(id) {
     const periciaSelect = card.querySelector('.ataque-pericia');
     const attrSelect = card.querySelector('.ataque-attr');
 
+    const d20Prefix = card.querySelector('.acerto-d20-prefix');
+
     function sincronizarAcerto() {
         if (!periciaSelect.value) {
             acertoInput.readOnly = false;
             acertoInput.classList.remove('combat-input--readonly');
+            if (d20Prefix) d20Prefix.style.display = 'none';
             return;
         }
         acertoInput.readOnly = true;
         acertoInput.classList.add('combat-input--readonly');
+        if (d20Prefix) d20Prefix.style.display = '';
         const total = getTotalPericia(periciaSelect.value, attrSelect.value || 'FOR');
         acertoInput.value = total != null ? String(total) : '';
         atualizarSummary();
@@ -782,6 +798,7 @@ export function criarCardPorrada(id) {
     const danoInput = card.querySelector('.ataque-dano');
     const attrSelect = card.querySelector('.ataque-attr');
 
+    const d20PrefixPorrada = card.querySelector('.acerto-d20-prefix');
     card._sincronizarAcerto = function syncPorrada() {
         const forVal = getAtributoBase('FOR');
         const desVal = getAtributoBase('DES');
@@ -797,9 +814,10 @@ export function criarCardPorrada(id) {
             acertoInput.value = total != null ? String(total) : '';
             acertoInput.readOnly = true;
             acertoInput.classList.add('combat-input--readonly');
+            if (d20PrefixPorrada) d20PrefixPorrada.style.display = '';
         }
 
-        // Dano: 1d4 + melhor atributo
+        // Dano: 1d8 + melhor atributo (Porrada usa 1d8 como dado base de ataque desarmado)
         if (danoInput) {
             danoInput.value = melhorVal > 0 ? `1d4+${melhorVal}` : '1d4';
         }
@@ -808,7 +826,15 @@ export function criarCardPorrada(id) {
         const summaryAcerto = card.querySelector('[data-summary="acerto"]');
         const summaryDano = card.querySelector('[data-summary="dano"]');
         const critSpan = card.querySelector('.combat-card__summary-crit');
-        if (summaryAcerto) summaryAcerto.textContent = acertoInput?.value || '—';
+        if (summaryAcerto) {
+            const v = acertoInput?.value || '—';
+            if (v === '—') { summaryAcerto.textContent = '—'; }
+            else if (v === '0' || v === '+0') { summaryAcerto.textContent = 'd20+'; }
+            else {
+                const sep = (v.startsWith('+') || v.startsWith('-')) ? '' : '+';
+                summaryAcerto.textContent = 'd20+' + sep + v;
+            }
+        }
         if (summaryDano) summaryDano.textContent = danoInput?.value || '—';
         if (critSpan) critSpan.textContent = '20/×1.5';
     };
@@ -1394,8 +1420,9 @@ function criarCardBonus(id) {
                     <option value="onus">Ônus</option>
                 </select>
                 <input type="text"
-                    class="combat-card__name-input"
+                    class="combat-card__name-input bonus-nome-input"
                     data-field="bonus-nome-${id}"
+                    list="onus-sugestoes"
                     placeholder="Nome do bônus / ônus"
                     aria-label="Nome do bônus ou ônus">
             </div>
@@ -1415,12 +1442,21 @@ function criarCardBonus(id) {
         </div>`;
 
     const tipoSel = card.querySelector('.bonus-tipo-select');
+    const nomeInp = card.querySelector('.bonus-nome-input');
+    const descTA  = card.querySelector(`[data-field="bonus-desc-${id}"]`);
 
-    function syncTipoStyle() {
-        card.dataset.bonusTipo = tipoSel.value;
-    }
-    tipoSel.addEventListener('change', syncTipoStyle);
-    syncTipoStyle();
+    // Auto-fill description when an ônus is selected from datalist
+    nomeInp.addEventListener('change', () => {
+        if (tipoSel.value !== 'onus') return;
+        const found = ONUS_LISTA.find(o => o.nome.toLowerCase() === nomeInp.value.trim().toLowerCase());
+        if (found && descTA && !descTA.value.trim()) {
+            descTA.value = found.desc;
+            document.dispatchEvent(new Event('ficha:changed'));
+        }
+    });
+
+    tipoSel.addEventListener('change', () => { card.dataset.bonusTipo = tipoSel.value; });
+    card.dataset.bonusTipo = tipoSel.value;
 
     setupAccordion(card);
 
@@ -1511,6 +1547,21 @@ export function initCombat() {
             datalist.appendChild(option);
         });
     }
+    function popularDatalistOnus() {
+        let datalist = document.getElementById('onus-sugestoes');
+        if (!datalist) {
+            datalist = document.createElement('datalist');
+            datalist.id = 'onus-sugestoes';
+            document.body.appendChild(datalist);
+        }
+        datalist.innerHTML = '';
+        ONUS_LISTA.forEach(o => {
+            const option = document.createElement('option');
+            option.value = o.nome;
+            datalist.appendChild(option);
+        });
+    }
+    popularDatalistOnus();
     initDelegatedEvents();
     initCombatExtras();
     popularDatalistCondicoes();

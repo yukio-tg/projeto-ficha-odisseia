@@ -519,6 +519,7 @@ function adicionarItemDoBusca() {
     salvarInventarioLocal();
     inputBusca.value = '';
     if (autocompleteInstance) autocompleteInstance.close();
+    inputBusca.focus();
 }
 
 // ========== Inicialização ==========

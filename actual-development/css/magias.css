@@ -217,7 +217,8 @@ body.theme-dark-paper .magic-la-input {
 
 /* Custo base */
 .magic-custo {
-    font-size: 0.75rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
     color: var(--ink2);
     white-space: nowrap;
     flex-shrink: 0;
@@ -490,6 +491,7 @@ body.theme-dark-paper .magic-la-input {
 }
 
 .autocomplete-magia-la {
+    font-family: 'Cinzel', serif;
     font-size: 0.72rem;
     font-weight: 700;
     border-radius: 3px;
@@ -498,6 +500,10 @@ body.theme-dark-paper .magic-la-input {
     min-width: 22px;
     text-align: center;
     flex-shrink: 0;
+}
+
+body.theme-dark-paper .autocomplete-magia-la {
+    color: hsl(220, 80%, 75%);
 }
 
 .autocomplete-magia-nome {

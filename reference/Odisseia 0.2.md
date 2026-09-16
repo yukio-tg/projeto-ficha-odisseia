@@ -1718,7 +1718,7 @@ Você pode gastar 2 PM para receber um conselho ou informação útil de um fami
 Pagando 10 PM máximos e 10 PV máximos, você recebe \+4d20 PM temporários e \+4d20 PV temporários
 
 **(15) Invocar Técnica | (-3 PM):**  
-Pagando 3 PM você pode usar um poder da sua escolha desde que o tenha acesso e que caiba em até 15 PT, você pode usar esse poder uma vez por cena. Poderes iguais não podem ser invocados mais de duas vezes. Apartir de nível 10, você pode invocar poderes de até 30 PT.
+Pagando 3 PM você pode usar um poder da sua escolha desde que o tenha acesso e que caiba em até 15 PT, você pode usar esse poder uma vez por cena. Um poder invocado por essa habilidade, jamais poderá ser re-invocado. Apartir de nível 10, você pode invocar poderes de até 30 PT.
 
 **(15) Invocar Magia Ancestral:**  
 Pagando 1 FE extra e 1 PM extra, você pode usar uma magia de Teurgia à sua escolha que não tenha acesso em sua Fonte. Ela ainda precisa ter mesmo Alinhamento que você e durante essa conjuração ela precisa ser de um grau que você já possua acesso.
@@ -1974,7 +1974,7 @@ Você é concedido com \+8 PV máximos e \+5 PM máximos.
 Você pode aumentar o grau de uma perícia em 1\. Esse poder pode ser pego várias vezes.
 
 **(7) Hábito Forçado:**  
-Você recebe um poder de Hábito no qual tenha acesso.
+Você recebe um poder de Hábito no qual tenha acesso. Esse poder pode ser pego várias vezes.
 
 **(8) Afortunado | (-1 PM):**  
 Pelo custo de 1 PM, quando rolar um dado de resultado 1 pode re-jogar o mesmo dado.
@@ -2251,7 +2251,7 @@ Efeitos que aumentam a margem de ameaça diminuem o número necessário para con
 
 * **Uma mão.** A arma pode ser usada com apenas uma mão, deixando a outra livre.
 
-* **Duas mãos.** A empunhadura correta da arma implica no uso das mãos, ocupando-as. Usar uma arma de duas mãos como uma de uma, implica em \-2d20 em testes de ataque. Além disso, armas como arcos, podem, de acordo com o Cronista, serem vetadas de usadas com apenas uma mão.
+* **Duas mãos.** A empunhadura correta da arma implica no uso das mãos, ocupando-as. Usar uma arma de duas mãos como uma de uma, implica em \-10 em testes de ataque. Além disso, armas como arcos, podem, de acordo com o Cronista, serem vetadas de usadas com apenas uma mão.
 
 **Espaço:** A quantidade de espaços que a arma ocupa em seu inventário. Inclui acessórios básicos da arma, como coldres para pistolas e bainhas para espadas, mas não munição.
 
@@ -2786,7 +2786,7 @@ Sua ação protagonista representa a coisa mais importante que você vai fazer e
 **Agredir.** Você faz um ataque com uma arma corpo a corpo ou à distância. Com uma arma corpo a corpo, você pode atacar qualquer inimigo dentro de 1,5m (adjacente no mapa). Você pode substituir um ataque corpo a corpo por uma manobra de combate (veja abaixo)  
 Com uma arma de ataque à distância, você pode atacar qualquer inimigo que consiga ver e que esteja no alcance da arma.
 
-**Manobra de Combate.** Uma manobra é um ataque vecorpo a corpo para fazer algo diferente de causar dano — como arrancar a arma do oponente ou empurrá-lo para um abismo. Não é possível fazer manobras de combate com ataques à distância.  
+**Manobra de Combate.** Uma manobra é um ataque corpo a corpo para fazer algo diferente de causar dano — como arrancar a arma do oponente ou empurrá-lo para um abismo. Não é possível fazer manobras de combate com ataques à distância.  
 Faça um teste de manobra (um teste de ataque corpo a corpo) oposto com o ser. Mesmo que ele esteja usando uma arma de ataque à distância, deve fazer o teste usando seu bônus de Lutar. Em caso de empate, outro teste deve ser feito. Em geral, você pode usar qualquer arma corpo a corpo para fazer manobras de combate  
 Estas são as manobras que você pode fazer
 
@@ -3311,7 +3311,7 @@ O Arcanismo provêm um custo em Pontos de Mana de acordo com a complexidade da m
 
 Para conjurar uma Magia Arcana o conjurador precisa gastar o dobro do Limite Arcano da magia em Pontos de Mana. Os aprimoramentos da magia são somados após o cálculo inicial de seu custo base. Quando **Truque** a magia gasta 1 PM.
 
-**Custo em PM \= LA  2 \+ Aprimoramentos**
+**Custo em PM \= LA $\times$ 2 \+ Aprimoramentos**
 
 ### **Magias de 1° Grau** {#magias-de-1°-grau}
 
@@ -5918,14 +5918,14 @@ As condições são efeitos temporários que recaem sobre personagens. Estas pod
 
 #### Condições de Sentidos {#condições-de-sentidos}
 
-* **Cego:** O personagem fica Desprevenido e Lento, não pode pode fazer testes de Perspicácia para observar e sofre \-5 em todos os testes de Destreza, Força e de ataque. Todos os alvos de seus ataques recebem camuflagem total. Você é cego quando está numa área de escuridão total, a menos que haja luz.  
+* **Cego:** O personagem fica Desprevenido e Lento, não pode pode fazer testes de Perspicácia para observar e sofre \-5 em todos os testes de Destreza, Força e de ataque. Todos os alvos de seus ataques recebem camuflagem total. Você é cego quando está numa área de escuridão total, ou quando nao tem os olhos ne duuuhra menos que haja luz.  
 * **Ofuscado:** O personagem sofre \-5 em testes de ataque e Perspicácia.  
 * **Surdo:** O personagem não pode fazer testes de Perspicácia para ouvir e sofre \-5 em testes de Reflexos.
 
 #### Condições Mentais {#condições-mentais}
 
 * **Abalado:** O personagem sofre desvantagem em testes. Se ficar Abalado novamente, fica Apavorado.  
-* **Alquebrado:** Todo gasto de PM em 1\.  
+* **Alquebrado:** aumenta Todo gasto de PM em 1\.  
 * **Apavorado:** O personagem sofre \-10 em testes. Deve fugir da fonte de medo da maneira mais eficiente possível (só parando quando não tem mais visão ou estiver além de alcance médio) e não pode se aproximar voluntariamente dela.  
 * **Atordoado:** O personagem fica desprevenido e não pode fazer ações.  
 * **Confuso:** O personagem comporta-se de modo aleatório. Role 1d6 no inicio de seus turnos: 1\) O personagem corre para uma direção aleatória (role 1d4); 2\) O personagem não pode realizar ações; 3\) Ataca o ser mais próximo independente de ser ou não aliado; 4\) O personagem larga qualquer item que empunhar em suas mãos e não o poderá pegar até o fim da condição; 5\) O personagem se joga no chão, sofrendo 1d4 pontos de dano de Impacto e ficando Caído; 6\) A condição se encerra.  

@@ -1,6 +1,11 @@
 // core/sheet-serializer.js
 // Coleta todo o estado da ficha em um objeto plano e restaura a partir dele.
 
+import {
+    herancaAttrBonusAplicado,
+    getBonusAprendizadoFlag,
+    setBonusAprendizadoRestaurado,
+} from './heranca-logic.js';
 import { getSkillsState, setSkillsState } from '../ui/skills.js';
 import { getPowersState, setPowersState } from '../ui/powers.js';
 import { getMagiasState, setMagiasState } from '../ui/magias.js';
@@ -125,11 +130,28 @@ export function serializeSheet() {
         bestas: getBestasState(),
         manualOverrides: Array.from(manualOverrides),
         protectionBases: serializeProtectionBases(),
+        // Flag que indica se o bônus de Aprendizado de Vida já foi somado
+        // ao DOM. Restaurada em deserializeSheet para que atualizarHeranca()
+        // possa sair antecipadamente sem somar novamente — evitando empilhamento.
+        bonusAprendizadoFlag: getBonusAprendizadoFlag(),
+        // Mantido para retrocompatibilidade com versões anteriores do save.
+        herancaAttrBonus: { ...herancaAttrBonusAplicado },
     };
 }
 
 export function deserializeSheet(data) {
     if (!data) return;
+
+    // ── RESTAURA A FLAG DE BÔNUS ──────────────────────────────────────────────
+    // Deve ocorrer ANTES de qualquer evento que dispare atualizarHeranca().
+    // setBonusAprendizadoRestaurado aceita:
+    //   • bonusAprendizadoFlag explícito (saves novos)
+    //   • undefined → inferência automática via campos heranca-nome / aprendizadoDaVida
+    //     (retrocompatibilidade com saves antigos que não possuem o campo)
+    // Também sincroniza herancaAttrBonusAplicado para que mudanças de herança
+    // após o reload possam remover o bônus antigo corretamente.
+    setBonusAprendizadoRestaurado(data.bonusAprendizadoFlag, data.fields);
+
     // Restore manual overrides FIRST so calc functions respect them during deserialization
     manualOverrides.clear();
     if (Array.isArray(data.manualOverrides)) {

@@ -91,7 +91,7 @@ export function createAutocomplete(config) {
         const items = isVisible ? dd.querySelectorAll(`.${itemClass}`) : [];
 
         if (isVisible && items.length) {
-            if (e.key === 'ArrowDown') {
+            if (e.key === 'ArrowDown' || e.key === 'Tab') {
                 e.preventDefault();
                 currentIndex = (currentIndex + 1) % items.length;
                 items.forEach((item, i) => item.classList.toggle(activeClass, i === currentIndex));

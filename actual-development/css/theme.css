@@ -178,3 +178,38 @@ body.theme-dark-paper .anot-toolbar-btn.active { color: var(--gold2); border-col
 
 /* ── Ornamento (.orn) ────────────────────────────────────────────── */
 body.theme-dark-paper .orn { color: var(--gold2); }
+
+/* ── Aspectos da Besta em fundo escuro ──────────────────────────── */
+/* Clareia as cores dos aspectos para melhor legibilidade em fundos escuros */
+body.theme-dark-paper {
+    --hab-bio-color: #e8796a;
+    --hab-treino-color: #6abf71;
+    --hab-indiv-color: #6a9fe8;
+}
+
+/* Nivel buttons (I, II, III) — hardcoded no CSS, precisam override */
+body.theme-dark-paper .besta-nivel-btn {
+    color: var(--hab-bio-color);
+    border-color: color-mix(in srgb, var(--hab-bio-color) 45%, transparent);
+}
+
+body.theme-dark-paper .besta-nivel-btn.active {
+    background: var(--hab-bio-color);
+    color: var(--ink0);
+    border-color: var(--hab-bio-color);
+}
+
+/* Treino PT label */
+body.theme-dark-paper .besta-treino-pt-label {
+    color: var(--hab-treino-color);
+}
+
+/* ── Fieldsets em fundo escuro ───────────────────────────────────── */
+/* No fundo claro: rgba(255,255,255,0.15) padrão, rgba(255,245,225,0.5) no focus */
+/* No fundo escuro: menos opacidade padrão, e branca pura no focus   */
+body.theme-dark-paper fieldset {
+    background: rgba(255, 255, 255, 0.05);
+}
+body.theme-dark-paper fieldset:focus-within {
+    background: rgba(255, 255, 255, 0.15);
+}

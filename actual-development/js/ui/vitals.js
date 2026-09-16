@@ -55,7 +55,7 @@ function commitCalc(el) {
     return false;
 }
 
-function attachCalcMode(el) {
+export function attachCalcMode(el) {
     el.addEventListener('focus', () => {
         el.dataset.calcBase = parseInt(el.value, 10) || 0;
         el.type = 'text';

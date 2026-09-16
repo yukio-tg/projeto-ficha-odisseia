@@ -1511,6 +1511,7 @@ option:hover {
     border-collapse: collapse;
     font-size: 15px;
     margin-bottom: 4px;
+    table-layout: fixed;
 }
 
 .stbl th {

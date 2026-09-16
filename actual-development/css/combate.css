@@ -634,7 +634,7 @@
 }
 
 .combat-card--ataque::before {
-    background: linear-gradient(90deg, var(--blood0), var(--blood1), transparent);
+    background: linear-gradient(90deg, var(--gold0), var(--gold1), transparent);
 }
 
 .combat-card--reacao::before {
@@ -775,7 +775,7 @@
 }
 
 .combat-card--ataque .combat-card__name-input {
-    color: var(--blood1);
+    color: var(--gold1);
 }
 
 .combat-card--reacao .combat-card__name-input {
@@ -822,12 +822,46 @@
 .combat-card__summary-acerto,
 .combat-card__summary-dano,
 .combat-card__summary-crit {
-    padding: 1px 3px;
+    padding: 1px 4px;
     border: 1px solid var(--p3);
     border-radius: 4px;
     background-color: var(--p1);
     color: var(--ink1);
-    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.06)
+    box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.06);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+/* Labels descritivos antes do valor em cada chip */
+.combat-card__summary-acerto::before {
+    content: 'AC';
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    flex-shrink: 0;
+}
+
+.combat-card__summary-dano::before {
+    content: 'D';
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    flex-shrink: 0;
+}
+
+.combat-card__summary-crit::before {
+    content: 'CR';
+    font-family: 'Cinzel', serif;
+    font-size: 7px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    opacity: 0.55;
+    flex-shrink: 0;
 }
 
 /* ── Delete button ── */

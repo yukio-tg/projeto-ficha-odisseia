@@ -273,6 +273,7 @@ function adicionarPoderDoBusca() {
     atualizarCategoryDot();
     inputBusca.value = '';
     fecharAutocomplete();
+    inputBusca.focus();
 }
 
 // ---------- Autocomplete (com suporte a erro e loading) ----------
@@ -318,12 +319,14 @@ function mostrarAutocomplete(query) {
         item.className = 'autocomplete-item-power';
         const bolinha = `<span class="autocomplete-cor-dot" style="background-color:${corCSSMap[p.cor] || '#ccc'}"></span>`;
         item.innerHTML = `${bolinha}<strong>${escapeHtml(p.nome)}</strong><span>PT: ${p.ptCost}</span>`;
-        item.addEventListener('mousedown', (e) => {
-            e.preventDefault(); // impede blur no inputBusca antes do disparo
+        // mousedown prevents blur; click fills the input (user presses Enter to add)
+        item.addEventListener('mousedown', e => e.preventDefault());
+        item.addEventListener('click', () => {
             inputBusca.value = p.nome;
             currentSelectedColor = p.cor || "Vermelho";
             atualizarCategoryDot();
-            adicionarPoderDoBusca(); // adiciona diretamente sem exigir clique extra
+            fecharAutocomplete();
+            inputBusca.focus();
         });
         dropdown.appendChild(item);
     });
@@ -339,8 +342,8 @@ function setupAutocompleteKeyboard() {
         const items = isDropdownVisible ? dropdown.querySelectorAll('.autocomplete-item-power') : [];
 
         if (isDropdownVisible && items.length) {
-            // Navegação com setas apenas quando dropdown está visível
-            if (e.key === 'ArrowDown') {
+            // Navegação com setas ou Tab quando dropdown está visível
+            if (e.key === 'ArrowDown' || e.key === 'Tab') {
                 e.preventDefault();
                 currentIndex = (currentIndex + 1) % items.length;
                 items.forEach((item, i) => item.classList.toggle('autocomplete-item-power--active', i === currentIndex));

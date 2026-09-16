@@ -4,7 +4,7 @@
       "nome": "Poção de Cura",
       "categoria": "básico",
       "peso": 1,
-      "raridade": "comum",
+      "raridade": "incomum",
       "descricao": "Recupera 2d8+3 PV. Ação protagonista.",
       "valor1": "2d8+3"
     },
