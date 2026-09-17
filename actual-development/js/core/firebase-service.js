@@ -10,15 +10,7 @@ import {
     arrayUnion, arrayRemove,
     serverTimestamp, deleteField
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
-
-const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyD0GKHekJIBroBaQbbKIagcaZ52ljsgT6A",
-    authDomain: "fichas-odisseia.firebaseapp.com",
-    projectId: "fichas-odisseia",
-    storageBucket: "fichas-odisseia.firebasestorage.app",
-    messagingSenderId: "438632062292",
-    appId: "1:438632062292:web:68e9584cf8f5ffcf2e3cc1"
-};
+import { FIREBASE_CONFIG } from '../../firebase-config.js';
 
 let app = null;
 let auth = null;
