@@ -1,0 +1,461 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=IM+Fell+English:ital@0;1&display=swap');
+
+:root {
+  /* ── Fundos escuros (site geral) ── */
+  --od-bg:          #0c0804;
+  --od-bg-mid:      #120b04;
+  --od-bg-panel:    #160e06;
+  --od-surface:     #1c1408;
+
+  /* ── Fundo das páginas de detalhe (escuro quente) ── */
+  --od-detail-bg:   #1a0d05;
+  --od-detail-mid:  #241405;
+  --od-detail-card: #2a1808;
+
+  /* ── Pergaminho (blocos de texto lore) ── */
+  --od-parch:       #f2e8d0;
+  --od-parch-mid:   #e8d8b0;
+  --od-parch-dark:  #dcc890;
+  --od-parch-light: #DFD0AD;
+
+  /* ── Bordas ── */
+  --od-border:      #4a3820;
+  --od-border-gold: #9a7832;
+  --od-border-dim:  #2e2010;
+
+  /* ── Ouro ── */
+  --od-gold:        #d4a828;
+  --od-gold-mid:    #b8861e;
+  --od-gold-light:  #e8cc5a;
+  --od-gold-dim:    #7a5c18;
+
+  /* ── Sangue ── */
+  --od-blood:       #5c0f0f;
+  --od-blood-mid:   #7a1818;
+  --od-blood-light: #b03838;
+
+  /* ── Texto (para fundos escuros) ── */
+  --od-ink:         #1a0f08;
+  --od-text:        #d4b878;
+  --od-text-light:  #ecdba0;
+  --od-muted:       #8a6c3a;
+
+  /* ── Texto (para fundos de pergaminho) ── */
+  --od-ink-parch:   #1c1008;
+  --od-ink-mid:     #3a2010;
+  --od-ink-label:   #5a3e18;
+
+  /* ── Roxo (secundário) ── */
+  --od-purple:      #6b4c9a;
+  --od-purple-light: #9b7cc9;
+}
+
+@layer base {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: #4a3820 #0c0804;
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0c0804; }
+  ::-webkit-scrollbar-thumb { background: #4a3820; border-radius: 1px; }
+  ::-webkit-scrollbar-thumb:hover { background: #d4a828; }
+
+  body {
+    @apply bg-odisseia-bg text-odisseia-text font-body;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-medieval;
+  }
+}
+
+@layer components {
+  .card-entity {
+    @apply bg-odisseia-surface border border-odisseia-border overflow-hidden
+           hover:border-odisseia-borderGold transition-all duration-300
+           hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-black/60;
+  }
+
+  .btn-primary {
+    @apply bg-odisseia-blood text-odisseia-parch font-medieval text-xs tracking-widest uppercase
+           px-6 py-2.5 border border-odisseia-bloodMid
+           hover:bg-odisseia-bloodMid transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply border border-odisseia-borderGold text-odisseia-gold font-medieval text-xs tracking-widest uppercase
+           px-6 py-2.5 hover:bg-odisseia-gold hover:text-odisseia-bg
+           transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply border border-odisseia-blood text-odisseia-bloodLight font-medieval text-xs tracking-widest uppercase
+           px-4 py-2 hover:bg-odisseia-blood hover:text-odisseia-parch
+           transition-all duration-200;
+  }
+
+  .input-field {
+    @apply w-full bg-odisseia-bgMid border border-odisseia-border
+           text-odisseia-text placeholder-odisseia-muted font-body
+           px-4 py-2.5 focus:border-odisseia-gold focus:outline-none
+           focus:ring-1 focus:ring-odisseia-gold/20;
+  }
+
+  .textarea-field {
+    @apply input-field resize-y min-h-[100px];
+  }
+
+  .section-title {
+    @apply font-medieval text-xl text-odisseia-gold mb-5 tracking-wide;
+  }
+
+  .badge {
+    @apply inline-block font-medieval text-[0.55rem] tracking-[0.2em] uppercase px-2.5 py-0.5 border;
+  }
+
+  .badge-raro {
+    @apply badge border-odisseia-borderGold text-odisseia-gold bg-odisseia-gold/10;
+  }
+
+  .badge-comum {
+    @apply badge border-odisseia-border text-odisseia-muted;
+  }
+
+  .badge-lendario {
+    @apply badge border-odisseia-blood text-odisseia-bloodLight bg-odisseia-blood/10;
+  }
+}
+
+/* ─── Página de detalhe ─── */
+/* Camada 1: fundo escuro com radial glow */
+.detail-page {
+  background-color: #0c0804;
+  background-image: radial-gradient(ellipse 80% 60% at 50% 0%, #2a1a04 0%, #0c0804 65%);
+  min-height: 100vh;
+  padding: 3rem 1rem 4rem;
+  margin: 0;
+}
+
+/* Camada 2: folha de pergaminho centralizada */
+.detail-page > div {
+  background-color: #e0d4b8;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, #dcc99a 0%, #e0d4b8 55%),
+    repeating-linear-gradient(
+      0deg, transparent, transparent 27px,
+      rgba(90,60,20,0.055) 27px, rgba(90,60,20,0.055) 28px
+    );
+  box-shadow:
+    0 0 0 1px rgba(90,60,20,0.25),
+    0 8px 40px rgba(0,0,0,0.7),
+    0 30px 80px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+/* ─── Separador ornamental ─── */
+.ornamental-rule {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 2.5rem 0;
+  color: #5a3e10;
+}
+.ornamental-rule::before,
+.ornamental-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+}
+.ornamental-rule::before { background: linear-gradient(90deg, transparent, #5a3e10); }
+.ornamental-rule::after  { background: linear-gradient(270deg, transparent, #5a3e10); }
+.ornamental-rule span {
+  font-size: 0.65rem;
+  opacity: 0.85;
+  letter-spacing: 0.1em;
+}
+
+/* ─── Ornamental Divider (legado) ─── */
+.ornamental-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #9a7832;
+  font-size: 0.9rem;
+}
+.ornamental-divider::before,
+.ornamental-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9a7832);
+}
+.ornamental-divider::after {
+  background: linear-gradient(270deg, transparent, #9a7832);
+}
+
+/* ─── Section title ─── */
+.section-title {
+  position: relative;
+  padding-bottom: 0.6rem;
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #3a2010;
+  margin-bottom: 1rem;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 2.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, #5a3e10, transparent);
+}
+
+/* ─── Parchment section (pergaminho com linhas e cruzetas sutis) ─── */
+.parch-section {
+  background-color: var(--od-parch);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(120,90,40,0.07) 27px, rgba(120,90,40,0.07) 28px),
+    repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(120,90,40,0.03) 59px, rgba(120,90,40,0.03) 60px);
+  color: var(--od-ink-parch);
+}
+
+/* ─── Card escuro medieval (seções fora do parch) ─── */
+.dark-card {
+  background-color: rgba(90,60,20,0.12);
+  border: 1px solid rgba(90,60,20,0.3);
+  position: relative;
+}
+.dark-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(90,60,20,0.06);
+  pointer-events: none;
+}
+
+/* ─── Barra lateral dourada (destaques) ─── */
+.gold-sidebar {
+  border-left: 3px solid var(--od-border-gold);
+  padding-left: 1.25rem;
+}
+
+/* ─── Medalha de atributo ─── */
+.stat-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--od-detail-card);
+  border: 1px solid var(--od-border);
+  padding: 0.75rem 1rem;
+  min-width: 4rem;
+}
+.stat-badge-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--od-muted);
+}
+.stat-badge-value {
+  font-family: 'Cinzel', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--od-gold);
+  line-height: 1.2;
+}
+
+/* ─── Search input medieval ─── */
+.search-input-medieval::placeholder { color: #3a2a10; }
+.search-input-medieval:focus::placeholder { color: #5a4020; }
+
+/* ─── Header rule ornamental (ref. bestiário) ─── */
+.header-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--od-border) 15%, var(--od-gold) 50%, var(--od-border) 85%, transparent 100%);
+  position: relative;
+  margin: 1.5rem 0;
+}
+.header-rule::before,
+.header-rule::after {
+  content: '◆';
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  color: var(--od-gold-mid);
+  font-size: 0.5rem;
+}
+.header-rule::before { left: 15%; }
+.header-rule::after  { right: 15%; }
+
+/* ─── Grid cards (corpo em pergaminho) ─── */
+.grid-card {
+  background: var(--od-surface);
+  border: 1px solid #3a2810;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
+  position: relative;
+}
+.grid-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--od-gold);
+  box-shadow: 0 10px 35px rgba(0,0,0,0.65);
+}
+.grid-card-body {
+  background-color: var(--od-parch);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(120,90,40,0.05) 27px, rgba(120,90,40,0.05) 28px);
+  border-top: 1px solid rgba(154,120,50,0.3);
+  padding: 0.9rem 1rem;
+}
+.grid-card-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--od-blood-mid);
+  margin-bottom: 0.2rem;
+}
+.grid-card-type {
+  font-family: 'IM Fell English', serif;
+  font-size: 0.78rem;
+  color: var(--od-ink-label);
+  font-style: italic;
+}
+
+/* ─── Drop cap em lore/descrição ─── */
+.desc-drop-cap::first-letter {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 3.8rem;
+  font-weight: 700;
+  line-height: 0.75;
+  float: left;
+  margin-right: 10px;
+  margin-top: 6px;
+  color: var(--od-blood);
+}
+
+/* ─── Tag variants (elemento, região, tipo, outro) ─── */
+.tag {
+  font-family: 'Cinzel', serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 3px 12px;
+  border: 1px solid;
+  text-transform: uppercase;
+  display: inline-block;
+}
+.tag-element { background: #eef6ea; border-color: #5a8038; color: #1e4010; }
+.tag-region  { background: #f6eeee; border-color: #8a3535; color: #5a1010; }
+.tag-type    { background: #f6f2e2; border-color: #8a7030; color: #5a4010; }
+.tag-other   { background: #eaecf6; border-color: #3a5888; color: #1a3560; }
+
+/* ─── Region badge ─── */
+.region-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--od-parch-dark);
+  border: 1px solid var(--od-border-gold);
+  border-top-color: rgba(154,120,50,0.5);
+  padding: 7px 18px 7px 14px;
+  margin-top: 1.2rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+.region-badge-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.54rem;
+  color: var(--od-ink-label);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.region-badge-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.82rem;
+  color: var(--od-ink-parch);
+  font-weight: 700;
+}
+
+/* ─── Entrada de página ─── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-in { animation: pageIn 0.35s ease; }
+
+/* ─── Toast de notificação ─── */
+.od-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--od-bg-mid);
+  border: 1px solid var(--od-gold);
+  border-left: 3px solid var(--od-gold);
+  color: var(--od-gold-mid);
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  padding: 0.8rem 1.6rem;
+  z-index: 2000;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s cubic-bezier(0.22,1,0.36,1);
+  pointer-events: none;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.7);
+}
+.od-toast.show { opacity: 1; transform: translateX(0); }
+
+/* Power Tree Styles */
+.power-tree {
+  @apply flex flex-col gap-6;
+}
+
+.tier-row {
+  @apply flex items-center gap-4;
+}
+
+.tier-label {
+  @apply text-sm font-medieval text-odisseia-muted w-16 shrink-0;
+}
+
+.pods-row {
+  @apply flex flex-wrap gap-3;
+}
+
+.poder-card {
+  @apply px-4 py-2 border cursor-pointer transition-all duration-200 text-left;
+}
+
+.poder-card.ativo-type {
+  @apply border-odisseia-borderGold bg-odisseia-gold/10 hover:bg-odisseia-gold/20;
+}
+
+.poder-card.passivo {
+  @apply border-odisseia-purple/60 bg-odisseia-purple/10 hover:bg-odisseia-purple/20;
+}
+
+.poder-card.ativo {
+  @apply ring-1 ring-odisseia-gold shadow-lg shadow-odisseia-gold/20;
+}
+
+.poder-nome {
+  @apply block text-sm font-medieval text-odisseia-text;
+}
+
+.poder-tipo {
+  @apply block text-xs text-odisseia-muted mt-0.5;
+}
+
+.poder-detalhe {
+  @apply mt-4 p-4 bg-odisseia-bgMid border border-odisseia-border;
+}

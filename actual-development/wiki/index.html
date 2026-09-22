@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki — Odisseia</title>
+    <link rel="icon" href="/image/odisseia-logo.ico">
+
+    <!-- Google Fonts ─ typefaces -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+    <!-- Material Symbols Outlined (variable font) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+    <!-- Wiki CSS -->
+    <link rel="stylesheet" href="css/wiki-main.css">
+</head>
+<body>
+
+<div class="wiki-shell">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         HEADER
+         ══════════════════════════════════════════════════════════════ -->
+    <header class="wiki-header">
+        <div class="wiki-header-row">
+
+            <a href="/wiki" class="wiki-brand">
+                <span class="material-symbols-outlined wiki-brand-rune"
+                      style="font-variation-settings:'FILL' 1">auto_stories</span>
+                Wiki de Odisseia
+            </a>
+
+            <div class="wiki-header-actions">
+                <div class="wiki-search-wrap">
+                    <span class="material-symbols-outlined">search</span>
+                    <input class="wiki-search-input" id="wiki-search"
+                           type="text" placeholder="Buscar documentos...">
+                </div>
+
+                <a href="/wiki/criar" class="wiki-create-btn" id="wiki-create-btn"
+                   style="display:none">
+                    <span class="material-symbols-outlined" style="font-size:15px">add</span>
+                    Criar
+                </a>
+
+                <div id="wiki-user-area"></div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         FILTER TABS
+         ══════════════════════════════════════════════════════════════ -->
+    <nav class="wiki-filter-nav">
+        <button class="wiki-tab-btn active" data-type="">Todos</button>
+        <button class="wiki-tab-btn" data-type="creature">Criaturas</button>
+        <button class="wiki-tab-btn" data-type="place">Lugares</button>
+        <button class="wiki-tab-btn" data-type="person">Pessoas</button>
+        <button class="wiki-tab-btn" data-type="concept">Conceitos</button>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         MAIN CONTENT
+         ══════════════════════════════════════════════════════════════ -->
+    <main class="wiki-content" id="wiki-main">
+        <div class="wiki-loading">Carregando documentos...</div>
+    </main>
+
+</div><!-- /.wiki-shell -->
+
+<!-- Toast notification -->
+<div id="wiki-toast" class="wiki-toast"></div>
+
+<script type="module" src="js/wiki-list.js"></script>
+</body>
+</html>

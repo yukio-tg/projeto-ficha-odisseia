@@ -12,7 +12,23 @@
     "rewrites": [
       {
         "source": "/ficha",
-        "destination": "/ficha.html"
+        "destination": "/ficha/ficha.html"
+      },
+      {
+        "source": "/wiki",
+        "destination": "/wiki/index.html"
+      },
+      {
+        "source": "/wiki/doc",
+        "destination": "/wiki/doc.html"
+      },
+      {
+        "source": "/wiki/criar",
+        "destination": "/wiki/criar.html"
+      },
+      {
+        "source": "/wiki/editar",
+        "destination": "/wiki/editar.html"
       },
       {
         "source": "**",

@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "C:\\Users\\Daniel\\Documents\\projeto-bestiario-odisseia\\odisseia\\public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

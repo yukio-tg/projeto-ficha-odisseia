@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Documento — Wiki Odisseia</title>
+    <link rel="icon" href="/image/odisseia-logo.ico">
+
+    <!-- Google Fonts — typefaces -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+
+    <!-- Material Symbols Outlined (variable font) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
+    <!-- Wiki CSS -->
+    <link rel="stylesheet" href="css/wiki-main.css">
+</head>
+<body>
+
+<div class="wiki-shell">
+
+    <div class="wiki-topbar">
+        <a href="/wiki" class="wiki-back-link">
+            <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
+            Wiki
+        </a>
+    </div>
+
+    <div class="wiki-content">
+        <div class="wiki-editor-wrap">
+            <h2 class="wiki-editor-title" id="editor-title">Novo Documento</h2>
+
+            <form id="wiki-form" novalidate>
+
+                <!-- Two-column: Type + Status -->
+                <div class="wiki-field-row">
+                    <div class="wiki-field">
+                        <label class="wiki-field-label required" for="field-type">Tipo</label>
+                        <select class="wiki-select" id="field-type" required>
+                            <option value="creature">Criatura</option>
+                            <option value="place">Lugar</option>
+                            <option value="person">Pessoa</option>
+                            <option value="concept">Conceito</option>
+                        </select>
+                    </div>
+                    <div class="wiki-field" id="field-status-wrap">
+                        <label class="wiki-field-label" for="field-status">Status</label>
+                        <select class="wiki-select" id="field-status">
+                            <option value="community">Comunitário</option>
+                            <!-- admin-only "canonical" option added by JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Name (required) -->
+                <div class="wiki-field" id="field-title-wrap">
+                    <label class="wiki-field-label required" for="field-title">Nome</label>
+                    <input class="wiki-input" id="field-title" type="text"
+                           placeholder="Nome do documento" required maxlength="120">
+                    <span class="wiki-field-error">O nome é obrigatório.</span>
+                </div>
+
+                <!-- Summary / Description (required) -->
+                <div class="wiki-field" id="field-summary-wrap">
+                    <label class="wiki-field-label required" for="field-summary">Descrição</label>
+                    <textarea class="wiki-textarea" id="field-summary"
+                              placeholder="Breve descrição que aparece nos cards da lista"
+                              required maxlength="600" rows="3"></textarea>
+                    <span class="wiki-field-error">A descrição é obrigatória.</span>
+                </div>
+
+                <!-- Tags -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label">Tags</label>
+                    <div class="wiki-tag-field" id="wiki-tag-field">
+                        <input class="wiki-tag-text-input" id="wiki-tag-input" type="text"
+                               placeholder="Digite e pressione Enter ou vírgula...">
+                    </div>
+                    <span class="wiki-input-hint">Exemplo: norte · monstro · histórico</span>
+                </div>
+
+                <!-- Content Sections -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label">Seções de Conteúdo</label>
+                    <div class="wiki-sections-builder" id="wiki-sections-builder"></div>
+                    <button type="button" class="wiki-add-section-btn" id="wiki-add-section">
+                        <span class="material-symbols-outlined" style="font-size:16px">add</span>
+                        Adicionar Seção
+                    </button>
+                </div>
+
+                <!-- Image Gallery -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label">Galeria de Imagens</label>
+                    <span class="wiki-input-hint" style="display:block;margin-bottom:8px">
+                        Apenas URLs externas. A primeira imagem é usada como capa do documento.
+                    </span>
+                    <div class="wiki-gallery-builder" id="wiki-gallery-builder"></div>
+                    <button type="button" class="wiki-add-gallery-btn" id="wiki-add-image">
+                        <span class="material-symbols-outlined" style="font-size:16px">add_photo_alternate</span>
+                        Adicionar Imagem
+                    </button>
+                </div>
+
+                <!-- Related Documents -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label">Documentos Relacionados</label>
+                    <div id="wiki-related-inputs" style="display:flex;flex-direction:column;gap:6px"></div>
+                    <button type="button" class="wiki-add-section-btn" id="wiki-add-related"
+                            style="margin-top:8px">
+                        <span class="material-symbols-outlined" style="font-size:16px">add</span>
+                        Adicionar Referência
+                    </button>
+                    <span class="wiki-input-hint">Cole o ID de outro documento da wiki.</span>
+                </div>
+
+                <!-- Color Theme -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label">Cores do Documento</label>
+                    <div id="wiki-theme-picker-container"></div>
+                    <div class="wiki-theme-preview" id="wiki-theme-preview"></div>
+                    <span class="wiki-input-hint">As cores são vistas por todos os leitores do documento.</span>
+                </div>
+
+                <!-- Submit -->
+                <div class="wiki-submit-row">
+                    <a href="/wiki" class="wiki-btn wiki-btn-secondary">Cancelar</a>
+                    <button type="submit" class="wiki-btn wiki-btn-primary" id="wiki-submit-btn">
+                        <span class="material-symbols-outlined" style="font-size:16px">save</span>
+                        Salvar Documento
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div><!-- /.wiki-shell -->
+
+<!-- Toast notification -->
+<div id="wiki-toast" class="wiki-toast"></div>
+
+<script type="module" src="js/wiki-editor.js"></script>
+</body>
+</html>

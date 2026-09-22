@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documento — Wiki Odisseia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/wiki-main.css">
+    <link rel="icon" type="image/x-icon" href="/image/odisseia-logo.ico">
+</head>
+<body>
+    <div class="wiki-shell">
+        <div class="wiki-topbar">
+            <a href="/wiki" class="wiki-back-link">
+                <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
+                Wiki
+            </a>
+            <div id="wiki-topbar-actions" class="wiki-topbar-actions"></div>
+        </div>
+        <div class="wiki-content">
+            <div class="wiki-doc-wrap" id="wiki-doc-wrap">
+                <div class="wiki-loading">Carregando...</div>
+            </div>
+        </div>
+    </div>
+    <div id="wiki-toast" class="wiki-toast"></div>
+    <script type="module" src="js/wiki-doc.js"></script>
+</body>
+</html>

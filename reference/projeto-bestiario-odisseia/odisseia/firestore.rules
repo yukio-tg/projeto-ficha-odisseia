@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /criaturas/{id} {
+      allow read: if resource.data.publicado == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /espacos/{id} {
+      allow read: if resource.data.publicado == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /personagens/{id} {
+      allow read: if resource.data.publicado == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /usuarios/{uid} {
+      allow read: if request.auth.uid == uid || isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

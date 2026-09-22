@@ -1,0 +1,261 @@
+[
+  {
+    "id": "c_evt7r0p",
+    "name": "Bormorfas",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/1200x/f2/87/df/f287dfcc00c989b3ede3deec346f1e74.jpg",
+    "region": "Terras Altas e Ilha da Caveira",
+    "mainType": "Inseto",
+    "stats": {
+      "str": "1/5",
+      "def": "3/5",
+      "int": "3/5",
+      "per": "Vassallus"
+    },
+    "elements": [
+      "Ar"
+    ],
+    "regionTags": [
+      "Montanhas",
+      "Cavernas",
+      "Florestas"
+    ],
+    "typeTags": [
+      "Voadora",
+      "Camuflada",
+      "Mágico",
+      "Inteligente",
+      "Hostil"
+    ],
+    "otherTags": [
+      "Comum"
+    ],
+    "description": "Criaturas que fazem de suas asas se assemelharem à túnicas quando fechadas. Possuem a altura de um ser humano médio e costumam se reunir em grupos de 6 a 12 indivíduos. Suas silhuetas são constantemente confundidas com reais humanos.\n\nSão capazes de estabelecer comunhão entre o grupo e se unem em padrões mágicos para a conjuração de magia através de posições e linhas sutis mágicas.\n\nSão passíveis de diálogo através de símbolos e magias. Comumente agressivas.",
+    "refs": {
+      "Referência de Arte": "https://i1-e.pinimg.com/1200x/f2/87/df/f287dfcc00c989b3ede3deec346f1e74.jpg"
+    }
+  },
+  {
+    "id": "c_mrdv62i",
+    "name": "Cerberus Inferior",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/1200x/b5/84/3d/b5843df9d7c25a9986255d8292908c9b.jpg",
+    "region": "Masmorras de Terras Vermelhas",
+    "mainType": "Espírito",
+    "stats": {
+      "str": "3/5",
+      "def": "3/5",
+      "int": "0/5",
+      "per": "Dominus"
+    },
+    "elements": [
+      "Fogo",
+      "Trevas"
+    ],
+    "regionTags": [
+      "Masmorras",
+      "Deserto Vermelho"
+    ],
+    "typeTags": [
+      "Canino",
+      "Hostil"
+    ],
+    "otherTags": [
+      "Raríssimo"
+    ],
+    "description": "Um espectro que ecoa como a forma do real Cerberus que já existiu à séculos atrás. Esse espírito inferior é como um eco de sua memória fragmentado entre os contos das terras vermelhas. Esse animal é o responsável pela morte e fim de muitos aventureiros.",
+    "refs": {
+      "ref": "https://i1-e.pinimg.com/1200x/b5/84/3d/b5843df9d7c25a9986255d8292908c9b.jpg"
+    }
+  },
+  {
+    "id": "c_460bpqs",
+    "name": "Corvos Múltiplos",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/736x/e1/5e/7d/e15e7da1c667bdb250dc340754833f06.jpg",
+    "region": "Terras Altas e Mar Interior",
+    "mainType": "Ave",
+    "stats": {
+      "str": "2/5",
+      "def": "2/5",
+      "int": "1/5",
+      "per": "Baronia Inferior"
+    },
+    "elements": [
+      "Ar"
+    ],
+    "regionTags": [
+      "Montanhas",
+      "Pântanos"
+    ],
+    "typeTags": [
+      "Voadora",
+      "Hostil"
+    ],
+    "otherTags": [
+      "Comum"
+    ],
+    "description": "Essa criatura com tamanho médio de 1,70, ataca de grandes à pequenos animais. Constantemente aumentando o número de duplicatas de bicos e garras e asas. Essa criatura eventualmente torna-se desengonçada de acordo com a evolução, por tanto o ideal é sempre enfrentar uma bem alimentada!\nSua agilidade e percepção pode impressionar, mas não se descuide quanto às garras.",
+    "refs": {}
+  },
+  {
+    "id": "c_rnf9wml",
+    "name": "Gorujas",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/736x/0a/1c/57/0a1c570e868e9a73cf17688aca5bd212.jpg",
+    "region": "Desconhecida",
+    "mainType": "Ave",
+    "stats": {
+      "str": "1/5",
+      "def": "2/5",
+      "int": "2/5",
+      "per": "Vassallus Inferior"
+    },
+    "elements": [
+      "Ar",
+      "Radiância"
+    ],
+    "regionTags": [
+      "Montanhas",
+      "Invernais",
+      "Florestas Altas"
+    ],
+    "typeTags": [
+      "Voadora",
+      "Passivo"
+    ],
+    "otherTags": [
+      "Comum"
+    ],
+    "description": "Gorujas são monstros passivos que não atacam humanos, exceto se com muita fome. Costumam andar sozinhas e caçam normalmente roedores menores para extrair magias restantes.\nUma Goruja, pode crescer se consumir o suficiente. Assim tomando sua forma adulta, mais similar à uma leoa. Alcançando Baronia Inferior.",
+    "refs": {}
+  },
+  {
+    "id": "c_rnf9kp7",
+    "name": "Polvos Duplos",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/1200x/ee/d3/bf/eed3bf7f900399099354ad6b0f4a614d.jpg",
+    "region": "Atlanta",
+    "mainType": "Aquático",
+    "stats": {
+      "str": "2/5",
+      "def": "3/5",
+      "int": "2/5",
+      "per": "Baronia Superior"
+    },
+    "elements": [
+      "Água",
+      "Radiância",
+      "Trevas"
+    ],
+    "regionTags": [
+      "Mares"
+    ],
+    "typeTags": [
+      "Aquático",
+      "Mágico",
+      "Neutro"
+    ],
+    "otherTags": [
+      "Incomuns"
+    ],
+    "description": "Mesmo que não ligados fisicamente, estes seres funcionam como um só e são incapazes de processar mana como normal. Sua fisiologia não permite com que eles se distanciem e os faz compartilhar qualquer dano sofrido um com o outro. Se separados morrem, se um morrer, outro morre. Essa lógica se aplica também a efeitos e outras condições.\nSua principal limitação é a incapacidade de digerir alimentos. O Polvo Claro nunca consome nada, apenas regurgita, enquanto o Polvo Negro apenas engole. O curioso, é que tudo engolido pelo Polvo Negro é cuspido pelo Polvo Claro, nunca chegando à um real estômago.\nEsses seres também são neutros, só atacando após serem atacados. Ainda assim, existem exceções. Se eles presenciam um ser com mana muito negativa, o Polvo Claro iniciará um ataque com tudo que lhe for disposto. Se o Polvo Negro encontrar alguém com muita mana branca, também será atacado. Equilíbrio.\nSuas bocas com propriedades mágicas podem ser extraídas com cuidado para criar um portal de curtas distâncias instantâneo.\nEles são seres fadados à estagnação e a auto aceitação.",
+    "refs": {}
+  },
+  {
+    "id": "c_zickz3i",
+    "name": "Peso de Rio",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/1200x/74/f1/19/74f119648fd9828595f58c67424d8073.jpg",
+    "region": "Ilhas Mortas",
+    "mainType": "Aquático",
+    "stats": {
+      "str": "4/5",
+      "def": "2/5",
+      "int": "2/5",
+      "per": "Baronia"
+    },
+    "elements": [
+      "Água"
+    ],
+    "regionTags": [
+      "Mares",
+      "Lagos",
+      "Pantânos"
+    ],
+    "typeTags": [
+      "Colossal",
+      "Réptil",
+      "Passivo"
+    ],
+    "otherTags": [
+      "Raro"
+    ],
+    "description": "Esses enormes monstros pouco se reproduzem. Eles seguem um ciclo de vida estático, normalmente baseado no consumo de algas e plantas costeiras à lagoas profundas.\nAnos atrás viviam no Mar Interior, mas foram expulsos e migraram para as Ilhas Mortas devido à maus tratos e morte. Hoje em dia, existem poucos Pesos de Rios.\n\nSão ótimas embarcações.",
+    "refs": {}
+  },
+  {
+    "id": "c_g9v1e9w",
+    "name": "Agarinos",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/1200x/ef/f3/26/eff3263515fff6ca7b519c98084bcf1b.jpg",
+    "region": "Ilha Micélio",
+    "mainType": "Anfíbio",
+    "stats": {
+      "str": "0/5",
+      "def": "1/5",
+      "int": "0/5",
+      "per": "Vassallus Inferior"
+    },
+    "elements": [
+      "Terra",
+      "Água"
+    ],
+    "regionTags": [
+      "Pântanos",
+      "Selvas"
+    ],
+    "typeTags": [
+      "Réptil",
+      "Venenoso",
+      "Passivo"
+    ],
+    "otherTags": [
+      "Comum"
+    ],
+    "description": "Pequenos animais que babam a Ilha Micélio e infestam rios arredores, não se fortificam ao consumir mana, apenas se multiplicam como bactérias. Babam um composto venenoso em toda superfície. A cor do composto determina seu efeito:\n- Rosa: Queima\n- Verde: Coça\n- Azul: Dificulta uso de magias\nSeus corpos podem ser utilizados para a construção de magias e outros venenos. Seus venenos não são letais e eles não são peçonhentos.",
+    "refs": {}
+  },
+  {
+    "id": "c_ch6whny",
+    "name": "Salindra",
+    "latin": "",
+    "image": "https://i1-e.pinimg.com/736x/8d/a6/57/8da65742693df4c859f32c09f11f9172.jpg",
+    "region": "Mares Interiores",
+    "mainType": "Aquático",
+    "stats": {
+      "str": "3/5",
+      "def": "2/5",
+      "int": "2/5",
+      "per": "Baronia Inferior"
+    },
+    "elements": [
+      "Água"
+    ],
+    "regionTags": [
+      "Rios",
+      "Lágoas"
+    ],
+    "typeTags": [
+      "Réptil",
+      "Passivo"
+    ],
+    "otherTags": [
+      "Incomum"
+    ],
+    "description": "Salindras são grandes seres que permeiam rios e os mares interiores, hoje se encontram em processo de extinção devido à grande caça em cima de sua carne refinada. São os filtradores desses rios, e apenas se alimentam de peixes menores.\nSão grandes, em torno de 6m de comprimento.",
+    "refs": {
+      "Variação": "https://i1-e.pinimg.com/736x/c5/9b/68/c59b68ccbc9d009a1b4d2927e4faba50.jpg"
+    }
+  }
+]

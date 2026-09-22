@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex Bestiarum — Bestiário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header class="site-header">
+  <div class="header-rule"></div>
+  <h1 class="site-title">Codex Bestiarum</h1>
+  <p class="site-sub">Bestiário do Reino — Arquivo de Criaturas &amp; Entidades</p>
+  <div class="header-divider">⸸</div>
+</header>
+
+<!-- ══ NAV ══ -->
+<nav class="nav-bar">
+  <button class="nav-btn active" id="navDetail">📜 Detalhe</button>
+  <span class="nav-sep">│</span>
+  <button class="nav-btn" id="navGrid">▦ Galeria</button>
+  <span class="nav-sep">│</span>
+  <button class="nav-btn" id="importBtn">⬆ Importar JSON</button>
+  <span class="nav-sep">│</span>
+  <button class="nav-btn" id="exportAllBtn">⬇ Exportar Tudo</button>
+</nav>
+
+<!-- ══ LAYOUT PRINCIPAL ══ -->
+<div class="main-wrap">
+  <aside class="sidebar">
+    <div>
+      <button class="add-btn" id="addCreatureBtn">✦ Inscrever Nova Criatura</button>
+    </div>
+    <div>
+      <div class="sidebar-label">Buscar</div>
+      <input class="search-input" type="text" id="searchInput" placeholder="Nome, região, descrição…">
+    </div>
+    <div>
+      <div class="sidebar-label">Tipo</div>
+      <div id="typeFilters"></div>
+    </div>
+    <div>
+      <div class="sidebar-label">
+        Criaturas <span class="count-badge" id="listCount"></span>
+      </div>
+      <ul class="creature-list" id="creatureList"></ul>
+    </div>
+  </aside>
+
+  <main class="content-area" id="contentArea">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-glyph">Ω</div>
+      <div class="empty-title">O Codex aguarda…</div>
+      <div class="empty-text">Seleciona uma criatura à esquerda ou inscreve uma nova no arquivo do bestiário.</div>
+    </div>
+    <div id="creaturePage" style="display:none"></div>
+    <div class="grid-view" id="gridView" style="display:none"></div>
+  </main>
+</div>
+
+<!-- ══ MODAIS (mesmos IDs) ══ -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Nova Criatura</span>
+      <button class="modal-close" id="closeEditModalBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nome *</label>
+          <input class="form-input" id="fName" placeholder="Ex: Wyrm das Cinzas">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome Latino / Epíteto</label>
+          <input class="form-input" id="fLatin" placeholder="Ex: Draco Cinerum">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL da Imagem</label>
+        <input class="form-input" id="fImage" placeholder="https://…">
+        <div class="form-hint">Qualquer URL pública de imagem.</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Região Principal *</label>
+          <input class="form-input" id="fRegion" placeholder="Ex: Montanhas de Khareth">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo Principal *</label>
+          <input class="form-input" id="fMainType" placeholder="Ex: Dragão, Morto-vivo…">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">FOR / Força</label>
+          <input class="form-input" id="fStr" placeholder="Ex: 18" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DEF / Defesa</label>
+          <input class="form-input" id="fDef" placeholder="Ex: 15" type="text">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">INT / Inteligência</label>
+          <input class="form-input" id="fInt" placeholder="Ex: 12" type="text">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PER / Perigo</label>
+          <input class="form-input" id="fPer" placeholder="Ex: ★★★★☆" type="text">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags — Elementos</label>
+        <input class="form-input" id="fElements" placeholder="fogo, água, trevas… (vírgula)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags — Biomas / Regiões</label>
+        <input class="form-input" id="fRegionTags" placeholder="floresta, montanha, pântano…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags — Tipo / Classificação</label>
+        <input class="form-input" id="fTypeTags" placeholder="dragão, demônio, fada…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tags — Outras</label>
+        <input class="form-input" id="fOtherTags" placeholder="raro, lendário, boss…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição *</label>
+        <textarea class="form-textarea" id="fDesc" placeholder="Descreva a criatura, lendas, comportamento…" style="min-height:140px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Referências / Inspirações</label>
+        <textarea class="form-textarea" id="fRefs" placeholder='Título|URL  (uma por linha)  ou  {"título": "url"}'></textarea>
+        <div class="form-hint">Formato: <em>Título|URL</em> por linha, ou JSON.</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="cancelEditBtn">Cancelar</button>
+      <button class="btn-save-modal" id="saveCreatureBtn">Inscrever no Codex</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="imgModal">
+  <div class="modal img-url-modal">
+    <div class="modal-header">
+      <span class="modal-title">Alterar Imagem</span>
+      <button class="modal-close" id="closeImgModalBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">URL da Nova Imagem</label>
+        <input class="form-input" id="imgUrlInput" placeholder="https://…">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="cancelImgBtn">Cancelar</button>
+      <button class="btn-save-modal" id="applyImgBtn">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Importar JSON</span>
+      <button class="modal-close" id="closeImportModalBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Cole o JSON do bestiário</label>
+        <textarea class="form-textarea" id="importJson" style="min-height:200px;font-family:monospace;font-size:0.82rem" placeholder='[{"name":"Criatura","image":"url",...}]'></textarea>
+      </div>
+      <div class="form-hint">Mescla com registros existentes (por nome).</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="cancelImportBtn">Cancelar</button>
+      <button class="btn-save-modal" id="doImportBtn">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Exportar Bestiário</span>
+      <button class="modal-close" id="closeExportModalBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-hint">JSON completo de todas as criaturas:</div>
+      <div class="export-area" id="exportArea"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" id="cancelExportBtn">Fechar</button>
+      <button class="btn-save-modal" id="copyExportBtn">Copiar JSON</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/app.js" type="module"></script>
+</body>
+</html>

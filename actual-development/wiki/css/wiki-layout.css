@@ -1,0 +1,491 @@
+/* wiki-layout.css — Layout for all wiki pages
+   Part of the Odisseia Wiki module.
+   Depends on: tokens.css, base.css
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════
+   WIKI SHELL — centred app wrapper
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-shell {
+    max-width: 960px;
+    margin: 0 auto;
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WIKI HEADER — dark leather bar (list + editor pages)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-header {
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(180deg, var(--leath0) 0%, var(--leath1) 50%, var(--leath2) 100%);
+    border-bottom: 2px solid var(--leath3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    padding: 16px 28px;
+    flex-shrink: 0;
+}
+
+/* Gold trim line at bottom of header */
+.wiki-header::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold1), var(--gold2), var(--gold1), transparent);
+    z-index: 3;
+}
+
+/* ── Brand / logo ─────────────────────────────────────────────────── */
+.wiki-brand {
+    text-decoration: none;
+    font-family: 'Cinzel Decorative', serif;
+    color: var(--gold2);
+    font-size: clamp(16px, 2.5vw, 22px);
+    letter-spacing: 0.12em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.15s;
+}
+
+.wiki-brand:hover {
+    color: var(--gold3);
+}
+
+.wiki-brand-rune {
+    font-size: 22px;
+    color: var(--gold2);
+    text-shadow:
+        0 0 20px color-mix(in srgb, var(--gold2) 60%, transparent),
+        0 0 40px color-mix(in srgb, var(--gold2) 20%, transparent);
+    line-height: 1;
+}
+
+/* ── Header row (brand + actions) ─────────────────────────────────── */
+.wiki-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.wiki-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ── User chip ────────────────────────────────────────────────────── */
+.wiki-user-chip {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.85;
+}
+
+.wiki-user-chip .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ── Login link ───────────────────────────────────────────────────── */
+.wiki-login-link {
+    text-decoration: none;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    border: 1px solid color-mix(in srgb, var(--gold1) 45%, transparent);
+    padding: 6px 14px;
+    border-radius: 4px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.wiki-login-link:hover {
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
+    border-color: var(--gold1);
+    color: var(--gold2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEARCH BAR
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-search-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--leath3);
+    border-radius: 6px;
+    padding: 0 10px;
+    gap: 6px;
+    transition: border-color 0.15s;
+}
+
+.wiki-search-wrap:focus-within {
+    border-color: var(--gold1);
+}
+
+.wiki-search-wrap .material-symbols-outlined {
+    color: var(--leath4);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.wiki-search-input {
+    background: none;
+    border: none;
+    color: var(--p0);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 14px;
+    padding: 8px 4px;
+    width: 200px;
+    outline: none;
+}
+
+.wiki-search-input::placeholder {
+    color: var(--leath4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CREATE BUTTON
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--gold1);
+    color: var(--gold1);
+    padding: 7px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.wiki-create-btn:hover {
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
+    border-color: var(--gold2);
+    color: var(--gold2);
+}
+
+.wiki-create-btn .material-symbols-outlined {
+    font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FILTER / CATEGORY TABS
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-filter-nav {
+    background: var(--leath0);
+    border-bottom: 1px solid var(--leath3);
+    padding: 0 28px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none; /* Firefox */
+}
+
+.wiki-filter-nav::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.wiki-tab-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--leath4);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: color 0.2s, border-bottom-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.wiki-tab-btn:hover {
+    color: var(--gold2);
+}
+
+.wiki-tab-btn.active {
+    color: var(--gold2);
+    border-bottom-color: var(--gold2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MAIN CONTENT AREA
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-content {
+    background: var(--sheet-bg);
+    background-image: url('/image/page.png');
+    min-height: calc(100vh - 130px);
+    padding: 28px;
+    position: relative;
+    flex: 1;
+}
+
+/* Parchment vignette edges */
+.wiki-content::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 120% 25% at 50% 0%,   color-mix(in srgb, var(--leath3) 18%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 25% 100% at 0% 50%,   color-mix(in srgb, var(--leath3) 12%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 25% 100% at 100% 50%, color-mix(in srgb, var(--leath3) 12%, transparent) 0%, transparent 100%),
+        radial-gradient(ellipse 120% 25% at 50% 100%, color-mix(in srgb, var(--leath3) 10%, transparent) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.wiki-content > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LOADING & EMPTY STATES
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-loading {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    text-align: center;
+    padding: 60px 40px;
+    opacity: 0.7;
+}
+
+.wiki-loading .material-symbols-outlined {
+    display: block;
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: var(--gold1);
+    opacity: 0.5;
+    animation: wiki-spin 1.4s linear infinite;
+}
+
+@keyframes wiki-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.wiki-empty {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink3);
+    text-align: center;
+    padding: 60px 40px;
+    opacity: 0.75;
+}
+
+.wiki-empty .material-symbols-outlined {
+    display: block;
+    font-size: 36px;
+    margin-bottom: 14px;
+    color: var(--gold0);
+    opacity: 0.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DOCUMENT TOPBAR (doc viewer pages)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 28px;
+    background: var(--leath0);
+    border-bottom: 1px solid var(--leath3);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 9;
+}
+
+.wiki-back-link {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+}
+
+.wiki-back-link:hover {
+    color: var(--gold2);
+}
+
+.wiki-back-link .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.wiki-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SHARED BUTTON SYSTEM
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 7px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+}
+
+.wiki-btn .material-symbols-outlined {
+    font-size: 15px;
+}
+
+/* Primary: gold outline */
+.wiki-btn-primary {
+    background: none;
+    border: 1px solid var(--gold1);
+    color: var(--gold1);
+}
+
+.wiki-btn-primary:hover {
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
+    border-color: var(--gold2);
+    color: var(--gold2);
+}
+
+/* Secondary: muted leather outline */
+.wiki-btn-secondary {
+    background: none;
+    border: 1px solid var(--leath3);
+    color: var(--leath4);
+}
+
+.wiki-btn-secondary:hover {
+    border-color: var(--leath4);
+    color: var(--p0);
+}
+
+/* Danger: blood-red outline */
+.wiki-btn-danger {
+    background: none;
+    border: 1px solid #c0392b;
+    color: #c0392b;
+}
+
+.wiki-btn-danger:hover {
+    background: rgba(192, 57, 43, 0.1);
+    border-color: #e74c3c;
+    color: #e74c3c;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION HEADING ORNAMENTS (shared across wiki)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-section-ornament {
+    text-align: center;
+    color: var(--gold1);
+    font-size: 11px;
+    letter-spacing: 10px;
+    margin: 20px 0 16px;
+    opacity: 0.5;
+}
+
+/* wiki-sh: decorative ruled heading line */
+.wiki-sh {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0 12px;
+}
+
+.wiki-sh::before,
+.wiki-sh::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold1), transparent);
+    opacity: 0.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE — ≤600px
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+    .wiki-shell {
+        max-width: 100%;
+        box-shadow: none;
+    }
+
+    .wiki-header {
+        padding: 12px 16px;
+    }
+
+    .wiki-header-row {
+        gap: 10px;
+    }
+
+    .wiki-brand {
+        font-size: 15px;
+        letter-spacing: 0.08em;
+    }
+
+    .wiki-search-input {
+        width: 120px;
+    }
+
+    .wiki-filter-nav {
+        padding: 0 16px;
+    }
+
+    .wiki-content {
+        padding: 16px;
+    }
+
+    .wiki-topbar {
+        padding: 10px 16px;
+    }
+
+    .wiki-tab-btn {
+        padding: 10px 12px;
+        font-size: 9.5px;
+        letter-spacing: 0.12em;
+    }
+}

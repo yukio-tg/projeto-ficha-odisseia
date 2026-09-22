@@ -1,0 +1,11 @@
+// Firebase Storage NÃO está ativo neste projeto.
+// Imagens são armazenadas como URLs externas ou base64 diretamente no Firestore.
+// Este arquivo é mantido apenas como placeholder caso Storage seja ativado no futuro.
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
