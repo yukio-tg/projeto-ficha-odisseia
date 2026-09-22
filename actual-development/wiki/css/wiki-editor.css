@@ -493,6 +493,140 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   STRUCTURED TAGS SECTION
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-tag-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--p2);
+    border-radius: 6px;
+    padding: 16px;
+}
+.wiki-tag-subsection { /* uses standard wiki-field children */ }
+
+/* ── Autocomplete dropdown ────────────────────────────────────────── */
+.wiki-autocomplete-wrap { position: relative; }
+
+.wiki-autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--p0);
+    border: 1px solid var(--gold1);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 200;
+    max-height: 180px;
+    overflow-y: auto;
+    list-style: none;
+    margin: 0; padding: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.wiki-autocomplete-item {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 14px;
+    color: var(--ink1);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid color-mix(in srgb, var(--p3) 40%, transparent);
+}
+.wiki-autocomplete-item:last-child { border-bottom: none; }
+.wiki-autocomplete-item:hover {
+    background: color-mix(in srgb, var(--gold1) 12%, transparent);
+    color: var(--ink0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME RESET BUTTON
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-theme-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    background: none;
+    border: 1px solid color-mix(in srgb, var(--gold1) 30%, transparent);
+    border-radius: 4px;
+    color: var(--gold1);
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    cursor: pointer;
+    opacity: 0.65;
+    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+}
+.wiki-theme-reset-btn:hover {
+    opacity: 1;
+    border-color: color-mix(in srgb, var(--gold2) 55%, transparent);
+    color: var(--gold2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK-PAPER OVERRIDES FOR EDITOR
+   ═══════════════════════════════════════════════════════════════════ */
+body.theme-dark-paper .wiki-editor-title { color: var(--ink0); }
+body.theme-dark-paper .wiki-field-label  { color: var(--ink3); }
+body.theme-dark-paper .wiki-input-hint   { color: var(--ink3); opacity: 0.8; }
+body.theme-dark-paper .wiki-input,
+body.theme-dark-paper .wiki-textarea,
+body.theme-dark-paper .wiki-select {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--ink0);
+    border-color: color-mix(in srgb, var(--p3) 40%, transparent);
+}
+body.theme-dark-paper .wiki-input:focus,
+body.theme-dark-paper .wiki-textarea:focus,
+body.theme-dark-paper .wiki-select:focus {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--gold1);
+}
+body.theme-dark-paper .wiki-tag-field {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: color-mix(in srgb, var(--p3) 40%, transparent);
+}
+body.theme-dark-paper .wiki-tag-chip {
+    background: color-mix(in srgb, var(--gold0) 18%, transparent);
+    color: var(--gold2);
+    border-color: color-mix(in srgb, var(--gold1) 35%, transparent);
+}
+body.theme-dark-paper .wiki-section-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: color-mix(in srgb, var(--p3) 28%, transparent);
+}
+body.theme-dark-paper .wiki-section-item-heading-input {
+    color: var(--ink0);
+    border-bottom-color: color-mix(in srgb, var(--p3) 35%, transparent);
+}
+body.theme-dark-paper .wiki-tag-section {
+    background: rgba(0, 0, 0, 0.22);
+    border-color: color-mix(in srgb, var(--p3) 28%, transparent);
+}
+body.theme-dark-paper .wiki-autocomplete-list {
+    background: var(--p0);
+    border-color: var(--gold1);
+}
+body.theme-dark-paper .wiki-autocomplete-item { color: var(--ink1); }
+body.theme-dark-paper .wiki-add-section-btn {
+    border-color: color-mix(in srgb, var(--p3) 35%, transparent);
+    color: var(--ink3);
+}
+body.theme-dark-paper .wiki-add-section-btn:hover {
+    border-color: var(--gold1);
+    color: var(--gold1);
+}
+body.theme-dark-paper .wiki-gallery-item-row {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: color-mix(in srgb, var(--p3) 28%, transparent);
+}
+body.theme-dark-paper .wiki-submit-row {
+    border-top-color: color-mix(in srgb, var(--p3) 25%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    THEME / COLOR PICKER
    ═══════════════════════════════════════════════════════════════════ */
 .wiki-theme-picker {

@@ -238,3 +238,83 @@ export function buildThemePicker(container, currentTheme, onChange) {
     container.innerHTML = '';
     container.appendChild(picker);
 }
+
+// ── localStorage cache (avoids theme flash on page load) ──────────────────────
+
+const WIKI_THEME_STORAGE_PREFIX = 'odisseia-wiki-theme-v1';
+
+/** Cache key for a specific document ID (or generic fallback). */
+export function wikiThemeCacheKey(docId) {
+    return docId ? `${WIKI_THEME_STORAGE_PREFIX}-${docId}` : WIKI_THEME_STORAGE_PREFIX;
+}
+
+/** Write theme to localStorage for this document. */
+export function cacheDocTheme(docId, theme) {
+    try {
+        localStorage.setItem(wikiThemeCacheKey(docId), JSON.stringify(theme));
+    } catch { /* storage unavailable */ }
+}
+
+/** Read cached theme from localStorage, or null if not found. */
+export function getCachedDocTheme(docId) {
+    try {
+        const raw = localStorage.getItem(wikiThemeCacheKey(docId));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        // Validate all three keys
+        if (validId(parsed?.fundo) && validId(parsed?.metalico) && validId(parsed?.pergaminho)) {
+            return parsed;
+        }
+        return null;
+    } catch { return null; }
+}
+
+/** Clear cached theme for a document (on reset). */
+export function clearDocThemeCache(docId) {
+    try { localStorage.removeItem(wikiThemeCacheKey(docId)); } catch { /* ok */ }
+}
+
+/**
+ * Removes all theme overrides applied to document.documentElement,
+ * returning the page to the default CSS tokens.
+ * Also removes the dark-paper class from body.
+ */
+export function resetDocTheme() {
+    const root = document.documentElement;
+    [
+        '--leath0', '--leath1', '--leath2', '--leath3', '--leath4',
+        '--gold0',  '--gold1',  '--gold2',  '--gold3',
+        '--p0',     '--p1',     '--p2',     '--p3',     '--p4',
+        '--sheet-bg',
+        '--ink0',   '--ink1',   '--ink2',   '--ink3',
+    ].forEach(p => root.style.removeProperty(p));
+    document.body.classList.remove('theme-dark-paper');
+}
+
+/**
+ * Applies a theme from Firestore (or localStorage cache) on the viewer page,
+ * with fast-load cache support to prevent a visual flash.
+ *
+ * @param {string} docId
+ * @param {{ fundo, metalico, pergaminho }|null} remoteTheme — from Firestore
+ */
+export function applyAndCacheDocTheme(docId, remoteTheme) {
+    const theme = remoteTheme ?? WIKI_DEFAULTS;
+    const f = validId(theme.fundo)      ?? WIKI_DEFAULTS.fundo;
+    const m = validId(theme.metalico)   ?? WIKI_DEFAULTS.metalico;
+    const p = validId(theme.pergaminho) ?? WIKI_DEFAULTS.pergaminho;
+    applyDocTheme(f, m, p);
+    cacheDocTheme(docId, { fundo: f, metalico: m, pergaminho: p });
+}
+
+/**
+ * Applies the localStorage-cached theme immediately (call before async Firestore load
+ * to prevent flash). Does nothing if no cache exists.
+ *
+ * @param {string} docId
+ */
+export function applyPreloadedTheme(docId) {
+    const cached = getCachedDocTheme(docId);
+    if (!cached) return;
+    applyDocTheme(cached.fundo, cached.metalico, cached.pergaminho);
+}

@@ -1,15 +1,21 @@
 // wiki-list.js — Wiki list page controller for Odisseia
-// Handles: auth state, search, type filters, card rendering.
 
-import { initWikiFirebase, listWikiDocs }                                from './wiki-firebase.js';
-import { getAuthState }                                                  from './wiki-auth.js';
-import { escapeHtml, normalizar, TYPE_LABELS, TYPE_ICONS, showToast }   from './wiki-utils.js';
-import { getAuth, signOut }  from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+import { initWikiFirebase, listWikiDocs }          from './wiki-firebase.js';
+import { getAuthState }                             from './wiki-auth.js';
+import { escapeHtml, normalizar, showToast }        from './wiki-utils.js';
+import {
+    TYPE_LABELS, TYPE_ICONS,
+    THREAT_COLORS, THREAT_COLORS_DARK,
+    DOMAIN_COLORS, DOMAIN_COLORS_DARK,
+    ALIGNMENT_COLORS, ALIGNMENT_COLORS_DARK,
+    getThreatStyle, getDomainStyle, getAlignmentStyle,
+} from './wiki-consts.js';
+import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
-// ─── Page state ───────────────────────────────────────────────────────────────
-let allDocs       = [];   // full dataset from Firestore
-let currentType   = '';   // '' = all types
-let currentSearch = '';   // normalised search string
+// ─── Page state ────────────────────────────────────────────────────────────────
+let allDocs       = [];
+let currentType   = '';
+let currentSearch = '';
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -17,7 +23,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { user, isAdmin } = await getAuthState();
 
-    // "Criar" button is only visible to authenticated users
     if (user) {
         const createBtn = document.getElementById('wiki-create-btn');
         if (createBtn) createBtn.style.display = '';
@@ -26,7 +31,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderUserArea(user, isAdmin);
     await loadDocs();
 
-    // ── Search input ────────────────────────────────────────────────────────
     const searchInput = document.getElementById('wiki-search');
     if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -35,11 +39,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // ── Filter tabs ─────────────────────────────────────────────────────────
     document.querySelectorAll('.wiki-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.wiki-tab-btn')
-                    .forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.wiki-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentType = btn.dataset.type || '';
             renderList();
@@ -50,14 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ─── Data loading ─────────────────────────────────────────────────────────────
 async function loadDocs() {
     const main = document.getElementById('wiki-main');
-
-    // Show animated spinner while fetching
-    main.innerHTML = `
-        <div class="wiki-loading">
-            <span class="material-symbols-outlined">autorenew</span>
-            Carregando documentos...
-        </div>`;
-
+    main.innerHTML = '<div class="wiki-loading"><span class="material-symbols-outlined">autorenew</span>Carregando documentos...</div>';
     try {
         allDocs = await listWikiDocs();
     } catch (e) {
@@ -65,7 +60,6 @@ async function loadDocs() {
         showToast('Erro ao carregar documentos.', true);
         allDocs = [];
     }
-
     renderList();
 }
 
@@ -73,32 +67,26 @@ async function loadDocs() {
 function renderList() {
     const main = document.getElementById('wiki-main');
 
-    // 1. Filter by selected type
-    let filtered = currentType
-        ? allDocs.filter(d => d.type === currentType)
-        : allDocs.slice();
+    let filtered = currentType ? allDocs.filter(d => d.type === currentType) : allDocs.slice();
 
-    // 2. Filter by search query (title · summary · tags)
     if (currentSearch) {
         const q = normalizar(currentSearch);
         filtered = filtered.filter(d =>
             normalizar(d.title).includes(q) ||
+            normalizar(d.altName || '').includes(q) ||
             normalizar(d.summary || '').includes(q) ||
-            (d.tags || []).some(t => normalizar(t).includes(q))
+            (d.types || []).some(t => normalizar(t).includes(q)) ||
+            (d.regions || []).some(t => normalizar(t).includes(q)) ||
+            normalizar(d.threat || '').includes(q) ||
+            normalizar(d.domain || '').includes(q)
         );
     }
 
-    // 3. Empty state
     if (filtered.length === 0) {
-        main.innerHTML = `
-            <div class="wiki-empty">
-                <span class="material-symbols-outlined">search_off</span>
-                Nenhum documento encontrado.
-            </div>`;
+        main.innerHTML = '<div class="wiki-empty"><span class="material-symbols-outlined">search_off</span>Nenhum documento encontrado.</div>';
         return;
     }
 
-    // 4. Build grid
     const grid = document.createElement('div');
     grid.className = 'wiki-grid';
     filtered.forEach(doc => grid.appendChild(buildCard(doc)));
@@ -108,89 +96,99 @@ function renderList() {
 }
 
 // ─── Card builder ─────────────────────────────────────────────────────────────
-/**
- * Builds a wiki card anchor element for the given document.
- *
- * Uses `document.createElement` for the card and all its children.
- * Text content is always set via `.textContent` (XSS-safe, no innerHTML for
- * user-supplied strings). `escapeHtml` is reserved for any future innerHTML
- * concatenation with user data.
- *
- * @param   {Object} doc  – Firestore wiki_doc record (id + all fields)
- * @returns {HTMLAnchorElement}
- */
 function buildCard(doc) {
-    // ── Root anchor ──────────────────────────────────────────────────────────
+    const isDark = document.body.classList.contains('theme-dark-paper');
+
     const card = document.createElement('a');
     card.className = 'wiki-card' + (doc.status === 'canonical' ? ' canonical' : '');
     card.href = `/wiki/doc?id=${doc.id}`;
 
-    // ── Image wrap ───────────────────────────────────────────────────────────
+    // ── Image wrap ────────────────────────────────────────────────────────────
     const imgWrap = document.createElement('div');
     imgWrap.className = 'wiki-card-img-wrap';
-
-    const firstImage = doc.images && doc.images.length > 0 ? doc.images[0] : null;
-
-    if (firstImage) {
+    const firstImage = doc.images?.[0] ?? null;
+    if (firstImage?.url) {
         const img = document.createElement('img');
         img.className = 'wiki-card-img';
         img.src       = firstImage.url;
         img.alt       = firstImage.caption || doc.title || '';
-        // Broken image → fall back to type placeholder
-        img.onerror = () => {
-            imgWrap.innerHTML = '';
-            imgWrap.appendChild(_makePlaceholder(doc.type));
-        };
+        img.loading   = 'lazy';
+        img.onerror   = () => { imgWrap.innerHTML = ''; imgWrap.appendChild(_makePlaceholder(doc.type)); };
         imgWrap.appendChild(img);
     } else {
         imgWrap.appendChild(_makePlaceholder(doc.type));
     }
-
     card.appendChild(imgWrap);
 
-    // ── Card body ────────────────────────────────────────────────────────────
+    // ── Card body ─────────────────────────────────────────────────────────────
     const body = document.createElement('div');
     body.className = 'wiki-card-body';
 
-    // ·· Type row ·············································
+    // Type + canonical row
     const typeRow = document.createElement('div');
     typeRow.className = 'wiki-card-type-row';
 
-    // Type badge (pill with icon + label)
     const typeBadge = document.createElement('span');
     typeBadge.className = 'wiki-type-badge';
-
-    const typeIconEl = document.createElement('span');
-    typeIconEl.className = 'material-symbols-outlined';
-    typeIconEl.style.cssText = "font-variation-settings:'FILL' 1;font-size:10px;vertical-align:middle;margin-right:3px";
-    typeIconEl.textContent  = TYPE_ICONS[doc.type]  || 'article';
-    typeBadge.appendChild(typeIconEl);
+    const typeIcon = document.createElement('span');
+    typeIcon.className = 'material-symbols-outlined';
+    typeIcon.style.cssText = "font-variation-settings:'FILL' 1;font-size:10px;vertical-align:middle;margin-right:3px";
+    typeIcon.textContent = TYPE_ICONS[doc.type] || 'article';
+    typeBadge.appendChild(typeIcon);
     typeBadge.appendChild(document.createTextNode(TYPE_LABELS[doc.type] || doc.type));
     typeRow.appendChild(typeBadge);
 
-    // Canonical badge (crown + "Canônico") — only for canonical docs
     if (doc.status === 'canonical') {
         const canonBadge = document.createElement('span');
         canonBadge.className = 'wiki-canonical-badge';
-
-        const crownIconEl = document.createElement('span');
-        crownIconEl.className = 'material-symbols-outlined';
-        crownIconEl.style.fontVariationSettings = "'FILL' 1";
-        crownIconEl.textContent = 'crown';
-        canonBadge.appendChild(crownIconEl);
-        canonBadge.appendChild(document.createTextNode(' Canônico'));
+        const crownIcon = document.createElement('span');
+        crownIcon.className = 'material-symbols-outlined';
+        crownIcon.style.fontVariationSettings = "'FILL' 1";
+        crownIcon.textContent = 'crown';
+        canonBadge.appendChild(crownIcon);
+        canonBadge.appendChild(document.createTextNode('\u00a0Canônico'));
         typeRow.appendChild(canonBadge);
     }
-
     body.appendChild(typeRow);
 
-    // ·· Title ···············································
+    // Title
     const titleEl = document.createElement('h3');
-    titleEl.className  = 'wiki-card-title';
+    titleEl.className   = 'wiki-card-title';
     titleEl.textContent = doc.title || '(Sem título)';
     body.appendChild(titleEl);
 
-    // ·· Summary — omitted entirely when empty ···············
+    // Alt name — only if non-empty
+    if (doc.altName?.trim()) {
+        const altEl = document.createElement('p');
+        altEl.className   = 'wiki-card-alt-name';
+        altEl.textContent = doc.altName;
+        body.appendChild(altEl);
+    }
+
+    // Threat + domain badges row — shown prominently
+    const hasThreat = !!doc.threat;
+    const hasDomain = !!doc.domain;
+    if (hasThreat || hasDomain) {
+        const badgeRow = document.createElement('div');
+        badgeRow.className = 'wiki-card-badge-row';
+        if (hasThreat) {
+            const b = document.createElement('span');
+            b.className = 'wiki-badge wiki-threat-badge';
+            b.textContent = doc.threat;
+            b.style.cssText = getThreatStyle(doc.threat, isDark);
+            badgeRow.appendChild(b);
+        }
+        if (hasDomain) {
+            const b = document.createElement('span');
+            b.className = 'wiki-badge wiki-domain-badge';
+            b.textContent = doc.domain;
+            b.style.cssText = getDomainStyle(doc.domain, isDark);
+            badgeRow.appendChild(b);
+        }
+        body.appendChild(badgeRow);
+    }
+
+    // Summary
     const summaryText = (doc.summary || '').trim();
     if (summaryText) {
         const summaryEl = document.createElement('p');
@@ -199,15 +197,26 @@ function buildCard(doc) {
         body.appendChild(summaryEl);
     }
 
-    // ·· Tags — omitted entirely when array is empty, max 5 ·
-    if (doc.tags && doc.tags.length > 0) {
+    // Free tags (types, regions, alignment) — max 4 total
+    const freeTags = [
+        ...(doc.types || []),
+        ...(doc.regions || []),
+        ...(doc.alignment ? [doc.alignment] : []),
+    ];
+    if (freeTags.length > 0) {
         const tagsDiv = document.createElement('div');
         tagsDiv.className = 'wiki-card-tags';
-        doc.tags.slice(0, 5).forEach(tag => {
-            const tagSpan = document.createElement('span');
-            tagSpan.className   = 'wiki-tag';
-            tagSpan.textContent = tag;
-            tagsDiv.appendChild(tagSpan);
+        freeTags.slice(0, 4).forEach((tag, i) => {
+            const isAlignment = doc.alignment && i === freeTags.indexOf(doc.alignment);
+            const span = document.createElement('span');
+            if (doc.alignment && tag === doc.alignment) {
+                span.className = 'wiki-badge wiki-alignment-badge';
+                span.style.cssText = getAlignmentStyle(tag, isDark);
+            } else {
+                span.className = 'wiki-tag';
+            }
+            span.textContent = tag;
+            tagsDiv.appendChild(span);
         });
         body.appendChild(tagsDiv);
     }
@@ -216,14 +225,6 @@ function buildCard(doc) {
     return card;
 }
 
-/**
- * Creates the image-area placeholder span for a given doc type.
- * Has both `material-symbols-outlined` (renders the icon) and
- * `wiki-card-img-placeholder` (CSS: flex-centred, full wrap height).
- *
- * @param   {string} type  – doc.type key
- * @returns {HTMLSpanElement}
- */
 function _makePlaceholder(type) {
     const ph = document.createElement('span');
     ph.className = 'material-symbols-outlined wiki-card-img-placeholder';
@@ -233,19 +234,10 @@ function _makePlaceholder(type) {
 }
 
 // ─── User area ────────────────────────────────────────────────────────────────
-/**
- * Renders authentication UI into `#wiki-user-area`.
- *  • Logged-out → "Entrar" link
- *  • Logged-in  → username chip (with ★ crown for admins) + logout button
- *
- * @param {import('firebase/auth').User|null} user
- * @param {boolean} isAdmin
- */
 function renderUserArea(user, isAdmin) {
     const area = document.getElementById('wiki-user-area');
     if (!area) return;
 
-    // ── Not logged in ────────────────────────────────────────────────────────
     if (!user) {
         area.innerHTML = '<a href="/index.html" class="wiki-login-link">Entrar</a>';
         return;
@@ -253,28 +245,24 @@ function renderUserArea(user, isAdmin) {
 
     area.innerHTML = '';
 
-    // ── User chip ────────────────────────────────────────────────────────────
     const chip = document.createElement('span');
     chip.className = 'wiki-user-chip';
-
-    // Admin indicator
     if (isAdmin) {
-        const crownStar = document.createElement('span');
-        crownStar.textContent = '★';
-        crownStar.title       = 'Administrador';
-        chip.appendChild(crownStar);
+        const star = document.createElement('span');
+        star.textContent = '★';
+        star.title = 'Administrador';
+        chip.appendChild(star);
         chip.appendChild(document.createTextNode(' '));
     }
-
     const nameSpan = document.createElement('span');
     nameSpan.textContent = user.displayName || user.email?.split('@')[0] || 'Usuário';
     chip.appendChild(nameSpan);
     area.appendChild(chip);
 
-    // ── Logout button ────────────────────────────────────────────────────────
     const logoutBtn = document.createElement('button');
     logoutBtn.className   = 'wiki-btn wiki-btn-secondary';
     logoutBtn.textContent = 'Sair';
+    logoutBtn.style.cssText = 'font-size:10px;padding:4px 10px';
     logoutBtn.addEventListener('click', () => {
         signOut(getAuth()).then(() => window.location.reload());
     });

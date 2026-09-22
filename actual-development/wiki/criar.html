@@ -5,22 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Documento — Wiki Odisseia</title>
     <link rel="icon" href="/image/odisseia-logo.ico">
-
-    <!-- Google Fonts — typefaces -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
-
-    <!-- Material Symbols Outlined (variable font) -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
-
-    <!-- Wiki CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="css/wiki-main.css">
 </head>
 <body>
 
 <div class="wiki-shell">
-
     <div class="wiki-topbar">
         <a href="/wiki" class="wiki-back-link">
             <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
@@ -34,56 +27,115 @@
 
             <form id="wiki-form" novalidate>
 
-                <!-- Two-column: Type + Status -->
+                <!-- ── Tipo + Status ── -->
                 <div class="wiki-field-row">
                     <div class="wiki-field">
                         <label class="wiki-field-label required" for="field-type">Tipo</label>
-                        <select class="wiki-select" id="field-type" required>
+                        <select class="wiki-select" id="field-type">
                             <option value="creature">Criatura</option>
                             <option value="place">Lugar</option>
                             <option value="person">Pessoa</option>
                             <option value="concept">Conceito</option>
                         </select>
+                        <span class="wiki-input-hint">Categoria principal do documento.</span>
                     </div>
                     <div class="wiki-field" id="field-status-wrap">
                         <label class="wiki-field-label" for="field-status">Status</label>
                         <select class="wiki-select" id="field-status">
                             <option value="community">Comunitário</option>
-                            <!-- admin-only "canonical" option added by JS -->
                         </select>
+                        <span class="wiki-input-hint">Documentos canônicos são oficiais. Apenas administradores podem definir este campo.</span>
                     </div>
                 </div>
 
-                <!-- Name (required) -->
+                <!-- ── Nome (required) ── -->
                 <div class="wiki-field" id="field-title-wrap">
                     <label class="wiki-field-label required" for="field-title">Nome</label>
-                    <input class="wiki-input" id="field-title" type="text"
-                           placeholder="Nome do documento" required maxlength="120">
-                    <span class="wiki-field-error">O nome é obrigatório.</span>
+                    <input class="wiki-input" id="field-title" type="text" placeholder="Nome do documento" required maxlength="120">
+                    <span class="wiki-field-error">O nome é obrigatório e deve ser único.</span>
+                    <span class="wiki-input-hint">Usado para criar links automáticos com a sintaxe [[Nome do Documento]].</span>
                 </div>
 
-                <!-- Summary / Description (required) -->
+                <!-- ── Nome Alternativo ── -->
+                <div class="wiki-field">
+                    <label class="wiki-field-label" for="field-alt-name">Nome Alternativo</label>
+                    <input class="wiki-input" id="field-alt-name" type="text" placeholder="Apelido, título ou nome popular" maxlength="120">
+                    <span class="wiki-input-hint">Exibido em itálico abaixo do nome principal. Opcional.</span>
+                </div>
+
+                <!-- ── Descrição (required) ── -->
                 <div class="wiki-field" id="field-summary-wrap">
                     <label class="wiki-field-label required" for="field-summary">Descrição</label>
-                    <textarea class="wiki-textarea" id="field-summary"
-                              placeholder="Breve descrição que aparece nos cards da lista"
-                              required maxlength="600" rows="3"></textarea>
+                    <textarea class="wiki-textarea" id="field-summary" placeholder="Breve descrição que aparece nos cards e no topo do documento" required maxlength="600" rows="3"></textarea>
                     <span class="wiki-field-error">A descrição é obrigatória.</span>
+                    <span class="wiki-input-hint">Aparece nos cards da lista e como introdução do documento.</span>
                 </div>
 
-                <!-- Tags -->
+                <!-- ── Tags estruturadas ── -->
                 <div class="wiki-field">
                     <label class="wiki-field-label">Tags</label>
-                    <div class="wiki-tag-field" id="wiki-tag-field">
-                        <input class="wiki-tag-text-input" id="wiki-tag-input" type="text"
-                               placeholder="Digite e pressione Enter ou vírgula...">
+                    <span class="wiki-input-hint" style="display:block;margin-bottom:12px">Campos opcionais. Ameaça e Domínio aparecem em destaque no documento e nos cards.</span>
+
+                    <div class="wiki-tag-section">
+
+                        <div class="wiki-tag-subsection">
+                            <label class="wiki-field-label" for="field-threat">Ameaça</label>
+                            <select class="wiki-select" id="field-threat">
+                                <option value="">— Nenhuma —</option>
+                            </select>
+                            <span class="wiki-input-hint">Nível de perigo relativo da entidade.</span>
+                        </div>
+
+                        <div class="wiki-tag-subsection">
+                            <label class="wiki-field-label" for="field-domain">Domínio</label>
+                            <select class="wiki-select" id="field-domain">
+                                <option value="">— Nenhum —</option>
+                            </select>
+                            <span class="wiki-input-hint">Elemento ou esfera de influência.</span>
+                        </div>
+
+                        <div class="wiki-tag-subsection">
+                            <label class="wiki-field-label">Tipo</label>
+                            <div class="wiki-autocomplete-wrap">
+                                <div class="wiki-tag-field" id="wiki-tipos-field">
+                                    <input class="wiki-tag-text-input" id="wiki-tipo-input" type="text" placeholder="Ex: Dragão, Humanoide… (Enter ou vírgula)">
+                                </div>
+                                <ul class="wiki-autocomplete-list" id="wiki-tipo-suggestions" style="display:none"></ul>
+                            </div>
+                            <span class="wiki-input-hint">Categoria biológica, racial ou funcional.</span>
+                        </div>
+
+                        <div class="wiki-tag-subsection">
+                            <label class="wiki-field-label">Região</label>
+                            <div class="wiki-autocomplete-wrap">
+                                <div class="wiki-tag-field" id="wiki-regioes-field">
+                                    <input class="wiki-tag-text-input" id="wiki-regiao-input" type="text" placeholder="Ex: Norte, Deserto de Veth… (Enter ou vírgula)">
+                                </div>
+                                <ul class="wiki-autocomplete-list" id="wiki-regiao-suggestions" style="display:none"></ul>
+                            </div>
+                            <span class="wiki-input-hint">Localização ou área geográfica.</span>
+                        </div>
+
+                        <div class="wiki-tag-subsection">
+                            <label class="wiki-field-label" for="field-alignment">Alinhamento</label>
+                            <select class="wiki-select" id="field-alignment">
+                                <option value="">— Nenhum —</option>
+                                <option value="Maligno">Maligno</option>
+                                <option value="Benigno">Benigno</option>
+                                <option value="Neutro">Neutro</option>
+                            </select>
+                            <span class="wiki-input-hint">Tendência moral geral.</span>
+                        </div>
+
                     </div>
-                    <span class="wiki-input-hint">Exemplo: norte · monstro · histórico</span>
                 </div>
 
-                <!-- Content Sections -->
+                <!-- ── Seções de Conteúdo ── -->
                 <div class="wiki-field">
                     <label class="wiki-field-label">Seções de Conteúdo</label>
+                    <span class="wiki-input-hint" style="display:block;margin-bottom:8px">
+                        Use [[Nome do Documento]] no texto para criar links automáticos para outros documentos da wiki.
+                    </span>
                     <div class="wiki-sections-builder" id="wiki-sections-builder"></div>
                     <button type="button" class="wiki-add-section-btn" id="wiki-add-section">
                         <span class="material-symbols-outlined" style="font-size:16px">add</span>
@@ -91,11 +143,11 @@
                     </button>
                 </div>
 
-                <!-- Image Gallery -->
+                <!-- ── Galeria de Imagens ── -->
                 <div class="wiki-field">
                     <label class="wiki-field-label">Galeria de Imagens</label>
                     <span class="wiki-input-hint" style="display:block;margin-bottom:8px">
-                        Apenas URLs externas. A primeira imagem é usada como capa do documento.
+                        Apenas URLs externas (ex: https://...). A primeira imagem é usada como capa. Clique na imagem para ampliar.
                     </span>
                     <div class="wiki-gallery-builder" id="wiki-gallery-builder"></div>
                     <button type="button" class="wiki-add-gallery-btn" id="wiki-add-image">
@@ -104,27 +156,18 @@
                     </button>
                 </div>
 
-                <!-- Related Documents -->
-                <div class="wiki-field">
-                    <label class="wiki-field-label">Documentos Relacionados</label>
-                    <div id="wiki-related-inputs" style="display:flex;flex-direction:column;gap:6px"></div>
-                    <button type="button" class="wiki-add-section-btn" id="wiki-add-related"
-                            style="margin-top:8px">
-                        <span class="material-symbols-outlined" style="font-size:16px">add</span>
-                        Adicionar Referência
-                    </button>
-                    <span class="wiki-input-hint">Cole o ID de outro documento da wiki.</span>
-                </div>
-
-                <!-- Color Theme -->
+                <!-- ── Cores do Documento ── -->
                 <div class="wiki-field">
                     <label class="wiki-field-label">Cores do Documento</label>
+                    <span class="wiki-input-hint" style="display:block;margin-bottom:8px">
+                        As cores escolhidas são visíveis para todos os leitores do documento. Escolha Fundo, Detalhes e Pergaminho.
+                    </span>
                     <div id="wiki-theme-picker-container"></div>
                     <div class="wiki-theme-preview" id="wiki-theme-preview"></div>
-                    <span class="wiki-input-hint">As cores são vistas por todos os leitores do documento.</span>
+                    <button type="button" class="wiki-theme-reset-btn" id="wiki-theme-reset">Restaurar Padrão</button>
                 </div>
 
-                <!-- Submit -->
+                <!-- ── Submit ── -->
                 <div class="wiki-submit-row">
                     <a href="/wiki" class="wiki-btn wiki-btn-secondary">Cancelar</a>
                     <button type="submit" class="wiki-btn wiki-btn-primary" id="wiki-submit-btn">
@@ -136,12 +179,9 @@
             </form>
         </div>
     </div>
+</div>
 
-</div><!-- /.wiki-shell -->
-
-<!-- Toast notification -->
 <div id="wiki-toast" class="wiki-toast"></div>
-
 <script type="module" src="js/wiki-editor.js"></script>
 </body>
 </html>

@@ -92,7 +92,210 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   COVER IMAGE
+   ALT NAME (italic secondary name below title)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-doc-alt-name {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink3);
+    margin-bottom: 10px;
+    margin-top: -4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BADGE ROW — threat + domain (prominent, below title)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.wiki-badge {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+    display: inline-block;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 1.5;
+}
+/* Colors applied via inline style from JS */
+.wiki-threat-badge, .wiki-domain-badge, .wiki-alignment-badge { }
+
+/* ═══════════════════════════════════════════════════════════════════
+   SUMMARY BOX (shown in document view)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-doc-summary-box {
+    background: color-mix(in srgb, var(--p2) 35%, transparent);
+    border-left: 3px solid var(--gold1);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+}
+.wiki-doc-summary-box p {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink2);
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CAROUSEL
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-carousel {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid var(--p3);
+    background: color-mix(in srgb, var(--leath0) 88%, transparent);
+}
+.wiki-carousel-track {
+    display: flex;
+    transition: transform 0.35s ease;
+}
+.wiki-carousel-slide {
+    flex: 0 0 100%;
+    max-height: 420px;
+    overflow: hidden;
+    cursor: pointer;
+}
+.wiki-carousel-slide img {
+    width: 100%;
+    height: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.2s;
+}
+.wiki-carousel-slide:hover img { transform: scale(1.02); }
+.wiki-carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.48);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 5;
+    font-size: 24px;
+    line-height: 1;
+    transition: background 0.15s;
+}
+.wiki-carousel-btn:hover { background: rgba(0,0,0,0.72); }
+.wiki-carousel-btn-prev { left: 10px; }
+.wiki-carousel-btn-next { right: 10px; }
+.wiki-carousel-dots {
+    position: absolute;
+    bottom: 8px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    z-index: 5;
+}
+.wiki-carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.45);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s;
+}
+.wiki-carousel-dot.active { background: rgba(255,255,255,0.95); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   LIGHTBOX (fullscreen image overlay)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    flex-direction: column;
+    gap: 12px;
+}
+.wiki-lightbox.open { display: flex; }
+.wiki-lightbox-img {
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+    object-fit: contain;
+    border-radius: 2px;
+    box-shadow: 0 8px 60px rgba(0,0,0,0.8);
+}
+.wiki-lightbox-caption {
+    color: rgba(255,255,255,0.65);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    text-align: center;
+    max-width: 600px;
+}
+.wiki-lightbox-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.65);
+    font-size: 36px;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+.wiki-lightbox-close:hover { color: #fff; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   INLINE WIKI-LINKS in content
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-inline-link {
+    color: var(--gold1);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--gold1);
+    transition: color 0.15s, border-color 0.15s;
+}
+.wiki-inline-link:hover {
+    color: var(--gold2);
+    border-bottom-color: var(--gold2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   REFERENCES SECTION
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-references {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid color-mix(in srgb, var(--p3) 60%, transparent);
+}
+.wiki-references-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COVER IMAGE (kept for backward compat)
    ═══════════════════════════════════════════════════════════════════ */
 .wiki-doc-cover {
     width: 100%;
@@ -413,27 +616,51 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   DARK-PAPER THEME OVERRIDES
+   DARK-PAPER THEME OVERRIDES (comprehensive — mirrors ficha/css/theme.css)
    ═══════════════════════════════════════════════════════════════════ */
-body.theme-dark-paper .wiki-section-btn {
+body.theme-dark-paper .wiki-doc-title        { color: var(--ink0); }
+body.theme-dark-paper .wiki-doc-alt-name     { color: var(--ink2); }
+body.theme-dark-paper .wiki-doc-author       { color: var(--ink2); }
+body.theme-dark-paper .wiki-doc-author-sep   { color: var(--p3);   }
+body.theme-dark-paper .wiki-doc-type-badge   {
     color: var(--ink2);
+    border-color: color-mix(in srgb, var(--ink2) 35%, transparent);
 }
-
-body.theme-dark-paper .wiki-doc-title {
-    color: var(--ink0);
+body.theme-dark-paper .wiki-doc-header {
+    border-bottom-color: color-mix(in srgb, var(--p3) 30%, transparent);
 }
-
-body.theme-dark-paper .wiki-card-title {
-    color: var(--ink0);
+body.theme-dark-paper .wiki-doc-summary-box {
+    background: color-mix(in srgb, var(--p2) 10%, transparent);
+    border-left-color: var(--gold2);
 }
-
-body.theme-dark-paper .wiki-card-summary {
-    color: var(--ink1);
+body.theme-dark-paper .wiki-doc-summary-box p { color: var(--ink1); }
+body.theme-dark-paper .wiki-doc-tags {
+    border-bottom-color: color-mix(in srgb, var(--p3) 25%, transparent);
 }
-
-body.theme-dark-paper .wiki-orn {
+body.theme-dark-paper .wiki-section-btn     { color: var(--ink2); }
+body.theme-dark-paper .wiki-section-btn:hover { color: var(--ink1); }
+body.theme-dark-paper .wiki-section-body p  { color: var(--ink1); }
+body.theme-dark-paper .wiki-inline-link     { color: var(--gold2); border-bottom-color: var(--gold2); }
+body.theme-dark-paper .wiki-inline-link:hover { color: var(--gold3); border-bottom-color: var(--gold3); }
+body.theme-dark-paper .wiki-tag {
+    background: color-mix(in srgb, var(--gold0) 18%, transparent);
     color: var(--gold2);
+    border-color: color-mix(in srgb, var(--gold1) 35%, transparent);
 }
+body.theme-dark-paper .wiki-sh              { color: var(--gold2); }
+body.theme-dark-paper .wiki-orn             { color: var(--gold2); }
+body.theme-dark-paper .wiki-gallery-caption { color: rgba(255,255,255,0.65); }
+body.theme-dark-paper .wiki-related-card-title  { color: var(--ink0); }
+body.theme-dark-paper .wiki-related-card-type   { color: var(--ink3); }
+body.theme-dark-paper .wiki-references {
+    border-top-color: color-mix(in srgb, var(--p3) 25%, transparent);
+}
+body.theme-dark-paper .wiki-doc-actions-bar {
+    border-top-color: color-mix(in srgb, var(--p3) 25%, transparent);
+}
+/* Cards visible inside dark-paper doc pages */
+body.theme-dark-paper .wiki-card-title      { color: var(--ink0); }
+body.theme-dark-paper .wiki-card-summary    { color: var(--ink1); }
 
 /* ═══════════════════════════════════════════════════════════════════
    RESPONSIVE — ≤600px

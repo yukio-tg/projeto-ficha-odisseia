@@ -309,7 +309,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   DOCUMENT TOPBAR (doc viewer pages)
+   DOCUMENT TOPBAR (doc viewer + editor pages)
    ═══════════════════════════════════════════════════════════════════ */
 .wiki-topbar {
     display: flex;
@@ -401,14 +401,14 @@
 /* Danger: blood-red outline */
 .wiki-btn-danger {
     background: none;
-    border: 1px solid #c0392b;
-    color: #c0392b;
+    border: 1px solid var(--blood1);
+    color: var(--blood1);
 }
 
 .wiki-btn-danger:hover {
-    background: rgba(192, 57, 43, 0.1);
-    border-color: #e74c3c;
-    color: #e74c3c;
+    background: color-mix(in srgb, var(--blood1) 10%, transparent);
+    border-color: var(--blood2);
+    color: var(--blood2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -443,6 +443,34 @@
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--gold1), transparent);
     opacity: 0.45;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK-PAPER THEME OVERRIDES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Dark paper: content area uses dark sheet-bg automatically via --sheet-bg override */
+body.theme-dark-paper .wiki-content {
+    background-color: var(--sheet-bg);
+}
+
+/* Dark paper: search input text */
+body.theme-dark-paper .wiki-search-input {
+    color: var(--p0);
+}
+
+/* Dark paper: tab buttons */
+body.theme-dark-paper .wiki-tab-btn {
+    color: var(--p4);
+}
+
+body.theme-dark-paper .wiki-tab-btn.active {
+    color: var(--gold2);
+}
+
+/* Dark paper: back link */
+body.theme-dark-paper .wiki-back-link {
+    color: var(--gold2);
 }
 
 /* ═══════════════════════════════════════════════════════════════════

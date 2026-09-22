@@ -1,621 +1,559 @@
 // wiki-editor.js — Create / Edit document editor for the Odisseia Wiki.
-// Shared by criar.html and editar.html.
-// Mode detection: ?id= present → edit mode; absent → create mode.
+// Shared by criar.html and editar.html. Mode: ?id= present = edit, absent = create.
 
-import { initWikiFirebase, getWikiDoc, createWikiDoc, updateWikiDoc } from './wiki-firebase.js';
-import { getAuthState, requireAuth }                                    from './wiki-auth.js';
-import { escapeHtml, getParam, slugifyTag, showToast }                  from './wiki-utils.js';
-import { buildThemePicker, applyDocTheme, WIKI_DEFAULTS }               from './wiki-theme.js';
-import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+import {
+    initWikiFirebase, getWikiDoc, createWikiDoc, updateWikiDoc,
+    titleExists, getTagSuggestions, registerTags,
+} from './wiki-firebase.js';
+import { getAuthState, requireAuth }                     from './wiki-auth.js';
+import { escapeHtml, getParam, slugifyTag, showToast }   from './wiki-utils.js';
+import {
+    buildThemePicker, applyDocTheme, resetDocTheme,
+    clearDocThemeCache, WIKI_DEFAULTS,
+} from './wiki-theme.js';
+import { THREAT_LEVELS, DOMAIN_TYPES, ALIGNMENT_TYPES }  from './wiki-consts.js';
+import { extractAllWikiLinks, resolveWikiLinks }          from './wiki-wikilinks.js';
 
 // ── Module state ──────────────────────────────────────────────────────────────
+let currentDocId  = null;
+let currentTheme  = { ...WIKI_DEFAULTS };
+let tipos         = [];
+let regioes       = [];
+let user          = null;
+let isAdmin       = false;
+const tipoChipMap   = new Map();
+const regiaoChipMap = new Map();
 
-/** null = create mode; non-null string = edit mode */
-let currentDocId = null;
+// Tag suggestions loaded at init
+let tipoSuggestions   = [];
+let regiaoSuggestions = [];
 
-/** Currently selected theme IDs — kept in sync via onThemeChange */
-let currentTheme = { ...WIKI_DEFAULTS };
-
-/**
- * Live list of slugified tag strings.
- * Mutations happen through addTag / removeTag only.
- */
-let tags = [];
-
-// Sections, gallery, and related-doc data are read back from the DOM at submit
-// time rather than tracked reactively — the arrays below satisfy the spec
-// declaration without introducing a parallel state that could desync.
-let sections   = []; // eslint-disable-line no-unused-vars
-let gallery    = []; // eslint-disable-line no-unused-vars
-let relatedIds = []; // eslint-disable-line no-unused-vars
-
-/** Authenticated Firebase user */
-let user = null;
-
-/** Whether the current user has admin privileges */
-let isAdmin = false;
-
-/**
- * Maps tag slug → its chip DOM element.
- * Enables O(1) removal without DOM queries.
- */
-const tagChipMap = new Map();
-
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
+// ── Bootstrap ──────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
     initWikiFirebase();
-
-    // Detect mode from URL
     currentDocId = getParam('id') || null;
 
-    // Gate: redirect to login if the user is not authenticated
     const authedUser = await requireAuth('/index.html');
-    if (!authedUser) return; // redirect already triggered
+    if (!authedUser) return;
 
-    // Resolve and cache auth state (cached after requireAuth)
-    const authState = await getAuthState();
-    user    = authState.user;
-    isAdmin = authState.isAdmin;
+    ({ user, isAdmin } = await getAuthState());
 
-    // Status field: only admins may choose "canonical"
+    // Populate controlled-vocabulary selects
+    populateThreatSelect();
+    populateDomainSelect();
     maybeAddCanonicalOption(isAdmin);
 
-    // In edit mode non-admins cannot change status at all — hide the field.
-    // Firestore rules enforce this server-side as well.
+    // Non-admin in edit mode cannot change status
     if (currentDocId && !isAdmin) {
-        const statusWrap = document.getElementById('field-status-wrap');
-        if (statusWrap) statusWrap.style.display = 'none';
+        const w = document.getElementById('field-status-wrap');
+        if (w) w.style.display = 'none';
     }
 
-    // Build theme picker with defaults; will be rebuilt if edit mode loads
-    // a document that carries its own theme overrides.
+    // Theme picker
     const themeContainer = document.getElementById('wiki-theme-picker-container');
     buildThemePicker(themeContainer, currentTheme, onThemeChange);
     applyDocTheme(currentTheme.fundo, currentTheme.metalico, currentTheme.pergaminho);
 
-    // Edit mode: fetch the document and fill the form
-    if (currentDocId) {
-        await loadDoc(currentDocId);
-    }
+    // Reset button
+    document.getElementById('wiki-theme-reset')?.addEventListener('click', () => {
+        currentTheme = { ...WIKI_DEFAULTS };
+        resetDocTheme();
+        if (currentDocId) clearDocThemeCache(currentDocId);
+        buildThemePicker(themeContainer, currentTheme, onThemeChange);
+    });
 
-    // ── Wire events ───────────────────────────────────────────────────────────
-    document.getElementById('wiki-form')
-        .addEventListener('submit', handleSubmit);
+    // Load tag suggestions in background
+    getTagSuggestions('tipo').then(r => { tipoSuggestions = r; });
+    getTagSuggestions('regiao').then(r => { regiaoSuggestions = r; });
 
-    document.getElementById('wiki-add-section')
-        .addEventListener('click', () => addSection());
+    // Wire tag inputs
+    wireTagInput('wiki-tipo-input',   'wiki-tipo-suggestions',   'wiki-tipos-field',   tipoSuggestions,   tipoChipMap,   tipos,   'tipo');
+    wireTagInput('wiki-regiao-input', 'wiki-regiao-suggestions', 'wiki-regioes-field', regiaoSuggestions, regiaoChipMap, regioes, 'regiao');
 
-    document.getElementById('wiki-add-image')
-        .addEventListener('click', () => addGalleryItem());
+    // Wire section / gallery builder
+    document.getElementById('wiki-add-section')?.addEventListener('click', () => addSection());
+    document.getElementById('wiki-add-image')?.addEventListener('click', () => addGalleryItem());
 
-    document.getElementById('wiki-add-related')
-        .addEventListener('click', () => addRelatedId());
+    // Form submission
+    document.getElementById('wiki-form')?.addEventListener('submit', handleSubmit);
 
-    setupTagInput();
+    // Edit mode: load existing doc
+    if (currentDocId) await loadDoc(currentDocId);
 });
 
-// ── Canonical status option ───────────────────────────────────────────────────
+// ── Controlled-vocabulary selects ─────────────────────────────────────────────
 
-/**
- * Appends the "Canônico ★" option to the status <select> when the user is an
- * admin and the option is not already present.
- */
-function maybeAddCanonicalOption(isAdminFlag) {
-    const sel = document.getElementById('field-status');
-    if (!isAdminFlag || !sel) return;
-    if (!sel.querySelector('option[value="canonical"]')) {
+function populateThreatSelect() {
+    const sel = document.getElementById('field-threat');
+    if (!sel) return;
+    THREAT_LEVELS.forEach(level => {
         const opt = document.createElement('option');
-        opt.value       = 'canonical';
-        opt.textContent = 'Canônico ★';
+        opt.value = level;
+        opt.textContent = level;
         sel.appendChild(opt);
-    }
+    });
 }
 
-// ── Theme ─────────────────────────────────────────────────────────────────────
+function populateDomainSelect() {
+    const sel = document.getElementById('field-domain');
+    if (!sel) return;
+    DOMAIN_TYPES.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        sel.appendChild(opt);
+    });
+}
 
-/**
- * Callback passed to buildThemePicker.
- * Keeps currentTheme in sync and applies the new CSS variables.
- * The .wiki-theme-preview strip auto-refreshes because it uses the same vars.
- */
+function maybeAddCanonicalOption(admin) {
+    if (!admin) return;
+    const sel = document.getElementById('field-status');
+    if (!sel || sel.querySelector('option[value="canonical"]')) return;
+    const opt = document.createElement('option');
+    opt.value = 'canonical';
+    opt.textContent = 'Canônico ★';
+    sel.appendChild(opt);
+}
+
+// ── Theme ──────────────────────────────────────────────────────────────────────
+
 function onThemeChange(newTheme) {
     currentTheme = newTheme;
     applyDocTheme(newTheme.fundo, newTheme.metalico, newTheme.pergaminho);
 }
 
-// ── Load document (edit mode) ─────────────────────────────────────────────────
+// ── Tag chip management ────────────────────────────────────────────────────────
 
-/**
- * Fetches the wiki document, verifies the current user has edit rights,
- * updates the page heading, and delegates field population to populateForm().
- *
- * On failure (not found / unauthorised / network error) a toast is shown
- * and the user is redirected after a brief delay.
- */
-async function loadDoc(id) {
-    try {
-        const wikiDoc = await getWikiDoc(id);
+function addTagChip(name, slugFn, chipMap, arr, fieldId, category) {
+    const slug = slugFn(name);
+    if (!slug || chipMap.has(slug)) return;
 
-        if (!wikiDoc) {
-            showToast('Documento não encontrado.', true);
-            setTimeout(() => { window.location.href = '/wiki'; }, 2500);
-            return;
-        }
+    arr.push(name);
+    chipMap.set(slug, name);
 
-        // Only the document's author or an admin may edit
-        if (!isAdmin && wikiDoc.authorId !== user.uid) {
-            showToast('Você não tem permissão para editar este documento.', true);
-            setTimeout(() => { window.location.href = '/wiki/doc?id=' + id; }, 2500);
-            return;
-        }
+    const field = document.getElementById(fieldId);
+    if (!field) return;
 
-        // Reflect the actual document title in the page heading
-        const editorTitle = document.getElementById('editor-title');
-        if (editorTitle && wikiDoc.title) {
-            editorTitle.textContent = wikiDoc.title;
-        }
-
-        populateForm(wikiDoc);
-
-    } catch (err) {
-        console.error('[wiki-editor] loadDoc error:', err);
-        showToast('Erro ao carregar documento: ' + (err.message || String(err)), true);
-    }
-}
-
-// ── Populate form (edit mode) ─────────────────────────────────────────────────
-
-/**
- * Fills every form field with data from an existing wiki document.
- * Also rebuilds the theme picker when the document defines theme overrides.
- */
-function populateForm(wikiDoc) {
-    // ── Scalar fields ─────────────────────────────────────────────────────────
-    const typeSelect   = document.getElementById('field-type');
-    const statusSelect = document.getElementById('field-status');
-    const titleInput   = document.getElementById('field-title');
-    const summaryInput = document.getElementById('field-summary');
-
-    if (typeSelect   && wikiDoc.type)    typeSelect.value   = wikiDoc.type;
-    if (statusSelect && wikiDoc.status)  statusSelect.value = wikiDoc.status;
-    if (titleInput)                      titleInput.value   = wikiDoc.title   || '';
-    if (summaryInput)                    summaryInput.value = wikiDoc.summary || '';
-
-    // ── Collections ───────────────────────────────────────────────────────────
-    (wikiDoc.tags       || []).forEach(t   => addTag(t));
-    (wikiDoc.content    || []).forEach(s   => addSection(s));
-    (wikiDoc.images     || []).forEach(img => addGalleryItem(img));
-    (wikiDoc.relatedDocs || []).forEach(id => addRelatedId(id));
-
-    // ── Theme — rebuild picker only when the doc has overrides ────────────────
-    if (wikiDoc.theme && Object.keys(wikiDoc.theme).length > 0) {
-        currentTheme = { ...WIKI_DEFAULTS, ...wikiDoc.theme };
-        const themeContainer = document.getElementById('wiki-theme-picker-container');
-        buildThemePicker(themeContainer, currentTheme, onThemeChange);
-        applyDocTheme(currentTheme.fundo, currentTheme.metalico, currentTheme.pergaminho);
-    }
-}
-
-// ── Tag management ────────────────────────────────────────────────────────────
-
-/**
- * Attaches keyboard and paste listeners to the tag text input.
- *
- * • Enter / comma  → commit the current value as a tag
- * • Backspace      → remove the last tag when the input is empty
- * • Paste          → split by comma/whitespace and add each part as a tag
- */
-function setupTagInput() {
-    const input = document.getElementById('wiki-tag-input');
-    const field = document.getElementById('wiki-tag-field');
-    if (!input || !field) return;
-
-    // Click anywhere in the tag container to focus the text input
-    field.addEventListener('click', () => input.focus());
-
-    input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            const raw  = input.value.trim().replace(/,+$/, '');
-            const slug = raw ? slugifyTag(raw) : '';
-            if (slug && !tags.includes(slug)) addTag(slug);
-            input.value = '';
-            return;
-        }
-
-        // Backspace on an empty input removes the last committed tag
-        if (e.key === 'Backspace' && input.value === '' && tags.length > 0) {
-            removeTag(tags[tags.length - 1]);
-        }
-    });
-
-    // Paste support: split pasted text and add each resulting slug
-    input.addEventListener('paste', e => {
-        e.preventDefault();
-        const pasted = (e.clipboardData || window.clipboardData).getData('text');
-        pasted
-            .split(/[,\s]+/)
-            .map(p => slugifyTag(p.trim()))
-            .filter(Boolean)
-            .forEach(slug => { if (!tags.includes(slug)) addTag(slug); });
-    });
-}
-
-/**
- * Adds a tag chip to the tag field.
- * No-op when the tag already exists or produces an empty slug after slugification.
- *
- * @param {string} tag - Raw tag string; will be slugified internally.
- */
-function addTag(tag) {
-    const slug = slugifyTag(tag);
-    if (!slug || tags.includes(slug)) return;
-
-    tags.push(slug);
-
-    // ── Build chip DOM ────────────────────────────────────────────────────────
     const chip = document.createElement('span');
     chip.className = 'wiki-tag-chip';
 
-    const text = document.createElement('span');
-    text.className   = 'wiki-tag-text';
-    text.textContent = slug;
+    const label = document.createElement('span');
+    label.textContent = name;
+    chip.appendChild(label);
 
     const removeBtn = document.createElement('button');
-    removeBtn.type      = 'button';
+    removeBtn.type = 'button';
     removeBtn.className = 'wiki-tag-chip-remove';
-    removeBtn.setAttribute('aria-label', 'Remover tag ' + escapeHtml(slug));
+    removeBtn.setAttribute('aria-label', 'Remover');
     removeBtn.textContent = '×';
-    removeBtn.addEventListener('click', () => removeTag(slug));
-
-    chip.appendChild(text);
-    chip.appendChild(removeBtn);
-
-    // Register in the map for O(1) removal later
-    tagChipMap.set(slug, chip);
-
-    // Insert the chip just before the text input (right-most element)
-    const field = document.getElementById('wiki-tag-field');
-    const input = document.getElementById('wiki-tag-input');
-    if (field && input) field.insertBefore(chip, input);
-}
-
-/**
- * Removes a tag chip from the DOM and from the tags[] array.
- *
- * @param {string} tag - Exact slug string, as stored in tags[].
- */
-function removeTag(tag) {
-    const idx = tags.indexOf(tag);
-    if (idx === -1) return;
-    tags.splice(idx, 1);
-
-    const chip = tagChipMap.get(tag);
-    if (chip) {
+    removeBtn.addEventListener('click', () => {
+        const idx = arr.indexOf(name);
+        if (idx !== -1) arr.splice(idx, 1);
+        chipMap.delete(slug);
         chip.remove();
-        tagChipMap.delete(tag);
-    }
+    });
+
+    chip.appendChild(removeBtn);
+    // Insert before the text input
+    const input = field.querySelector('.wiki-tag-text-input');
+    field.insertBefore(chip, input);
 }
 
-// ── Content sections builder ──────────────────────────────────────────────────
+// ── Tag autocomplete ───────────────────────────────────────────────────────────
 
-/**
- * Creates a content section item and appends it to the sections builder.
- * Section data is read back from the DOM at submit time — nothing is
- * tracked live beyond the DOM.
- *
- * @param {{ heading?: string, body?: string, collapsible?: boolean }} section
- */
-function addSection(section = { heading: '', body: '', collapsible: false }) {
+function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, category) {
+    const input = document.getElementById(inputId);
+    const list  = document.getElementById(listId);
+    if (!input || !list) return;
+
+    const addFn = (name) => addTagChip(
+        name, slugifyTag, chipMap, arr, fieldId, category
+    );
+
+    function showSuggestions(query) {
+        const q = (query || '').toLowerCase();
+        const matches = (
+            category === 'tipo' ? tipoSuggestions : regiaoSuggestions
+        ).filter(s => s.toLowerCase().includes(q) && !chipMap.has(slugifyTag(s)));
+
+        list.innerHTML = '';
+        if (!matches.length || !q) { list.style.display = 'none'; return; }
+
+        matches.slice(0, 8).forEach(s => {
+            const li = document.createElement('li');
+            li.className = 'wiki-autocomplete-item';
+            li.textContent = s;
+            li.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // prevent blur before click
+                addFn(s);
+                input.value = '';
+                list.style.display = 'none';
+            });
+            list.appendChild(li);
+        });
+        list.style.display = 'block';
+    }
+
+    function commitInput() {
+        const val = input.value.trim();
+        if (val) { addFn(val); input.value = ''; }
+        list.style.display = 'none';
+    }
+
+    input.addEventListener('input', () => showSuggestions(input.value));
+    input.addEventListener('blur',  () => setTimeout(() => { list.style.display = 'none'; }, 150));
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitInput(); }
+        if (e.key === 'Backspace' && !input.value && arr.length) {
+            const last = arr[arr.length - 1];
+            const slug = slugifyTag(last);
+            arr.pop();
+            chipMap.delete(slug);
+            const field = document.getElementById(fieldId);
+            const chips = field?.querySelectorAll('.wiki-tag-chip');
+            chips?.[chips.length - 1]?.remove();
+        }
+    });
+    input.addEventListener('paste', (e) => {
+        const pasted = e.clipboardData.getData('text');
+        e.preventDefault();
+        pasted.split(/[,\n\t]/).forEach(t => { const v = t.trim(); if (v) addFn(v); });
+    });
+}
+
+// ── Content sections builder ───────────────────────────────────────────────────
+
+function addSection(section = {}) {
+    const { heading = '', body = '', collapsible = false } = section;
+    const builder = document.getElementById('wiki-sections-builder');
+    if (!builder) return;
+
     const item = document.createElement('div');
     item.className = 'wiki-section-item';
 
-    // ── Header row ────────────────────────────────────────────────────────────
-    const header = document.createElement('div');
-    header.className = 'wiki-section-item-header';
+    // Header row
+    const headerRow = document.createElement('div');
+    headerRow.className = 'wiki-section-item-header';
 
     const headingInput = document.createElement('input');
-    headingInput.type        = 'text';
-    headingInput.className   = 'wiki-section-item-heading-input';
-    headingInput.placeholder = 'Título da seção';
-    headingInput.value       = section.heading || '';
+    headingInput.type = 'text';
+    headingInput.className = 'wiki-section-item-heading-input';
+    headingInput.placeholder = 'Título da seção (ex: Descrição, História...)';
+    headingInput.value = heading;
 
-    // ── Controls cluster ──────────────────────────────────────────────────────
     const controls = document.createElement('div');
     controls.className = 'wiki-section-controls';
 
-    // Custom collapsible checkbox
+    // Collapsible toggle
     const toggleLabel = document.createElement('label');
     toggleLabel.className = 'wiki-collapsible-toggle';
-
-    const checkbox     = document.createElement('input');
-    checkbox.type      = 'checkbox';
-    checkbox.checked   = !!section.collapsible;
-
-    const indicator    = document.createElement('span');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = collapsible;
+    const indicator = document.createElement('span');
     indicator.className = 'wiki-collapsible-indicator';
-
-    const checkIcon    = document.createElement('span');
-    checkIcon.className   = 'material-symbols-outlined';
-    checkIcon.textContent = 'check';
-    indicator.appendChild(checkIcon);
-
-    toggleLabel.appendChild(checkbox);
+    if (collapsible) {
+        const checkIcon = document.createElement('span');
+        checkIcon.className = 'material-symbols-outlined';
+        checkIcon.style.cssText = 'font-size:10px;font-variation-settings:"FILL" 1';
+        checkIcon.textContent = 'check';
+        indicator.appendChild(checkIcon);
+    }
+    cb.addEventListener('change', () => {
+        indicator.innerHTML = cb.checked
+            ? '<span class="material-symbols-outlined" style="font-size:10px;font-variation-settings:\'FILL\' 1">check</span>'
+            : '';
+    });
+    const toggleText = document.createTextNode('\u00a0Recolhível');
+    toggleLabel.appendChild(cb);
     toggleLabel.appendChild(indicator);
-    toggleLabel.appendChild(document.createTextNode('\u00a0Recolhível'));
+    toggleLabel.appendChild(toggleText);
 
-    // Remove-section button
+    // Remove button
     const removeBtn = document.createElement('button');
-    removeBtn.type      = 'button';
+    removeBtn.type = 'button';
     removeBtn.className = 'wiki-section-control-btn';
     removeBtn.setAttribute('aria-label', 'Remover seção');
-    removeBtn.addEventListener('click', () => item.remove());
-
-    const removeIcon    = document.createElement('span');
-    removeIcon.className   = 'material-symbols-outlined';
+    const removeIcon = document.createElement('span');
+    removeIcon.className = 'material-symbols-outlined';
     removeIcon.textContent = 'close';
     removeBtn.appendChild(removeIcon);
+    removeBtn.addEventListener('click', () => item.remove());
 
     controls.appendChild(toggleLabel);
     controls.appendChild(removeBtn);
+    headerRow.appendChild(headingInput);
+    headerRow.appendChild(controls);
+    item.appendChild(headerRow);
 
-    header.appendChild(headingInput);
-    header.appendChild(controls);
+    // Body textarea
+    const bodyArea = document.createElement('textarea');
+    bodyArea.className = 'wiki-textarea';
+    bodyArea.placeholder = 'Conteúdo da seção...\n\nUse [[Nome do Documento]] para criar links automáticos para outros documentos da wiki.';
+    bodyArea.rows = 5;
+    bodyArea.value = body;
+    item.appendChild(bodyArea);
 
-    // ── Body textarea ─────────────────────────────────────────────────────────
-    const bodyTextarea       = document.createElement('textarea');
-    bodyTextarea.className   = 'wiki-textarea';
-    bodyTextarea.placeholder = 'Conteúdo da seção...';
-    bodyTextarea.rows        = 4;
-    bodyTextarea.value       = section.body || '';
-
-    item.appendChild(header);
-    item.appendChild(bodyTextarea);
-
-    document.getElementById('wiki-sections-builder').appendChild(item);
+    builder.appendChild(item);
 }
 
-// ── Image gallery builder ─────────────────────────────────────────────────────
+// ── Gallery builder ────────────────────────────────────────────────────────────
 
-/**
- * Creates an image gallery row and appends it to the gallery builder.
- * The preview thumbnail updates in real time as the URL input value changes.
- *
- * @param {{ url?: string, caption?: string }} img
- */
-function addGalleryItem(img = { url: '', caption: '' }) {
-    const row       = document.createElement('div');
-    row.className   = 'wiki-gallery-item-row';
+function addGalleryItem(imgData = {}) {
+    const { url = '', caption = '' } = imgData;
+    const builder = document.getElementById('wiki-gallery-builder');
+    if (!builder) return;
 
-    // ── Preview / placeholder ─────────────────────────────────────────────────
-    const preview   = document.createElement('img');
+    const row = document.createElement('div');
+    row.className = 'wiki-gallery-item-row';
+
+    // Image preview
+    const preview = document.createElement('img');
     preview.className = 'wiki-gallery-img-preview';
-    preview.alt       = 'Pré-visualização';
+    preview.alt = '';
+    preview.style.cssText = url ? '' : 'display:none';
+    if (url) preview.src = url;
 
     const placeholder = document.createElement('div');
     placeholder.className = 'wiki-gallery-img-placeholder';
+    const phIcon = document.createElement('span');
+    phIcon.className = 'material-symbols-outlined';
+    phIcon.textContent = 'image';
+    placeholder.appendChild(phIcon);
+    placeholder.style.cssText = url ? 'display:none' : '';
 
-    const placeholderIcon       = document.createElement('span');
-    placeholderIcon.className   = 'material-symbols-outlined';
-    placeholderIcon.textContent = 'image';
-    placeholder.appendChild(placeholderIcon);
+    // Inputs
+    const inputs = document.createElement('div');
+    inputs.className = 'wiki-gallery-item-inputs';
 
-    // Mount the correct visual for the initial state
-    if (img.url) {
-        preview.src = img.url;
-        row.appendChild(preview);
-    } else {
-        row.appendChild(placeholder);
-    }
-
-    // ── Input group ───────────────────────────────────────────────────────────
-    const inputs       = document.createElement('div');
-    inputs.className   = 'wiki-gallery-item-inputs';
-
-    const urlInput           = document.createElement('input');
-    urlInput.type            = 'text';
-    urlInput.className       = 'wiki-input wiki-gallery-item-url';
-    urlInput.placeholder     = 'URL da imagem (https://...)';
-    urlInput.value           = img.url || '';
-
-    const captionInput       = document.createElement('input');
-    captionInput.type        = 'text';
-    captionInput.className   = 'wiki-input';
-    captionInput.placeholder = 'Legenda (opcional)';
-    captionInput.value       = img.caption || '';
-
-    const removeBtn       = document.createElement('button');
-    removeBtn.type        = 'button';
-    removeBtn.className   = 'wiki-gallery-remove-btn';
-    removeBtn.setAttribute('aria-label', 'Remover imagem da galeria');
-    removeBtn.addEventListener('click', () => row.remove());
-
-    const removeIcon       = document.createElement('span');
-    removeIcon.className   = 'material-symbols-outlined';
-    removeIcon.textContent = 'close';
-    removeBtn.appendChild(removeIcon);
-
-    inputs.appendChild(urlInput);
-    inputs.appendChild(captionInput);
-    inputs.appendChild(removeBtn);
-    row.appendChild(inputs);
-
-    // ── Live preview update ───────────────────────────────────────────────────
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.className = 'wiki-input';
+    urlInput.placeholder = 'URL da imagem (https://...)';
+    urlInput.value = url;
     urlInput.addEventListener('input', () => {
-        const url = urlInput.value.trim();
-        if (url) {
-            preview.src = url;
+        const v = urlInput.value.trim();
+        if (v) {
+            preview.src = v;
             if (row.contains(placeholder)) row.replaceChild(preview, placeholder);
         } else {
             if (row.contains(preview)) row.replaceChild(placeholder, preview);
         }
     });
 
-    document.getElementById('wiki-gallery-builder').appendChild(row);
-}
+    const captionInput = document.createElement('input');
+    captionInput.type = 'text';
+    captionInput.className = 'wiki-input';
+    captionInput.placeholder = 'Legenda (opcional)';
+    captionInput.value = caption;
 
-// ── Related documents ─────────────────────────────────────────────────────────
-
-/**
- * Adds a related document ID input row to the related-docs container.
- *
- * @param {string} id - Optional pre-filled document ID.
- */
-function addRelatedId(id = '') {
-    const container = document.getElementById('wiki-related-inputs');
-    if (!container) return;
-
-    const row           = document.createElement('div');
-    row.style.cssText   = 'display:flex;gap:8px;align-items:center;';
-
-    const input         = document.createElement('input');
-    input.type          = 'text';
-    input.className     = 'wiki-input';
-    input.placeholder   = 'ID do documento relacionado';
-    input.value         = String(id || '');
-    input.style.flex    = '1';
-
-    const removeBtn     = document.createElement('button');
-    removeBtn.type      = 'button';
-    removeBtn.className = 'wiki-section-control-btn';
-    removeBtn.setAttribute('aria-label', 'Remover referência');
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'wiki-gallery-remove-btn wiki-section-control-btn';
+    removeBtn.setAttribute('aria-label', 'Remover imagem');
+    const rIcon = document.createElement('span');
+    rIcon.className = 'material-symbols-outlined';
+    rIcon.textContent = 'delete';
+    removeBtn.appendChild(rIcon);
     removeBtn.addEventListener('click', () => row.remove());
 
-    const removeIcon       = document.createElement('span');
-    removeIcon.className   = 'material-symbols-outlined';
-    removeIcon.textContent = 'close';
-    removeBtn.appendChild(removeIcon);
+    inputs.appendChild(urlInput);
+    inputs.appendChild(captionInput);
+    inputs.appendChild(removeBtn);
 
-    row.appendChild(input);
-    row.appendChild(removeBtn);
-    container.appendChild(row);
+    if (url) { row.appendChild(preview); } else { row.appendChild(placeholder); }
+    row.appendChild(inputs);
+    builder.appendChild(row);
 }
 
-// ── Form submission ───────────────────────────────────────────────────────────
+// ── Load and populate form ─────────────────────────────────────────────────────
 
-/**
- * Validates the form, collects all field values, and persists the document.
- *
- * Create mode → createWikiDoc()  → redirect to /wiki/doc?id=<newId>
- * Edit mode   → updateWikiDoc()  → redirect to /wiki/doc?id=<currentDocId>
- *
- * On error the submit button is re-enabled and a toast shows the message.
- *
- * @param {SubmitEvent} e
- */
+async function loadDoc(id) {
+    const d = await getWikiDoc(id);
+    if (!d) {
+        showToast('Documento não encontrado.', true);
+        window.location.href = '/wiki';
+        return;
+    }
+    const canEditDoc = isAdmin || (user && user.uid === d.authorId);
+    if (!canEditDoc) {
+        showToast('Sem permissão para editar.', true);
+        window.location.href = `/wiki/doc?id=${id}`;
+        return;
+    }
+    await populateForm(d);
+}
+
+async function populateForm(doc) {
+    setSelect('field-type', doc.type);
+    if (isAdmin || !currentDocId) {
+        if (doc.status === 'canonical') maybeAddCanonicalOption(true);
+        setSelect('field-status', doc.status);
+    }
+    setVal('field-title',    doc.title    || '');
+    setVal('field-alt-name', doc.altName  || '');
+    setVal('field-summary',  doc.summary  || '');
+    setSelect('field-threat',    doc.threat    || '');
+    setSelect('field-domain',    doc.domain    || '');
+    setSelect('field-alignment', doc.alignment || '');
+
+    // Tags
+    (doc.types   || []).forEach(t => addTagChip(t, slugifyTag, tipoChipMap,   tipos,   'wiki-tipos-field',   'tipo'));
+    (doc.regions || []).forEach(t => addTagChip(t, slugifyTag, regiaoChipMap, regioes, 'wiki-regioes-field', 'regiao'));
+
+    // Sections
+    (doc.content || []).forEach(s => addSection(s));
+
+    // Gallery
+    (doc.images || []).forEach(img => addGalleryItem(img));
+
+    // Theme
+    if (doc.theme && (doc.theme.fundo || doc.theme.metalico || doc.theme.pergaminho)) {
+        currentTheme = { ...WIKI_DEFAULTS, ...doc.theme };
+        const container = document.getElementById('wiki-theme-picker-container');
+        buildThemePicker(container, currentTheme, onThemeChange);
+        applyDocTheme(currentTheme.fundo, currentTheme.metalico, currentTheme.pergaminho);
+    }
+
+    // Update page title
+    const editorTitle = document.getElementById('editor-title');
+    if (editorTitle) editorTitle.textContent = doc.title || 'Editar Documento';
+}
+
+function setVal(id, val)       { const el = document.getElementById(id); if (el) el.value = val; }
+function setSelect(id, val)    {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const opt = [...el.options].find(o => o.value === val);
+    if (opt) el.value = val;
+}
+
+// ── Form submission ────────────────────────────────────────────────────────────
+
 async function handleSubmit(e) {
     e.preventDefault();
 
-    // ── Client-side validation ────────────────────────────────────────────────
-    let isValid = true;
-
+    // Validation
     const titleWrap  = document.getElementById('field-title-wrap');
     const titleInput = document.getElementById('field-title');
-    const titleVal   = titleInput ? titleInput.value.trim() : '';
+    const titleVal   = titleInput?.value.trim() ?? '';
+
+    const summaryWrap  = document.getElementById('field-summary-wrap');
+    const summaryInput = document.getElementById('field-summary');
+    const summaryVal   = summaryInput?.value.trim() ?? '';
+
+    let valid = true;
 
     if (!titleVal) {
         titleWrap?.classList.add('error');
-        isValid = false;
+        valid = false;
     } else {
         titleWrap?.classList.remove('error');
     }
 
-    const summaryWrap  = document.getElementById('field-summary-wrap');
-    const summaryInput = document.getElementById('field-summary');
-    const summaryVal   = summaryInput ? summaryInput.value.trim() : '';
-
     if (!summaryVal) {
         summaryWrap?.classList.add('error');
-        isValid = false;
+        valid = false;
     } else {
         summaryWrap?.classList.remove('error');
     }
 
-    if (!isValid) return;
+    if (!valid) return;
 
-    // ── Disable button while saving ───────────────────────────────────────────
+    // Unique title check
     const submitBtn    = document.getElementById('wiki-submit-btn');
-    const originalHTML = submitBtn.innerHTML; // static markup — safe to restore
+    const originalHTML = submitBtn.innerHTML;
     submitBtn.disabled    = true;
+    submitBtn.textContent = 'Verificando...';
+
+    try {
+        const exists = await titleExists(titleVal, currentDocId);
+        if (exists) {
+            titleWrap?.classList.add('error');
+            const errSpan = titleWrap?.querySelector('.wiki-field-error');
+            if (errSpan) errSpan.textContent = 'Já existe um documento com este nome.';
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHTML;
+            return;
+        }
+    } catch (e) {
+        console.warn('[wiki-editor] titleExists check failed:', e);
+    }
+
     submitBtn.textContent = 'Salvando...';
 
-    // ── Collect content sections ──────────────────────────────────────────────
+    // Collect sections
     const content = [];
-    document.querySelectorAll('#wiki-sections-builder .wiki-section-item')
-        .forEach(item => {
-            const headingEl   = item.querySelector('.wiki-section-item-heading-input');
-            const bodyEl      = item.querySelector('.wiki-textarea');
-            const collapseCb  = item.querySelector('input[type="checkbox"]');
+    document.querySelectorAll('#wiki-sections-builder .wiki-section-item').forEach(item => {
+        const headingEl = item.querySelector('.wiki-section-item-heading-input');
+        const bodyEl    = item.querySelector('.wiki-textarea');
+        const cbEl      = item.querySelector('input[type="checkbox"]');
+        const heading   = headingEl?.value.trim() ?? '';
+        const body      = bodyEl?.value.trim() ?? '';
+        const coll      = cbEl?.checked ?? false;
+        if (heading || body) content.push({ heading, body, collapsible: coll });
+    });
 
-            const heading     = headingEl  ? headingEl.value.trim()  : '';
-            const body        = bodyEl     ? bodyEl.value.trim()     : '';
-            const collapsible = collapseCb ? collapseCb.checked      : false;
-
-            // Skip sections where both fields are empty
-            if (heading || body) content.push({ heading, body, collapsible });
-        });
-
-    // ── Collect gallery images ────────────────────────────────────────────────
+    // Collect gallery images
     const images = [];
-    document.querySelectorAll('#wiki-gallery-builder .wiki-gallery-item-row')
-        .forEach(row => {
-            const allInputs = row.querySelectorAll('.wiki-input');
-            const url     = allInputs[0] ? allInputs[0].value.trim() : '';
-            const caption = allInputs[1] ? allInputs[1].value.trim() : '';
+    document.querySelectorAll('#wiki-gallery-builder .wiki-gallery-item-row').forEach(row => {
+        const ins = row.querySelectorAll('.wiki-input');
+        const url = ins[0]?.value.trim() ?? '';
+        const cap = ins[1]?.value.trim() ?? '';
+        if (url) images.push({ url, caption: cap });
+    });
 
-            // Skip rows without a URL
-            if (url) images.push({ url, caption });
-        });
+    // Auto-populate relatedDocs from wiki-links
+    let relatedDocs = [];
+    try {
+        const allNames = extractAllWikiLinks(content);
+        const linksMap = await resolveWikiLinks(allNames);
+        relatedDocs = [...new Set([...linksMap.values()].map(d => d.id))];
+    } catch (e) {
+        console.warn('[wiki-editor] wiki-links resolution failed:', e);
+    }
 
-    // ── Collect related document IDs ──────────────────────────────────────────
-    const relatedDocs = [];
-    document.querySelectorAll('#wiki-related-inputs .wiki-input')
-        .forEach(input => {
-            const val = input.value.trim();
-            if (val) relatedDocs.push(val);
-        });
-
-    // ── Build payload ─────────────────────────────────────────────────────────
     const data = {
-        title:       titleVal,
-        type:        document.getElementById('field-type')?.value    || 'creature',
-        summary:     summaryVal,
-        tags:        [...tags],
+        title:    titleVal,
+        altName:  document.getElementById('field-alt-name')?.value.trim() ?? '',
+        type:     document.getElementById('field-type')?.value    || 'creature',
+        summary:  summaryVal,
+        threat:   document.getElementById('field-threat')?.value    || '',
+        domain:   document.getElementById('field-domain')?.value    || '',
+        alignment: document.getElementById('field-alignment')?.value || '',
+        types:    [...tipos],
+        regions:  [...regioes],
         content,
         images,
         relatedDocs,
-        theme:       { ...currentTheme },
+        theme:    { ...currentTheme },
     };
 
-    // Status is included for:
-    //   • create mode (any user — non-admins can only pick "community")
-    //   • edit mode with admin privileges
-    //
-    // Non-admin users in edit mode do NOT send status; omitting the field from
-    // updateWikiDoc leaves the existing Firestore value intact.
-    // Firestore security rules provide a server-side guard as well.
+    // Status: only in create mode or for admins
     if (!currentDocId || isAdmin) {
         data.status = document.getElementById('field-status')?.value || 'community';
     }
 
-    // ── Persist ───────────────────────────────────────────────────────────────
     try {
+        // Register free tags for future autocomplete
+        await Promise.all([
+            registerTags(tipos,   'tipo'),
+            registerTags(regioes, 'regiao'),
+        ]);
+
         if (currentDocId) {
-            // Edit mode — authorId intentionally excluded to protect the author field
             await updateWikiDoc(currentDocId, data);
-            window.location.href = '/wiki/doc?id=' + currentDocId;
+            window.location.href = `/wiki/doc?id=${currentDocId}`;
         } else {
-            // Create mode — attach author identity to the new document
             data.authorId    = user.uid;
             data.authorEmail = user.email;
             const newId = await createWikiDoc(data);
-            window.location.href = '/wiki/doc?id=' + newId;
+            window.location.href = `/wiki/doc?id=${newId}`;
         }
     } catch (saveErr) {
         console.error('[wiki-editor] handleSubmit error:', saveErr);
-        // Restore the submit button to its original state
-        submitBtn.disabled = false;
+        submitBtn.disabled  = false;
         submitBtn.innerHTML = originalHTML;
         showToast('Erro ao salvar: ' + (saveErr.message || String(saveErr)), true);
     }

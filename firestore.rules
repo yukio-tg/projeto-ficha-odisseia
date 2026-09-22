@@ -17,6 +17,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // ── wiki_tags collection ──────────────────────────────────────────────
+    // Tags públicas para autocomplete de tipos e regiões.
+    // Qualquer autenticado pode ler. Qualquer autenticado pode criar/atualizar
+    // (count increment via merge). Admin pode deletar.
+    match /wiki_tags/{tagId} {
+      allow read:   if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null
+                    && request.resource.data.diff(resource.data)
+                                           .affectedKeys().hasOnly(['count']);
+      allow delete: if isAdmin();
+    }
+
     // ── wiki_docs collection ──────────────────────────────────────────────
     // Leitura: qualquer pessoa (inclusive não autenticados).
     // Criação: qualquer autenticado; documentos canônicos exigem ser admin.
