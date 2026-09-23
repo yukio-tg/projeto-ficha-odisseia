@@ -3,6 +3,9 @@
 
 <head>
     <meta charset="UTF-8">
+    <!-- base MUST be first: Firebase rewrite serves this file at URL /ficha (no slash),
+         so without base, relative paths resolve to / instead of /ficha/. -->
+    <base href="/ficha/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Odisseia — Ficha de Personagem</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
