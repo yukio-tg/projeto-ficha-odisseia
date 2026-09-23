@@ -46,15 +46,17 @@
     color: var(--blood2);
 }
 
-/* Shared input / textarea / select base */
+/* Shared input / textarea / select base
+   Matches the ficha's fieldset pattern: solid parchment background,
+   ink-coloured text, gold border on focus. */
 .wiki-input,
 .wiki-textarea,
 .wiki-select {
     display: block;
     width: 100%;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--p0);
     border: 1px solid var(--p2);
-    border-radius: 4px;
+    border-radius: 5px;
     color: var(--ink0);
     font-family: 'IM Fell English', Georgia, serif;
     font-size: 15px;
@@ -67,10 +69,10 @@
 .wiki-textarea:focus,
 .wiki-select:focus {
     border-color: var(--gold1);
-    background: rgba(255, 245, 225, 0.5);
+    background: var(--p1);
 }
 
-/* Textarea specifics */
+/* Textarea */
 .wiki-textarea {
     resize: vertical;
     min-height: 100px;
@@ -81,11 +83,26 @@
     min-height: 72px;
 }
 
-/* Select specifics */
+/* Select — solid parchment so the dropdown panel also gets light bg */
 .wiki-select {
     cursor: pointer;
     font-family: 'Cinzel', serif;
     font-size: 13px;
+    /* Use the ficha trick for custom-styled selects */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c4892a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+/* Option styling — parchment background + ink text */
+.wiki-select option {
+    background-color: var(--p0);
+    color: var(--ink0);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 14px;
+    padding: 4px 8px;
 }
 
 /* Hint text beneath a field */
@@ -128,7 +145,7 @@
    TAG INPUT
    ═══════════════════════════════════════════════════════════════════ */
 .wiki-tag-field {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--p0);
     border: 1px solid var(--p2);
     border-radius: 4px;
     padding: 6px 10px;
@@ -143,7 +160,7 @@
 
 .wiki-tag-field:focus-within {
     border-color: var(--gold1);
-    background: rgba(255, 245, 225, 0.5);
+    background: var(--p1);
 }
 
 /* Tag chip inside the input */
@@ -574,15 +591,19 @@ body.theme-dark-paper .wiki-input-hint   { color: var(--ink3); opacity: 0.8; }
 body.theme-dark-paper .wiki-input,
 body.theme-dark-paper .wiki-textarea,
 body.theme-dark-paper .wiki-select {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--ink0);
+    background: var(--p0);          /* dark in dark-paper mode */
+    color: var(--ink0);             /* light in dark-paper mode */
     border-color: color-mix(in srgb, var(--p3) 40%, transparent);
 }
 body.theme-dark-paper .wiki-input:focus,
 body.theme-dark-paper .wiki-textarea:focus,
 body.theme-dark-paper .wiki-select:focus {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--p1);
     border-color: var(--gold1);
+}
+body.theme-dark-paper .wiki-select option {
+    background-color: var(--p0);
+    color: var(--ink0);
 }
 body.theme-dark-paper .wiki-tag-field {
     background: rgba(255, 255, 255, 0.06);

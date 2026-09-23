@@ -494,6 +494,39 @@ async function renderDoc(doc, user, isAdmin) {
     }
 }
 
+// ── Identity header (mirrors ficha's sheet-header) ────────────────────────────
+
+const CREST_ICONS = {
+    creature: 'pets',
+    place:    'map',
+    person:   'person',
+    concept:  'auto_awesome',
+};
+
+function renderIdentityHeader(doc) {
+    const header = document.getElementById('wiki-doc-identity');
+    const crest  = document.getElementById('wiki-doc-identity-crest');
+    const title  = document.getElementById('wiki-doc-identity-title');
+    const sub    = document.getElementById('wiki-doc-identity-sub');
+    if (!header) return;
+
+    // Crest icon based on doc type
+    const iconName = CREST_ICONS[doc.type] || 'auto_stories';
+    crest.innerHTML = `<span class="material-symbols-outlined">${iconName}</span>`;
+
+    // Title
+    title.textContent = doc.title ?? '';
+
+    // Subtitle: type label + optional alt-name + canonical marker
+    const typeLabel = TYPE_LABELS[doc.type] ?? doc.type ?? '';
+    const parts = [typeLabel];
+    if (doc.altName?.trim()) parts.push(doc.altName);
+    if (doc.status === 'canonical') parts.push('✦ Canônico');
+    sub.textContent = parts.join('  ·  ');
+
+    header.style.display = '';
+}
+
 // ── Entry point ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -521,6 +554,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyAndCacheDocTheme(id, wikiDoc.theme ?? null);
 
     document.title = wikiDoc.title + ' — Wiki Odisseia';
+
+    // Populate the identity header (dark leather bar, like ficha's sheet-header)
+    renderIdentityHeader(wikiDoc);
 
     renderTopbarActions(user, isAdmin, wikiDoc);
     await renderDoc(wikiDoc, user, isAdmin);

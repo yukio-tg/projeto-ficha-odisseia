@@ -10,6 +10,7 @@ import {
     ALIGNMENT_COLORS, ALIGNMENT_COLORS_DARK,
     getThreatStyle, getDomainStyle, getAlignmentStyle,
 } from './wiki-consts.js';
+import { computeThemeVars, WIKI_DEFAULTS } from './wiki-theme.js';
 import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 // ─── Page state ────────────────────────────────────────────────────────────────
@@ -102,6 +103,20 @@ function buildCard(doc) {
     const card = document.createElement('a');
     card.className = 'wiki-card' + (doc.status === 'canonical' ? ' canonical' : '');
     card.href = `/wiki/doc?id=${doc.id}`;
+
+    // Apply the document's colour theme to the card via CSS custom properties.
+    // This means the card's parchment, ink, and gold colours match the doc's theme.
+    if (doc.theme) {
+        const vars = computeThemeVars(
+            doc.theme.fundo      ?? WIKI_DEFAULTS.fundo,
+            doc.theme.metalico   ?? WIKI_DEFAULTS.metalico,
+            doc.theme.pergaminho ?? WIKI_DEFAULTS.pergaminho
+        );
+        Object.entries(vars).forEach(([prop, val]) => {
+            if (prop !== 'darkPaper') card.style.setProperty(prop, val);
+        });
+        if (vars.darkPaper) card.classList.add('wiki-card-dark-paper');
+    }
 
     // ── Image wrap ────────────────────────────────────────────────────────────
     const imgWrap = document.createElement('div');

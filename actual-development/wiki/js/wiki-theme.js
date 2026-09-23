@@ -117,6 +117,27 @@ function genInk(h, s, isDark) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /**
+ * Computes the CSS variable map for a theme WITHOUT applying it to the DOM.
+ * Used to colour individual cards with their document's theme.
+ *
+ * @returns {{ [cssVar: string]: string, darkPaper: boolean }}
+ */
+export function computeThemeVars(fundoId, metalicoId, pergaminhoId) {
+    const f = findColor(fundoId)      ?? findColor(WIKI_DEFAULTS.fundo);
+    const m = findColor(metalicoId)   ?? findColor(WIKI_DEFAULTS.metalico);
+    const p = findColor(pergaminhoId) ?? findColor(WIKI_DEFAULTS.pergaminho);
+    return {
+        ...genFundo(f.h, f.s, f.bias),
+        ...genMetalico(m.h, m.s, m.bias),
+        ...(p.darkPaper
+            ? genPergaminhoEscuro(p.h, p.s, p.bias)
+            : genPergaminhoClaro(p.h, p.s, p.bias)),
+        ...genInk(p.h, p.s, p.darkPaper),
+        darkPaper: p.darkPaper,
+    };
+}
+
+/**
  * Applies all theme CSS variables to document.documentElement and toggles
  * the `theme-dark-paper` class on document.body.
  *

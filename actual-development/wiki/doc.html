@@ -18,18 +18,36 @@
 </head>
 <body>
     <div class="wiki-shell">
+
+        <!-- Thin nav bar: back + actions -->
         <div class="wiki-topbar">
             <a href="/wiki" class="wiki-back-link">
-                <span class="material-symbols-outlined" style="font-size:16px">arrow_back</span>
+                <span class="material-symbols-outlined" style="font-size:15px">arrow_back</span>
                 Wiki
             </a>
             <div id="wiki-topbar-actions" class="wiki-topbar-actions"></div>
         </div>
+
+        <!-- Rich identity header (dark leather, gold trim — mirrors ficha's sheet-header) -->
+        <header class="wiki-doc-identity" id="wiki-doc-identity" style="display:none">
+            <div class="wiki-doc-identity-body">
+                <div class="wiki-doc-identity-crest" id="wiki-doc-identity-crest">
+                    <span class="material-symbols-outlined">auto_stories</span>
+                </div>
+                <div class="wiki-doc-identity-text">
+                    <div class="wiki-doc-identity-title" id="wiki-doc-identity-title">—</div>
+                    <div class="wiki-doc-identity-sub"  id="wiki-doc-identity-sub"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Parchment content area -->
         <div class="wiki-content">
             <div class="wiki-doc-wrap" id="wiki-doc-wrap">
                 <div class="wiki-loading">Carregando...</div>
             </div>
         </div>
+
     </div>
     <div id="wiki-toast" class="wiki-toast"></div>
     <script type="module" src="js/wiki-doc.js"></script>
