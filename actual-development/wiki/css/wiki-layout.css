@@ -116,7 +116,10 @@
     flex-shrink: 0;
     border-radius: 2px;
     opacity: 0.9;
-    filter: sepia(20%) brightness(1.1);
+    /* Tinge o SVG branco para dourado (--gold2 ≈ #c8a44a):
+       brightness(0) → preto; invert(1) → branco; sepia+saturate+hue-rotate → dourado */
+    filter: brightness(0) invert(1) sepia(1) saturate(2.5) hue-rotate(5deg) brightness(0.88);
+    transition: filter 0.18s, opacity 0.18s;
 }
 
 /* ── Header actions ───────────────────────────────────────────── */
@@ -267,7 +270,8 @@
     position: relative;
 }
 .wiki-brand-home:hover .wiki-brand-logo {
-    filter: sepia(20%) brightness(1.25) drop-shadow(0 0 6px rgba(200,160,30,0.5));
+    filter: brightness(0) invert(1) sepia(1) saturate(2.5) hue-rotate(5deg) brightness(1.05)
+            drop-shadow(0 0 6px rgba(200, 160, 30, 0.55));
     opacity: 1;
 }
 
