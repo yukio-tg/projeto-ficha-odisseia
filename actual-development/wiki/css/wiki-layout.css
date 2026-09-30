@@ -497,7 +497,6 @@
    ═══════════════════════════════════════════════════════════════════ */
 .wiki-content {
     background: var(--sheet-bg);
-    background-image: url('/image/page.png');
     padding: 24px 28px;
     position: relative;
     flex: 1;
