@@ -30,6 +30,7 @@ import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { initSharePopup } from './ui/share.js';
 import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
 import { addManualOverride } from './core/state.js';
+import { initConfiguracoes, updateEvoTable } from './ui/configuracoes.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
 let suppressSave = false;
@@ -338,6 +339,7 @@ async function initAllModules() {
     await Promise.all([initPowers(), initMagias(), initInventory(), initBesta()]);
     initAnotacoes();
     initClassCrest();
+    initConfiguracoes();
 }
 
 function wireCalculations() {
@@ -511,6 +513,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Aplica a imagem do retrato (o campo foi preenchido mas nenhum evento input foi disparado)
         applyPortraitUrl(sheetDoc.data?.fields?.['retrato-url'] || '');
         refreshCrest(); // atualiza crest com a classe carregada (deserialize não dispara eventos)
+        // Notifica módulos que precisam reagir ao carregamento da ficha
+        setTimeout(() => document.dispatchEvent(new Event('ficha:loaded')), 60);
     } catch (e) {
         console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);

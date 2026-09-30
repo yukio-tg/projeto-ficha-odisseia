@@ -433,6 +433,14 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
     });
 
     const descTextarea = card.querySelector('.item-desc-textarea');
+    if (descTextarea) {
+        const autoResizeItem = () => {
+            descTextarea.style.height = 'auto';
+            descTextarea.style.height = descTextarea.scrollHeight + 'px';
+        };
+        descTextarea.addEventListener('input', autoResizeItem);
+        requestAnimationFrame(autoResizeItem);
+    }
     descTextarea.addEventListener('input', salvarInventarioLocal);
     const nomeInput = card.querySelector('.item-nome-input');
     let reorderTimeout = null;

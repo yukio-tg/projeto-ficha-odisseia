@@ -2,6 +2,7 @@
 @import url('../../ficha/css/tokens.css');
 @import url('../../ficha/css/base.css');
 @import url('./wiki-layout.css');
+@import url('./wiki-sidebar.css');
 @import url('./wiki-cards.css');
 @import url('./wiki-doc.css');
 @import url('./wiki-editor.css');

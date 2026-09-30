@@ -3,13 +3,14 @@ import { autoCalcEnabled, manualOverrides } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
 let afterSkillsUpdate = null;
 
-const D20_TEXT = 'd20+';
+const D20_TEXT = 'd20';
 
-/** Returns HTML string: "d20+" prefix + value */
+/** Returns HTML string: "d20" prefix + modifier (e.g. "d20+5", "d20-3") */
 export function buildD20Html(val) {
     if (!val || val === '—') return val || '—';
-    // Don't show d20++0 (redundant)
+    // Bare zero: show just d20
     if (val === '0' || val === '+0') return D20_TEXT;
+    // val may already start with + or - (e.g. "+5"), or be a bare number ("5")
     const sep = (val.startsWith('+') || val.startsWith('-')) ? '' : '+';
     return D20_TEXT + sep + val;
 }

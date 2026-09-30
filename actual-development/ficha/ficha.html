@@ -44,6 +44,7 @@
                 <li data-tab="inventario">Inventário</li>
                 <li data-tab="besta">Besta</li>
                 <li data-tab="anotacoes">Anotações</li>
+                <li data-tab="configuracoes">Configurações</li>
             </ul>
             <div class="sidebar-bottom">
                 <a href="https://docs.google.com/document/d/1wdy6T7tU72ndB3-lACYrQiwr6JziWEdkuA40eTVmm-w/edit?usp=sharing"
@@ -67,6 +68,7 @@
                 <li data-tab="inventario">Inventário</li>
                 <li data-tab="besta">Besta</li>
                 <li data-tab="anotacoes">Anotações</li>
+                <li data-tab="configuracoes">⚙</li>
             </ul>
         </nav>
 
@@ -277,7 +279,7 @@
                                 </ol>
                             </fieldset>
 
-                            <!-- Fortune + Monstro -->
+                            <!-- Fortune -->
                             <div class="fortune-block">
                                 <fieldset class="fortune-fieldset">
                                     <legend>Fortuna</legend>
@@ -296,10 +298,6 @@
                                                 data-field="dinheiro"></label>
                                     </div>
                                 </fieldset>
-                                <label class="monstro-check-label">
-                                    <input type="checkbox" data-field="monstro" id="monstro-check">
-                                    <span class="monstro-check-badge">Monstro?</span>
-                                </label>
                             </div>
 
                         </div>
@@ -918,6 +916,211 @@
                 <div class="page" id="tab-anotacoes">
                     <!-- Rendered by js/ui/anotacoes.js -->
                 </div>
+
+                <!-- CONFIGURAÇÕES -->
+                <div class="page" id="tab-configuracoes">
+                    <div class="cfg-wrap">
+
+                        <!-- ── Modo Monstro ── -->
+                        <div class="cfg-section">
+                            <div class="sh">Modo de Jogo</div>
+                            <div class="cfg-card">
+                                <div class="cfg-row">
+                                    <label class="monstro-check-label">
+                                        <input type="checkbox" data-field="monstro" id="monstro-check">
+                                        <span class="monstro-check-badge">Monstro?</span>
+                                    </label>
+                                    <span class="cfg-hint">Ativa o Modo Monstro: PM substitui PV, acumulando vida e mana.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ── Evolução do Personagem ── -->
+                        <div class="cfg-section">
+                            <div class="sh">Evolução do Personagem</div>
+                            <div class="cfg-card cfg-evo-card">
+                                <table class="cfg-evo-table" id="cfg-evo-table">
+                                    <thead>
+                                        <tr><th>Nível</th><th>Marco</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr data-nivel="1"><td>1</td><td>Classe</td></tr>
+                                        <tr data-nivel="2"><td>2</td><td>Ramo</td></tr>
+                                        <tr data-nivel="3"><td>3</td><td>Individualidade</td></tr>
+                                        <tr data-nivel="4"><td>4</td><td>Novo Hábito</td></tr>
+                                        <tr data-nivel="5"><td>5</td><td>Novo Tipo Reação Complexa e Evolução de Hierarquia</td></tr>
+                                        <tr data-nivel="6"><td>6</td><td>Individualidade</td></tr>
+                                        <tr data-nivel="7"><td>7</td><td>Versatilidade de Ramos</td></tr>
+                                        <tr data-nivel="8"><td>8</td><td>Reação Complexa Extra</td></tr>
+                                        <tr data-nivel="9"><td>9</td><td>Novo Hábito</td></tr>
+                                        <tr data-nivel="10"><td>10</td><td>Versatilidade de Classe</td></tr>
+                                        <tr data-nivel="11"><td>11</td><td>Individualidade</td></tr>
+                                        <tr data-nivel="12"><td>12</td><td>Totalidade de Herança</td></tr>
+                                        <tr data-nivel="13"><td>13</td><td>Novo Tipo de Reação Complexa e Evolução de Hierarquia</td></tr>
+                                        <tr data-nivel="14"><td>14</td><td>Novo Hábito</td></tr>
+                                        <tr data-nivel="15"><td>15</td><td>Ação de Coesão Extra</td></tr>
+                                        <tr data-nivel="16"><td>16</td><td>Individualidade</td></tr>
+                                        <tr data-nivel="17"><td>17</td><td>Versatilidade de Ramos</td></tr>
+                                        <tr data-nivel="18"><td>18</td><td>Novo Hábito</td></tr>
+                                        <tr data-nivel="19"><td>19</td><td>Ação Protagonista Extra e Evolução de Hierarquia</td></tr>
+                                        <tr data-nivel="20"><td>20</td><td>Individualidade</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ── Incrementos ── -->
+                        <div class="cfg-section">
+                            <div class="sh">Incrementos</div>
+                            <p class="cfg-desc">
+                                Adicione ou subtraia valores dos seus vitais e atributos. A fórmula aplicada é:
+                                <strong>(Auto + Adição) × (1 + Porcentagem%)</strong>.
+                            </p>
+
+                            <div class="cfg-incr-grid">
+
+                                <!-- PV -->
+                                <div class="cfg-incr-row cfg-has-pct">
+                                    <span class="cfg-incr-label">PV</span>
+                                    <span class="cfg-incr-hint">Pontos de Vida</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-pv-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">% Final</label>
+                                            <input type="number" data-field="incr-pv-pct" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PM -->
+                                <div class="cfg-incr-row cfg-has-pct">
+                                    <span class="cfg-incr-label">PM</span>
+                                    <span class="cfg-incr-hint">Pontos de Mana</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-pm-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">% Final</label>
+                                            <input type="number" data-field="incr-pm-pct" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- FE -->
+                                <div class="cfg-incr-row cfg-has-pct">
+                                    <span class="cfg-incr-label">FE</span>
+                                    <span class="cfg-incr-hint">Pontos de Fé</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-fe-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">% Final</label>
+                                            <input type="number" data-field="incr-fe-pct" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PT -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">PT</span>
+                                    <span class="cfg-incr-hint">Pontos de Treino</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-pt-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- LA -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">LA</span>
+                                    <span class="cfg-incr-hint">Limite Arcano</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-la-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- INV -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">INV</span>
+                                    <span class="cfg-incr-hint">Inventário</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-inv-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DEF -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">DEF</span>
+                                    <span class="cfg-incr-hint">Defesa</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-def-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- DESL -->
+                                <div class="cfg-incr-row cfg-has-pct">
+                                    <span class="cfg-incr-label">DESL</span>
+                                    <span class="cfg-incr-hint">Deslocamento</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-desl-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">% Final</label>
+                                            <input type="number" data-field="incr-desl-pct" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pontos de Atributos -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">Atributos</span>
+                                    <span class="cfg-incr-hint">Pontos de Atributos</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-attr-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Pontos de Perícia -->
+                                <div class="cfg-incr-row">
+                                    <span class="cfg-incr-label">Perícias</span>
+                                    <span class="cfg-incr-hint">Pontos de Perícia</span>
+                                    <div class="cfg-incr-inputs">
+                                        <div class="cfg-incr-field">
+                                            <label class="cfg-incr-sublabel">± Flat</label>
+                                            <input type="number" data-field="incr-skill-flat" class="cfg-incr-input" value="0" placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div><!-- /.cfg-incr-grid -->
+                        </div><!-- /.cfg-section -->
+
+                    </div><!-- /.cfg-wrap -->
+                </div><!-- /#tab-configuracoes -->
+
             </div>
         </main>
     </div>

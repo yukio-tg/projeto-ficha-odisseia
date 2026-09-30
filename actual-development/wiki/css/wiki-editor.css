@@ -34,8 +34,8 @@
 .wiki-field-label {
     display: block;
     font-family: 'Cinzel', serif;
-    font-size: 8.5px;
-    letter-spacing: 0.22em;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--ink3);
     margin-bottom: 6px;
@@ -70,6 +70,7 @@
 .wiki-select:focus {
     border-color: var(--gold1);
     background: var(--p1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold1) 28%, transparent);
 }
 
 /* Textarea */
@@ -169,8 +170,8 @@
     align-items: center;
     gap: 4px;
     font-family: 'Cinzel', serif;
-    font-size: 9px;
-    letter-spacing: 0.1em;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--gold0);
     background: color-mix(in srgb, var(--gold0) 12%, transparent);
@@ -304,8 +305,8 @@
     align-items: center;
     gap: 6px;
     font-family: 'Cinzel', serif;
-    font-size: 8.5px;
-    letter-spacing: 0.12em;
+    font-size: 10px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--ink3);
     cursor: pointer;
@@ -358,8 +359,8 @@
     border-radius: 6px;
     padding: 10px;
     font-family: 'Cinzel', serif;
-    font-size: 9.5px;
-    letter-spacing: 0.18em;
+    font-size: 10.5px;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--ink3);
     cursor: pointer;
@@ -463,8 +464,8 @@
     border-radius: 4px;
     padding: 9px;
     font-family: 'Cinzel', serif;
-    font-size: 9.5px;
-    letter-spacing: 0.18em;
+    font-size: 10.5px;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--ink3);
     cursor: pointer;
@@ -568,8 +569,8 @@
     border-radius: 4px;
     color: var(--gold1);
     font-family: 'Cinzel', serif;
-    font-size: 8px;
-    letter-spacing: 0.18em;
+    font-size: 10px;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     padding: 4px 10px;
     cursor: pointer;
@@ -672,11 +673,11 @@ body.theme-dark-paper .wiki-submit-row {
 /* Row label */
 .wiki-theme-row-label {
     font-family: 'Cinzel', serif;
-    font-size: 7.5px;
-    letter-spacing: 0.22em;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--gold1);
-    width: 72px;
+    width: 80px;
     flex-shrink: 0;
     opacity: 0.78;
     line-height: 1;
@@ -692,11 +693,11 @@ body.theme-dark-paper .wiki-submit-row {
 
 /* Individual swatch circle — .wiki-theme-swatch is the name used by wiki-theme.js */
 .wiki-theme-swatch {
-    width: 14px;
-    height: 14px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     cursor: pointer;
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
     padding: 0;
     flex-shrink: 0;
     transition: transform 0.1s, border-color 0.14s, box-shadow 0.14s;
@@ -704,15 +705,15 @@ body.theme-dark-paper .wiki-submit-row {
 }
 
 .wiki-theme-swatch:hover {
-    transform: scale(1.38);
-    border-color: rgba(255, 255, 255, 0.42);
+    transform: scale(1.25);
+    border-color: rgba(255, 255, 255, 0.48);
     z-index: 2;
 }
 
 .wiki-theme-swatch.active {
     border-color: var(--gold2);
-    transform: scale(1.22);
-    box-shadow: 0 0 5px color-mix(in srgb, var(--gold2) 62%, transparent);
+    transform: scale(1.15);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--gold2) 70%, transparent);
     z-index: 1;
 }
 
@@ -750,10 +751,9 @@ body.theme-dark-paper .wiki-submit-row {
     border: 1px solid var(--gold1);
     border-radius: 6px;
     padding: 12px 20px;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 13px;
+    letter-spacing: 0.02em;
     color: var(--gold2);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     opacity: 0;
@@ -763,7 +763,7 @@ body.theme-dark-paper .wiki-submit-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    max-width: 320px;
+    max-width: 360px;
 }
 
 .wiki-toast .material-symbols-outlined {
@@ -823,3 +823,158 @@ body.theme-dark-paper .wiki-submit-row {
         padding: 10px 12px;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ATTRIBUTE EDITOR (monstro/pessoa)
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-attrs-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: rgba(0,0,0,0.12);
+    border: 1px solid color-mix(in srgb, var(--p2) 50%, transparent);
+    border-radius: 5px;
+    padding: 14px 16px;
+}
+
+.wiki-attr-row {
+    display: grid;
+    grid-template-columns: 20px 110px 1fr 60px;
+    align-items: start;
+    gap: 10px;
+    row-gap: 6px;
+}
+
+/* chip preview row spans all columns except the icon */
+.wiki-editor-attr-chips {
+    grid-column: 2 / -1;
+    margin-top: 2px;
+}
+
+.wiki-attr-icon {
+    width: 18px;
+    height: 18px;
+    background: var(--gold1);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.wiki-attr-label {
+    font-family: 'Cinzel', serif;
+    font-size: 9.5px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    white-space: nowrap;
+    cursor: default;
+}
+
+.wiki-attr-input {
+    width: 100%;
+    background: var(--p0);
+    border: 1px solid color-mix(in srgb, var(--p2) 70%, transparent);
+    border-radius: 4px;
+    color: var(--ink0);
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    padding: 5px 8px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.14s;
+}
+
+.wiki-attr-input:focus {
+    border-color: var(--gold1);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 20%, transparent);
+}
+
+.wiki-attr-hint {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink3);
+    opacity: 0.65;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+    .wiki-attr-row {
+        grid-template-columns: 18px 80px 60px 1fr;
+    }
+    .wiki-attr-hint { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   .md FILE UPLOAD AREA
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-md-upload-area {
+    position: relative;
+    border: 2px dashed color-mix(in srgb, var(--p3) 55%, transparent);
+    border-radius: 5px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    background: rgba(0,0,0,0.08);
+    min-height: 80px;
+    text-align: center;
+}
+
+.wiki-md-upload-area:hover {
+    border-color: var(--gold0);
+    background: color-mix(in srgb, var(--gold0) 5%, transparent);
+}
+
+.wiki-md-upload-icon {
+    font-size: 28px;
+    color: var(--gold0);
+    opacity: 0.6;
+}
+
+.wiki-md-upload-label {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink3);
+    opacity: 0.75;
+}
+
+/* File preview (shown after upload) */
+.wiki-md-file-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--gold0) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold0) 35%, transparent);
+    border-radius: 4px;
+}
+
+.wiki-md-file-name {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 13px;
+    color: var(--ink1);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wiki-md-file-remove {
+    background: none;
+    border: none;
+    color: var(--blood1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    transition: color 0.15s;
+}
+.wiki-md-file-remove:hover { color: var(--blood2); }

@@ -6,7 +6,7 @@
          so without base, relative paths resolve to / instead of /wiki/. -->
     <base href="/wiki/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wiki — Odisseia</title>
+    <title>Enciclopédia Ascalon</title>
     <link rel="icon" href="/image/odisseia-logo.ico">
 
     <!-- Google Fonts ─ typefaces -->
@@ -25,34 +25,27 @@
 <div class="wiki-shell">
 
     <!-- ══════════════════════════════════════════════════════════════
-         HEADER
+         HEADER — dark leather bar
          ══════════════════════════════════════════════════════════════ -->
     <header class="wiki-header">
         <div class="wiki-header-row">
 
             <a href="/wiki" class="wiki-brand">
-                <span class="material-symbols-outlined wiki-brand-rune"
-                      style="font-variation-settings:'FILL' 1">auto_stories</span>
-                Wiki de Odisseia
+                <img src="/image/odisseia-logo.ico" class="wiki-brand-logo" alt="Odisseia">
+                Enciclopédia Ascalon
             </a>
 
             <div class="wiki-header-actions">
-                <div class="wiki-search-wrap">
-                    <span class="material-symbols-outlined">search</span>
-                    <input class="wiki-search-input" id="wiki-search"
-                           type="text" placeholder="Buscar documentos...">
-                </div>
-
                 <a href="/wiki/criar" class="wiki-create-btn" id="wiki-create-btn"
                    style="display:none">
                     <span class="material-symbols-outlined" style="font-size:15px">add</span>
-                    Criar
+                    Novo Artigo
                 </a>
 
                 <!-- Ponte para o Dashboard de Fichas -->
                 <a href="/index.html" class="wiki-fichas-bridge" title="Dashboard de Fichas">
                     <span class="material-symbols-outlined" style="font-size:17px;font-variation-settings:'FILL' 1">home</span>
-                    <span>Fichas</span>
+                    <span>Dashboard</span>
                 </a>
 
                 <div id="wiki-user-area"></div>
@@ -62,22 +55,44 @@
     </header>
 
     <!-- ══════════════════════════════════════════════════════════════
-         FILTER TABS
+         BODY — sidebar + main area
          ══════════════════════════════════════════════════════════════ -->
-    <nav class="wiki-filter-nav">
-        <button class="wiki-tab-btn active" data-type="">Todos</button>
-        <button class="wiki-tab-btn" data-type="creature">Criaturas</button>
-        <button class="wiki-tab-btn" data-type="place">Lugares</button>
-        <button class="wiki-tab-btn" data-type="person">Pessoas</button>
-        <button class="wiki-tab-btn" data-type="concept">Conceitos</button>
-    </nav>
+    <div class="wiki-body">
 
-    <!-- ══════════════════════════════════════════════════════════════
-         MAIN CONTENT
-         ══════════════════════════════════════════════════════════════ -->
-    <main class="wiki-content" id="wiki-main">
-        <div class="wiki-loading">Carregando documentos...</div>
-    </main>
+        <!-- Sidebar -->
+        <aside class="wiki-sidebar" id="wiki-sidebar">
+            <div class="wiki-sidebar-inner">
+                <div class="wiki-sidebar-search-wrap">
+                    <span class="material-symbols-outlined wiki-sidebar-search-icon">search</span>
+                    <input class="wiki-sidebar-search-input" id="wiki-search"
+                           type="text" placeholder="Buscar artigos…">
+                </div>
+                <div class="wiki-sidebar-list" id="wiki-sidebar-list">
+                    <div class="wiki-sidebar-loading">Carregando…</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main content area -->
+        <div class="wiki-main-area">
+
+            <!-- FILTER TABS -->
+            <nav class="wiki-filter-nav">
+                <button class="wiki-tab-btn active" data-type="">Todos</button>
+                <button class="wiki-tab-btn" data-type="creature">Monstros</button>
+                <button class="wiki-tab-btn" data-type="place">Lugares</button>
+                <button class="wiki-tab-btn" data-type="person">Pessoas</button>
+                <button class="wiki-tab-btn" data-type="concept">Conceitos</button>
+            </nav>
+
+            <!-- MAIN CONTENT -->
+            <main class="wiki-content" id="wiki-main">
+                <div class="wiki-loading">Carregando documentos...</div>
+            </main>
+
+        </div><!-- /.wiki-main-area -->
+
+    </div><!-- /.wiki-body -->
 
 </div><!-- /.wiki-shell -->
 

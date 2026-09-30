@@ -3,14 +3,14 @@
 import { initWikiFirebase, listWikiDocs }          from './wiki-firebase.js';
 import { getAuthState }                             from './wiki-auth.js';
 import { escapeHtml, normalizar, showToast }        from './wiki-utils.js';
+import { initWikiSidebar }                          from './wiki-sidebar.js';
 import {
-    TYPE_LABELS, TYPE_ICONS,
+    TYPE_LABELS, TYPE_ICONS, TYPE_SVG,
     THREAT_COLORS, THREAT_COLORS_DARK,
     DOMAIN_COLORS, DOMAIN_COLORS_DARK,
     ALIGNMENT_COLORS, ALIGNMENT_COLORS_DARK,
     getThreatStyle, getDomainStyle, getAlignmentStyle,
 } from './wiki-consts.js';
-import { computeThemeVars, WIKI_DEFAULTS } from './wiki-theme.js';
 import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 // ─── Page state ────────────────────────────────────────────────────────────────
@@ -20,6 +20,8 @@ let currentSearch = '';
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+    // Permanent dark mode for the wiki
+    document.body.classList.add('theme-dark-paper');
     initWikiFirebase();
 
     const { user, isAdmin } = await getAuthState();
@@ -30,8 +32,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     renderUserArea(user, isAdmin);
+
+    // Sidebar (loads its own docs)
+    initWikiSidebar(null);
+
+    // Hook sidebar search to also filter the card grid
+    window.__wikiSidebarSearchHook = (q) => {
+        currentSearch = q;
+        renderList();
+    };
+
     await loadDocs();
 
+    // Wire the legacy wiki-search ID (now in sidebar) to the grid
     const searchInput = document.getElementById('wiki-search');
     if (searchInput) {
         searchInput.addEventListener('input', () => {
@@ -104,20 +117,6 @@ function buildCard(doc) {
     card.className = 'wiki-card' + (doc.status === 'canonical' ? ' canonical' : '');
     card.href = `/wiki/doc?id=${doc.id}`;
 
-    // Apply the document's colour theme to the card via CSS custom properties.
-    // This means the card's parchment, ink, and gold colours match the doc's theme.
-    if (doc.theme) {
-        const vars = computeThemeVars(
-            doc.theme.fundo      ?? WIKI_DEFAULTS.fundo,
-            doc.theme.metalico   ?? WIKI_DEFAULTS.metalico,
-            doc.theme.pergaminho ?? WIKI_DEFAULTS.pergaminho
-        );
-        Object.entries(vars).forEach(([prop, val]) => {
-            if (prop !== 'darkPaper') card.style.setProperty(prop, val);
-        });
-        if (vars.darkPaper) card.classList.add('wiki-card-dark-paper');
-    }
-
     // ── Image wrap ────────────────────────────────────────────────────────────
     const imgWrap = document.createElement('div');
     imgWrap.className = 'wiki-card-img-wrap';
@@ -145,11 +144,13 @@ function buildCard(doc) {
 
     const typeBadge = document.createElement('span');
     typeBadge.className = 'wiki-type-badge';
-    const typeIcon = document.createElement('span');
-    typeIcon.className = 'material-symbols-outlined';
-    typeIcon.style.cssText = "font-variation-settings:'FILL' 1;font-size:10px;vertical-align:middle;margin-right:3px";
-    typeIcon.textContent = TYPE_ICONS[doc.type] || 'article';
-    typeBadge.appendChild(typeIcon);
+    const svgPath = TYPE_SVG[doc.type];
+    if (svgPath) {
+        const typeIcon = document.createElement('span');
+        typeIcon.className = 'wiki-type-svg-icon';
+        typeIcon.style.cssText = `display:inline-block;width:10px;height:10px;vertical-align:middle;margin-right:3px;mask:url('${svgPath}') center/contain no-repeat;-webkit-mask:url('${svgPath}') center/contain no-repeat;background:currentColor`;
+        typeBadge.appendChild(typeIcon);
+    }
     typeBadge.appendChild(document.createTextNode(TYPE_LABELS[doc.type] || doc.type));
     typeRow.appendChild(typeBadge);
 
@@ -241,10 +242,18 @@ function buildCard(doc) {
 }
 
 function _makePlaceholder(type) {
-    const ph = document.createElement('span');
-    ph.className = 'material-symbols-outlined wiki-card-img-placeholder';
-    ph.style.fontVariationSettings = "'FILL' 1";
-    ph.textContent = TYPE_ICONS[type] || 'article';
+    const svgPath = TYPE_SVG[type];
+    const ph = document.createElement('div');
+    ph.className = 'wiki-card-img-placeholder';
+    if (svgPath) {
+        ph.style.cssText = `mask:url('${svgPath}') center/55% no-repeat;-webkit-mask:url('${svgPath}') center/55% no-repeat;background:var(--leath4);opacity:0.3;width:100%;height:100%`;
+    } else {
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.style.fontVariationSettings = "'FILL' 1";
+        icon.textContent = TYPE_ICONS[type] || 'article';
+        ph.appendChild(icon);
+    }
     return ph;
 }
 

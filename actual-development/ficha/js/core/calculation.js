@@ -1,6 +1,7 @@
 import { getNivel, getAtributoTotal } from './radar-service.js';
 import { autoCalcEnabled, manualOverrides } from './state.js';
 import { refreshAllBars } from '../ui/vitals.js';
+import { getIncrFlat, getIncrPct, applyIncrement } from '../ui/configuracoes.js';
 
 export const INERTIDAO_TAMANHO = {
     'tam-minusculo': 0,
@@ -156,6 +157,12 @@ export function calcStats() {
     let pvMax = Math.floor(formulas.pv.base + con + nivel * (formulas.pv.per + con / 2));
     let pmBase = Math.floor(formulas.pm.base + car + nivel * (formulas.pm.per + car / 2));
     let ptMax = Math.floor(formulas.pt.base + int + nivel * (formulas.pt.per + int / 2));
+
+    // ── Apply increments (Configurações tab) ──
+    // Order: Auto → Flat addition → Percentage
+    pvMax  = applyIncrement(pvMax,  getIncrFlat('pv'), getIncrPct('pv'));
+    pmBase = applyIncrement(pmBase, getIncrFlat('pm'), getIncrPct('pm'));
+    ptMax  = applyIncrement(ptMax,  getIncrFlat('pt'), 0);
     let laMax;
     if (typeof formulas.la === 'function') {
         const baseLa = formulas.la(sab, nivel);
@@ -164,6 +171,7 @@ export function calcStats() {
     } else {
         laMax = Math.floor(formulas.la + nivel * (formulas.laPer || 0));
     }
+    laMax = applyIncrement(laMax, getIncrFlat('la'), 0);
     let invMax = 0;
     const forca = getAtributoTotal('FOR');
     const classeInv = getClasseNormalizada();
@@ -178,6 +186,9 @@ export function calcStats() {
         // fallback (caso classe não reconhecida) – usa o antigo ou 5+FOR
         invMax = 5 + forca;
     }
+
+    // Apply INV increment
+    invMax = applyIncrement(invMax, getIncrFlat('inv'), 0);
 
     // Atualiza o campo total na interface e dispara evento
     const invTotalInput = document.querySelector('[data-field="inv-total"]');
@@ -221,6 +232,8 @@ export function calcStats() {
         atualizarVital('pv', pvMax);
     }
 
+    // Apply PM percentage increment (flat already applied to pmBase above)
+    pmMax = applyIncrement(pmMax, 0, getIncrPct('pm'));
     atualizarVital('mana', pmMax);
 
     // ===== TRATAMENTO ESPECIAL PARA PT =====
@@ -256,6 +269,9 @@ export function calcStats() {
 
     // Fé (se ativo)
     if (feAtivo) {
+        // Apply FE increment
+        feMax = applyIncrement(feMax, getIncrFlat('fe'), getIncrPct('fe'));
+
         const feAtualInput = document.querySelector('[data-field="fe-atual"]');
         const feMaxInput = document.querySelector('[data-field="fe-total"]');
         if (feMaxInput) {

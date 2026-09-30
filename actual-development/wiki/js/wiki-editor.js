@@ -13,6 +13,7 @@ import {
 } from './wiki-theme.js';
 import { THREAT_LEVELS, DOMAIN_TYPES, ALIGNMENT_TYPES }  from './wiki-consts.js';
 import { extractAllWikiLinks, resolveWikiLinks }          from './wiki-wikilinks.js';
+import { initWikiSidebar }                               from './wiki-sidebar.js';
 
 // ── Module state ──────────────────────────────────────────────────────────────
 let currentDocId  = null;
@@ -28,9 +29,77 @@ const regiaoChipMap = new Map();
 let tipoSuggestions   = [];
 let regiaoSuggestions = [];
 
+// .md file state
+let currentMdContent = null; // null = no file, string = file content
+
+// ── Type-based field visibility ────────────────────────────────────────────────
+// Fields and which types they apply to:
+const FIELD_VISIBILITY = {
+    'tag-threat-wrap':   ['creature', 'person'],    // Lugar, Conceito: sem ameaça
+    'tag-domain-wrap':   ['creature', 'place', 'person'], // Conceito: sem domínio
+    'tag-tipo-wrap':     ['creature'],              // Apenas monstro tem tipo
+    'tag-regiao-wrap':   ['creature', 'person'],    // Conceito não tem região
+    'tag-alignment-wrap':['creature', 'person'],    // Lugar e Conceito: sem alinhamento
+    'field-attrs-wrap':  ['creature', 'person'],    // Apenas monstro/pessoa
+    'field-md-wrap':     ['creature', 'person'],    // Apenas monstro/pessoa
+};
+
+function updateTypeVisibility(type) {
+    for (const [id, allowedTypes] of Object.entries(FIELD_VISIBILITY)) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = allowedTypes.includes(type) ? '' : 'none';
+    }
+}
+
+// ── Attribute chip preview in editor ──────────────────────────────────────────
+
+const ATTR_KEYS = ['corpo', 'velocidade', 'essencia', 'inteligencia'];
+
+/** Renders or updates the chip preview next to an attribute input. */
+function updateAttrChipPreview(key) {
+    const input = document.getElementById(`attr-${key}`);
+    if (!input) return;
+    const val = Math.min(10, Math.max(0, parseInt(input.value, 10) || 5));
+
+    // Find or create the chip preview element
+    const row = input.closest('.wiki-attr-row');
+    if (!row) return;
+    let preview = row.querySelector('.wiki-editor-attr-chips');
+    if (!preview) {
+        preview = document.createElement('div');
+        preview.className = 'wiki-editor-attr-chips wiki-attr-bar-chips';
+        preview.style.cssText = 'margin-top:5px;grid-column:2/-1';
+        row.appendChild(preview);
+    }
+
+    preview.innerHTML = '';
+    for (let i = 1; i <= 10; i++) {
+        const chip = document.createElement('span');
+        chip.className = 'wiki-attr-chip';
+        if (i <= val) {
+            chip.classList.add('filled');
+            if (i >= 9) chip.classList.add('chip-max');
+            else if (i >= 7) chip.classList.add('chip-high');
+        }
+        preview.appendChild(chip);
+    }
+}
+
+function initAttrChipPreviews() {
+    ATTR_KEYS.forEach(key => {
+        const input = document.getElementById(`attr-${key}`);
+        if (input) {
+            input.addEventListener('input', () => updateAttrChipPreview(key));
+            updateAttrChipPreview(key);
+        }
+    });
+}
+
 // ── Bootstrap ──────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Permanent dark mode for the wiki
+    document.body.classList.add('theme-dark-paper');
     initWikiFirebase();
     currentDocId = getParam('id') || null;
 
@@ -38,6 +107,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!authedUser) return;
 
     ({ user, isAdmin } = await getAuthState());
+
+    // Sidebar
+    initWikiSidebar(null);
 
     // Populate controlled-vocabulary selects
     populateThreatSelect();
@@ -77,6 +149,48 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Form submission
     document.getElementById('wiki-form')?.addEventListener('submit', handleSubmit);
+
+    // Type selector: update field visibility on change
+    const typeSelect = document.getElementById('field-type');
+    if (typeSelect) {
+        typeSelect.addEventListener('change', () => {
+            updateTypeVisibility(typeSelect.value);
+            // Re-init chip previews when type changes to creature/person
+            initAttrChipPreviews();
+        });
+        // Initial visibility
+        updateTypeVisibility(typeSelect.value);
+    }
+
+    // Wire chip previews for attribute inputs
+    initAttrChipPreviews();
+
+    // .md file upload
+    const mdFileInput = document.getElementById('wiki-md-file-input');
+    const mdPreview   = document.getElementById('wiki-md-file-preview');
+    const mdLabel     = document.getElementById('wiki-md-upload-label');
+    const mdFileName  = document.getElementById('wiki-md-file-name');
+    const mdRemove    = document.getElementById('wiki-md-file-remove');
+
+    mdFileInput?.addEventListener('change', () => {
+        const file = mdFileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            currentMdContent = e.target.result;
+            if (mdFileName) mdFileName.textContent = file.name;
+            if (mdPreview)  mdPreview.style.display = 'flex';
+            if (mdLabel)    mdLabel.style.opacity = '0.4';
+        };
+        reader.readAsText(file, 'UTF-8');
+    });
+
+    mdRemove?.addEventListener('click', () => {
+        currentMdContent = null;
+        if (mdFileInput) mdFileInput.value = '';
+        if (mdPreview)   mdPreview.style.display = 'none';
+        if (mdLabel)     mdLabel.style.opacity = '';
+    });
 
     // Edit mode: load existing doc
     if (currentDocId) await loadDoc(currentDocId);
@@ -387,6 +501,9 @@ async function loadDoc(id) {
 
 async function populateForm(doc) {
     setSelect('field-type', doc.type);
+    // Update visibility BEFORE other fields
+    updateTypeVisibility(doc.type);
+
     if (isAdmin || !currentDocId) {
         if (doc.status === 'canonical') maybeAddCanonicalOption(true);
         setSelect('field-status', doc.status);
@@ -408,6 +525,26 @@ async function populateForm(doc) {
     // Gallery
     (doc.images || []).forEach(img => addGalleryItem(img));
 
+    // Attributes (monstro/pessoa)
+    if (doc.attributes) {
+        const attrKeys = ['corpo', 'velocidade', 'essencia', 'inteligencia'];
+        attrKeys.forEach(k => {
+            const inp = document.getElementById(`attr-${k}`);
+            if (inp && doc.attributes[k] !== undefined) inp.value = doc.attributes[k];
+        });
+    }
+
+    // .md content (if previously uploaded)
+    if (doc.mdContent) {
+        currentMdContent = doc.mdContent;
+        const mdPreview  = document.getElementById('wiki-md-file-preview');
+        const mdFileName = document.getElementById('wiki-md-file-name');
+        const mdLabel    = document.getElementById('wiki-md-upload-label');
+        if (mdFileName) mdFileName.textContent = (doc.title || 'ficha') + '.md (já carregado)';
+        if (mdPreview)  mdPreview.style.display = 'flex';
+        if (mdLabel)    mdLabel.style.opacity = '0.4';
+    }
+
     // Theme
     if (doc.theme && (doc.theme.fundo || doc.theme.metalico || doc.theme.pergaminho)) {
         currentTheme = { ...WIKI_DEFAULTS, ...doc.theme };
@@ -418,7 +555,7 @@ async function populateForm(doc) {
 
     // Update page title
     const editorTitle = document.getElementById('editor-title');
-    if (editorTitle) editorTitle.textContent = doc.title || 'Editar Documento';
+    if (editorTitle) editorTitle.textContent = doc.title || 'Editar Artigo';
 }
 
 function setVal(id, val)       { const el = document.getElementById(id); if (el) el.value = val; }
@@ -514,10 +651,23 @@ async function handleSubmit(e) {
         console.warn('[wiki-editor] wiki-links resolution failed:', e);
     }
 
+    const docType = document.getElementById('field-type')?.value || 'creature';
+
+    // Attributes (monstro/pessoa)
+    let attributes = null;
+    if (docType === 'creature' || docType === 'person') {
+        attributes = {
+            corpo:        parseInt(document.getElementById('attr-corpo')?.value, 10) || 0,
+            velocidade:   parseInt(document.getElementById('attr-velocidade')?.value, 10) || 0,
+            essencia:     parseInt(document.getElementById('attr-essencia')?.value, 10) || 0,
+            inteligencia: parseInt(document.getElementById('attr-inteligencia')?.value, 10) || 0,
+        };
+    }
+
     const data = {
         title:    titleVal,
         altName:  document.getElementById('field-alt-name')?.value.trim() ?? '',
-        type:     document.getElementById('field-type')?.value    || 'creature',
+        type:     docType,
         summary:  summaryVal,
         threat:   document.getElementById('field-threat')?.value    || '',
         domain:   document.getElementById('field-domain')?.value    || '',
@@ -528,6 +678,8 @@ async function handleSubmit(e) {
         images,
         relatedDocs,
         theme:    { ...currentTheme },
+        attributes,
+        mdContent: currentMdContent,
     };
 
     // Status: only in create mode or for admins

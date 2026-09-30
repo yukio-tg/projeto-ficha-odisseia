@@ -5,6 +5,11 @@
 
 // ── Palette (29 colors — identical to ficha) ──────────────────────────────────
 export const WIKI_PALETTE = [
+    // ── Warm dark tones (for wiki dark-mode) ──────────────────────────────────
+    { id: 'marrom-escuro',     h:  22, s: 55, bias: -2, darkPaper: true,  label: 'Marrom Escuro'     },
+    { id: 'ocre-escuro',       h:  30, s: 60, bias: -3, darkPaper: true,  label: 'Ocre Escuro'       },
+    { id: 'areia-escura',      h:  38, s: 45, bias: -2, darkPaper: true,  label: 'Areia Escura'      },
+    // ── Original palette ──────────────────────────────────────────────────────
     { id: 'vermelho-saturado', h:   0, s: 90, bias:  0, darkPaper: false, label: 'Vermelho Saturado' },
     { id: 'vermelho-escuro',   h: 355, s: 72, bias: -4, darkPaper: true,  label: 'Vermelho Escuro'   },
     { id: 'vermelho-claro',    h:   5, s: 55, bias: +5, darkPaper: false, label: 'Vermelho Claro'    },
@@ -36,7 +41,8 @@ export const WIKI_PALETTE = [
     { id: 'branco',            h:  38, s: 18, bias: +22, darkPaper: false, label: 'Branco'           },
 ];
 
-export const WIKI_DEFAULTS = { fundo: 'marrom', metalico: 'amarelo-escuro', pergaminho: 'bege' };
+// Default: warm dark brown pergaminho (like dashboard), warm leather fundo, gold detalhes
+export const WIKI_DEFAULTS = { fundo: 'marrom', metalico: 'amarelo-escuro', pergaminho: 'marrom-escuro' };
 
 // ── Internal helpers (identical logic to ficha/js/ui/theme.js) ────────────────
 
@@ -161,7 +167,8 @@ export function applyDocTheme(fundo, metalico, pergaminho) {
 
     const root = document.documentElement;
     for (const [prop, val] of Object.entries(vars)) root.style.setProperty(prop, val);
-    document.body.classList.toggle('theme-dark-paper', p.darkPaper);
+    // Wiki is always dark mode — always keep the class regardless of pergaminho
+    document.body.classList.add('theme-dark-paper');
 }
 
 /**
@@ -232,11 +239,16 @@ export function buildThemePicker(container, currentTheme, onChange) {
         const swatchesEl = document.createElement('div');
         swatchesEl.className = 'wiki-theme-swatches';
 
-        for (const color of WIKI_PALETTE) {
+        // For wiki dark mode: only show dark-compatible colors for pergaminho
+        const filteredPalette = (key === 'pergaminho')
+            ? WIKI_PALETTE.filter(c => c.darkPaper)
+            : WIKI_PALETTE;
+
+        for (const color of filteredPalette) {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'wiki-theme-swatch';
-            btn.title = color.label + (color.darkPaper && key === 'pergaminho' ? ' ◐' : '');
+            btn.title = color.label;
             btn.style.backgroundColor = swatchColor(color, key);
             if (current[key] === color.id) btn.classList.add('active');
 

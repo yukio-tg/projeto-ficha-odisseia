@@ -63,9 +63,10 @@ function getTitulo(n) {
 
 function attrBase(nivel) { return 13 + parseInt(nivel,10); }
 
-function calcPmMax(nivel, conMod, carMod) {
-    const base = 25 + conMod + carMod;
-    return Math.floor(base + nivel * (3 + (conMod + carMod) / 2));
+function calcPmMax(nivel, conMod, sabMod) {
+    // Vida da Besta: baseada em Constituição e Sabedoria (não Carisma)
+    const base = 25 + conMod + sabMod;
+    return Math.floor(base + nivel * (3 + (conMod + sabMod) / 2));
 }
 
 function calcDefesa(desMod) { return 12 + desMod; }
@@ -134,10 +135,10 @@ function derivedFor(b) {
     const n  = parseInt(b.nivel,10) || 1;
     const ba = attrBase(n);
     const conMod = b.attrs.CON || 0;
-    const carMod = b.attrs.CAR || 0;
+    const sabMod = b.attrs.SAB || 0; // Vida baseada em CON + SAB
     const desMod = b.attrs.DES || 0;
     // Respect manual overrides when set
-    const pmMax   = (b.pmMaxManual  != null) ? b.pmMaxManual  : calcPmMax(n, conMod, carMod);
+    const pmMax   = (b.pmMaxManual  != null) ? b.pmMaxManual  : calcPmMax(n, conMod, sabMod);
     const defesa  = (b.defesaManual != null) ? b.defesaManual : calcDefesa(desMod);
     const inertia = calcInertia(n, b.tamanho);
     const profLim = calcProfLimit(n);

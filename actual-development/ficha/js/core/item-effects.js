@@ -5,6 +5,7 @@ import { uid } from './utils.js';
 import { getAtributoBase } from './radar-service.js';
 import { criarCardAtaque } from '../ui/combat.js';
 import { manualOverrides } from './state.js';
+import { getIncrFlat, applyIncrement, getIncrPct } from '../ui/configuracoes.js';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -224,7 +225,9 @@ function recalcProtectionBonuses() {
     const defesaInput = document.querySelector('[data-field="defesa"]');
     if (defesaInput && !manualOverrides.has('defesa')) {
         const baseDefesa = (getAtributoBase('DES') || 0) + 10;
-        defesaInput.value = baseDefesa + totalDefBonus;
+        // Aplica incremento de Configurações (DEF flat)
+        const defFlat = getIncrFlat('def');
+        defesaInput.value = baseDefesa + totalDefBonus + defFlat;
         defesaInput.dataset.protBonus = totalDefBonus;
         defesaInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
@@ -232,7 +235,6 @@ function recalcProtectionBonuses() {
     // Apply to RD — skip if user has manually overridden it
     const rdInput = document.querySelector('[data-field="rd"]');
     if (rdInput && !manualOverrides.has('rd')) {
-        // Use the persisted base (restored from saved data) or initialise from current value
         if (!rdInput.dataset.baseValue) rdInput.dataset.baseValue = rdInput.value;
         const baseRd = parseInt(rdInput.dataset.baseValue, 10) || 0;
         rdInput.value = baseRd + totalRdBonus;
@@ -240,12 +242,16 @@ function recalcProtectionBonuses() {
         rdInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Apply to Deslocamento (percentage reduction) — skip if user has manually overridden it
+    // Apply to Deslocamento (percentage reduction + Configurações increment)
     const deslInput = document.querySelector('[data-field="deslocamento"]');
     if (deslInput && !manualOverrides.has('deslocamento')) {
         const baseDesl = getBaseDeslocamento();
         const reducedDesl = baseDesl * (1 - totalDeslocReduction);
-        deslInput.value = Math.round(reducedDesl * 10) / 10;
+        // Aplica incrementos de Configurações (flat + porcentagem)
+        const deslFlat = getIncrFlat('desl');
+        const deslPct  = getIncrPct('desl');
+        const finalDesl = applyIncrement(reducedDesl, deslFlat, deslPct);
+        deslInput.value = Math.round(finalDesl * 10) / 10;
         deslInput.dataset.protReduction = totalDeslocReduction;
         deslInput.dispatchEvent(new Event('input', { bubbles: true }));
     }

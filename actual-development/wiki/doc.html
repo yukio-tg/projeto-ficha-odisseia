@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <base href="/wiki/">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Documento — Wiki Odisseia</title>
+    <title>Documento — Enciclopédia Ascalon</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -17,39 +17,84 @@
     <link rel="icon" type="image/x-icon" href="/image/odisseia-logo.ico">
 </head>
 <body>
-    <div class="wiki-shell">
+<div class="wiki-shell">
 
-        <!-- Thin nav bar: back + actions -->
-        <div class="wiki-topbar">
-            <a href="/wiki" class="wiki-back-link">
-                <span class="material-symbols-outlined" style="font-size:15px">arrow_back</span>
-                Wiki
-            </a>
-            <div id="wiki-topbar-actions" class="wiki-topbar-actions"></div>
-        </div>
-
-        <!-- Rich identity header (dark leather, gold trim — mirrors ficha's sheet-header) -->
-        <header class="wiki-doc-identity" id="wiki-doc-identity" style="display:none">
-            <div class="wiki-doc-identity-body">
-                <div class="wiki-doc-identity-crest" id="wiki-doc-identity-crest">
+    <!-- ══ HEADER ══ -->
+    <header class="wiki-doc-header-bar" id="wiki-doc-header-bar">
+        <div class="wiki-doc-header-bar-inner">
+            <!-- Crest -->
+            <div class="wiki-doc-crest" id="wiki-doc-crest">
+                <div class="wiki-doc-crest-inner" id="wiki-doc-crest-inner">
                     <span class="material-symbols-outlined">auto_stories</span>
                 </div>
-                <div class="wiki-doc-identity-text">
-                    <div class="wiki-doc-identity-title" id="wiki-doc-identity-title">—</div>
-                    <div class="wiki-doc-identity-sub"  id="wiki-doc-identity-sub"></div>
+            </div>
+            <!-- Title block -->
+            <div class="wiki-doc-header-text">
+                <div class="wiki-doc-header-type" id="wiki-doc-header-type"></div>
+                <h1 class="wiki-doc-header-title" id="wiki-doc-header-title">—</h1>
+                <div class="wiki-doc-header-sub" id="wiki-doc-header-sub"></div>
+            </div>
+            <!-- Actions -->
+            <div class="wiki-doc-header-actions">
+                <a href="/wiki" class="wiki-btn wiki-btn-ghost wiki-back-link">
+                    <span class="material-symbols-outlined" style="font-size:15px">arrow_back</span>
+                    Enciclopédia
+                </a>
+                <div id="wiki-topbar-actions" class="wiki-topbar-actions"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══ BODY — sidebar + content ══ -->
+    <div class="wiki-body">
+
+        <!-- Sidebar -->
+        <aside class="wiki-sidebar" id="wiki-sidebar">
+            <div class="wiki-sidebar-inner">
+                <div class="wiki-sidebar-search-wrap">
+                    <span class="material-symbols-outlined wiki-sidebar-search-icon">search</span>
+                    <input class="wiki-sidebar-search-input" id="wiki-sidebar-search"
+                           type="text" placeholder="Buscar artigos…">
+                </div>
+                <div class="wiki-sidebar-list" id="wiki-sidebar-list">
+                    <div class="wiki-sidebar-loading">Carregando…</div>
                 </div>
             </div>
-        </header>
+        </aside>
 
-        <!-- Parchment content area -->
-        <div class="wiki-content">
-            <div class="wiki-doc-wrap" id="wiki-doc-wrap">
-                <div class="wiki-loading">Carregando...</div>
+        <!-- Main area -->
+        <div class="wiki-main-area">
+            <div class="wiki-content">
+                <div class="wiki-doc-wrap" id="wiki-doc-wrap">
+                    <div class="wiki-loading">Carregando...</div>
+                </div>
             </div>
         </div>
 
+    </div><!-- /.wiki-body -->
+
+</div><!-- /.wiki-shell -->
+
+<!-- .md popup modal -->
+<div id="wiki-md-modal" class="wiki-md-modal" style="display:none" role="dialog" aria-modal="true" aria-label="Ficha do Documento">
+    <div class="wiki-md-modal-inner">
+        <div class="wiki-md-modal-toolbar">
+            <span class="wiki-md-modal-title" id="wiki-md-modal-title">Ficha</span>
+            <div class="wiki-md-modal-actions">
+                <button type="button" class="wiki-md-download-btn" id="wiki-md-download-btn" title="Baixar arquivo .md">
+                    <span class="material-symbols-outlined" style="font-size:16px">download</span>
+                    Download .md
+                </button>
+                <button type="button" class="wiki-md-close-btn" id="wiki-md-close-btn" title="Fechar">
+                    <span class="material-symbols-outlined" style="font-size:20px">close</span>
+                </button>
+            </div>
+        </div>
+        <div class="wiki-md-modal-content" id="wiki-md-modal-content"></div>
     </div>
-    <div id="wiki-toast" class="wiki-toast"></div>
-    <script type="module" src="js/wiki-doc.js"></script>
+</div>
+
+<div id="wiki-toast" class="wiki-toast"></div>
+<script type="module" src="js/wiki-doc.js"></script>
 </body>
 </html>

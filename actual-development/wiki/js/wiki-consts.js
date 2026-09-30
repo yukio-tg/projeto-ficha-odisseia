@@ -4,16 +4,24 @@
 // ── Document types ────────────────────────────────────────────────────────────
 export const WIKI_TYPES = ['creature', 'place', 'person', 'concept'];
 export const TYPE_LABELS = {
-    creature: 'Criatura',
+    creature: 'Monstro',
     place:    'Lugar',
     person:   'Pessoa',
     concept:  'Conceito',
 };
+// Material Symbols fallbacks (used in rarely-updated contexts)
 export const TYPE_ICONS = {
     creature: 'pets',
     place:    'map',
     person:   'person',
     concept:  'auto_awesome',
+};
+// SVG icon paths (preferred — match filenames in /image/)
+export const TYPE_SVG = {
+    creature: '/image/monstro.svg',
+    place:    '/image/lugar.svg',
+    person:   '/image/pessoa.svg',
+    concept:  '/image/conceitos.svg',
 };
 
 // ── Threat levels (Ameaça) — 20 levels, inoffensive → catastrophic ────────────

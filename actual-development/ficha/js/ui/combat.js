@@ -529,7 +529,7 @@ export function criarCardAtaque(id) {
                 <div class="ataque-field-group">
                     <label class="combat-label">Acerto</label>
                     <div class="acerto-input-wrap">
-                        <span class="acerto-d20-prefix" aria-hidden="true" style="display:none">d20+</span>
+                        <span class="acerto-d20-prefix" aria-hidden="true" style="display:none">d20</span>
                         <input type="text"
                             class="ataque-acerto combat-input"
                             data-field="ataque-acerto-${id}"
@@ -659,7 +659,7 @@ export function criarCardAtaque(id) {
         headerSummary.appendChild(critSpan);
     }
 
-    const D20_TEXT = 'd20+';
+    const D20_TEXT = 'd20';
     function buildAcertoDisplay(val) {
         if (!val || val === '—') return '—';
         if (val === '0' || val === '+0') return D20_TEXT;
@@ -829,10 +829,10 @@ export function criarCardPorrada(id) {
         if (summaryAcerto) {
             const v = acertoInput?.value || '—';
             if (v === '—') { summaryAcerto.textContent = '—'; }
-            else if (v === '0' || v === '+0') { summaryAcerto.textContent = 'd20+'; }
+            else if (v === '0' || v === '+0') { summaryAcerto.textContent = 'd20'; }
             else {
                 const sep = (v.startsWith('+') || v.startsWith('-')) ? '' : '+';
-                summaryAcerto.textContent = 'd20+' + sep + v;
+                summaryAcerto.textContent = 'd20' + sep + v;
             }
         }
         if (summaryDano) summaryDano.textContent = danoInput?.value || '—';

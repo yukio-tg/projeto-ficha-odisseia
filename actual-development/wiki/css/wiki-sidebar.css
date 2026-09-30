@@ -1,0 +1,189 @@
+/* wiki-sidebar.css — Persistent article list sidebar (warm dark manuscript)
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════
+   BODY LAYOUT
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.wiki-main-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SIDEBAR SHELL
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, var(--leath0) 0%, #1a0e04 100%);
+    border-right: 1px solid var(--leath3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Ornamental gold edge (right) */
+.wiki-sidebar::after {
+    content: '';
+    position: absolute;
+    top: 15%; right: 0; bottom: 15%;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, var(--gold0), transparent);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.wiki-sidebar-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEARCH BAR
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-sidebar-search-wrap {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--leath3);
+    padding: 0 10px;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.wiki-sidebar-search-wrap:focus-within {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.wiki-sidebar-search-icon {
+    color: var(--leath4);
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.wiki-sidebar-search-input {
+    background: none;
+    border: none;
+    color: var(--ink1);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 12.5px;
+    padding: 9px 4px;
+    width: 100%;
+    outline: none;
+}
+.wiki-sidebar-search-input::placeholder { color: var(--leath4); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   ARTICLE LIST
+   ═══════════════════════════════════════════════════════════════════ */
+.wiki-sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px 0 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--leath3) transparent;
+}
+.wiki-sidebar-list::-webkit-scrollbar { width: 3px; }
+.wiki-sidebar-list::-webkit-scrollbar-track { background: transparent; }
+.wiki-sidebar-list::-webkit-scrollbar-thumb { background: var(--leath3); border-radius: 2px; }
+
+/* Group header */
+.wiki-sidebar-group-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 12px 3px;
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold0);
+    opacity: 0.6;
+    border-top: 1px solid color-mix(in srgb, var(--leath3) 45%, transparent);
+    margin-top: 4px;
+}
+.wiki-sidebar-group-header:first-child { border-top: none; margin-top: 0; }
+
+.wiki-sidebar-group-icon {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+/* Article item */
+.wiki-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px 5px 18px;
+    text-decoration: none;
+    color: var(--ink3);
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 12px;
+    line-height: 1.4;
+    transition: background 0.1s, color 0.1s;
+    border-left: 2px solid transparent;
+}
+
+.wiki-sidebar-item:hover {
+    background: rgba(138, 94, 16, 0.1);
+    color: var(--gold2);
+    border-left-color: rgba(138, 94, 16, 0.4);
+}
+
+.wiki-sidebar-item--active {
+    background: rgba(138, 94, 16, 0.16);
+    color: var(--gold2);
+    border-left-color: var(--gold1);
+    font-style: italic;
+}
+
+.wiki-sidebar-item-title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wiki-sidebar-item-crown {
+    font-size: 9px;
+    color: var(--gold1);
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.wiki-sidebar-loading,
+.wiki-sidebar-empty {
+    font-family: 'Cinzel', serif;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--leath4);
+    opacity: 0.4;
+    text-align: center;
+    padding: 20px 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+    .wiki-sidebar { display: none; }
+    .wiki-main-area { width: 100%; }
+}

@@ -231,7 +231,20 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
         });
     });
 
-    toggleCard(card, true);
+    // Cards start open by default (state is saved and remembered)
+    toggleCard(card, false);
+
+    // Auto-resize textarea to content
+    const textarea = card.querySelector('.power-desc-textarea');
+    if (textarea) {
+        const autoResize = () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        };
+        textarea.addEventListener('input', autoResize);
+        // Run after content is set
+        requestAnimationFrame(autoResize);
+    }
 
     card.querySelector('.pt-cost-input').addEventListener('input', atualizarTotalPt);
 
@@ -455,7 +468,7 @@ export function getPowersState() {
         otherCosts: card.querySelector('.other-costs-input')?.value || '',
         descricao: card.querySelector('.power-desc-textarea')?.value || '',
         cor: card.dataset.cor || 'Vermelho',
-        collapsed: card.dataset.collapsed !== 'false',
+        collapsed: card.dataset.collapsed === 'true', // default false (open)
         herancaPower: card.dataset.herancaPower === 'true',
     }));
 }
@@ -468,7 +481,8 @@ export function setPowersState(data) {
             nome: p.nome, ptCost: p.ptCost, otherCosts: p.otherCosts,
             descricao: p.descricao, cor: p.cor
         }, '', p.cor);
-        toggleCard(card, p.collapsed !== false);
+        // Default to open (collapsed=false) unless explicitly saved as true
+        toggleCard(card, p.collapsed === true);
         if (p.herancaPower) _marcarComoPoderHeranca(card);
         containerCards.appendChild(card);
     });

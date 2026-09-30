@@ -1,0 +1,246 @@
+/* configuracoes.css — Configurações tab styles
+   Part of Odisseia Ficha de Personagem.
+   ─────────────────────────────────────────────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════
+   OUTER WRAP
+   ═══════════════════════════════════════════════════════════════════ */
+.cfg-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 8px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION
+   ═══════════════════════════════════════════════════════════════════ */
+.cfg-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cfg-desc {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink3);
+    line-height: 1.65;
+    margin: -4px 0 4px;
+    opacity: 0.85;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CARD CONTAINER
+   ═══════════════════════════════════════════════════════════════════ */
+.cfg-card {
+    background: color-mix(in srgb, var(--p1) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--p3) 60%, transparent);
+    border-radius: 6px;
+    padding: 16px 18px;
+}
+
+.cfg-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cfg-hint {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink3);
+    opacity: 0.75;
+    flex: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVOLUTION TABLE
+   ═══════════════════════════════════════════════════════════════════ */
+.cfg-evo-card {
+    overflow-x: auto;
+    padding: 0;
+}
+
+.cfg-evo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-size: 14px;
+}
+
+.cfg-evo-table thead th {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold1);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 35%, transparent);
+    background: color-mix(in srgb, var(--leath0) 35%, transparent);
+}
+
+.cfg-evo-table thead th:first-child {
+    width: 60px;
+    text-align: center;
+}
+
+.cfg-evo-table tbody tr {
+    border-bottom: 1px solid color-mix(in srgb, var(--p3) 30%, transparent);
+    transition: background 0.12s;
+    position: relative;
+}
+
+.cfg-evo-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.cfg-evo-table tbody tr:hover {
+    background: color-mix(in srgb, var(--gold0) 5%, transparent);
+}
+
+/* Current level row highlight */
+.cfg-evo-table tbody tr.cfg-evo-current {
+    background: color-mix(in srgb, var(--gold0) 12%, transparent);
+    border-left: 3px solid var(--gold1);
+}
+
+.cfg-evo-table tbody td {
+    padding: 8px 14px;
+    color: var(--ink2);
+    line-height: 1.5;
+}
+
+.cfg-evo-table tbody td:first-child {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: var(--ink1);
+    font-weight: 600;
+}
+
+/* Level arrow indicator */
+.cfg-evo-table tbody tr.cfg-evo-current td:first-child::before {
+    content: '→ ';
+    color: var(--gold2);
+    font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   INCREMENTS GRID
+   ═══════════════════════════════════════════════════════════════════ */
+.cfg-incr-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cfg-incr-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: color-mix(in srgb, var(--p1) 35%, transparent);
+    border: 1px solid color-mix(in srgb, var(--p3) 50%, transparent);
+    border-radius: 5px;
+    transition: background 0.12s;
+}
+
+.cfg-incr-row:hover {
+    background: color-mix(in srgb, var(--p1) 55%, transparent);
+}
+
+.cfg-incr-label {
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    color: var(--ink1);
+    white-space: nowrap;
+}
+
+.cfg-incr-hint {
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink3);
+    opacity: 0.75;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cfg-incr-inputs {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cfg-incr-field {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.cfg-incr-sublabel {
+    font-family: 'Cinzel', serif;
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    opacity: 0.65;
+    line-height: 1;
+}
+
+.cfg-incr-input {
+    width: 72px;
+    text-align: center;
+    background: color-mix(in srgb, var(--p0) 70%, transparent);
+    border: 1px solid color-mix(in srgb, var(--p3) 70%, transparent);
+    border-radius: 4px;
+    color: var(--ink0);
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    padding: 5px 6px;
+    outline: none;
+    transition: border-color 0.14s, background 0.14s;
+}
+
+.cfg-incr-input:focus {
+    border-color: var(--gold1);
+    background: var(--p0);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold1) 20%, transparent);
+}
+
+/* Non-zero values: tint gold */
+.cfg-incr-input:not([value="0"]) {
+    color: var(--gold2);
+    border-color: color-mix(in srgb, var(--gold0) 50%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+    .cfg-incr-row {
+        grid-template-columns: 60px 1fr;
+        gap: 8px;
+    }
+
+    .cfg-incr-hint {
+        display: none;
+    }
+
+    .cfg-incr-inputs {
+        grid-column: 1 / -1;
+    }
+}

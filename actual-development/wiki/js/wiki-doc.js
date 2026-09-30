@@ -3,11 +3,12 @@
 import { initWikiFirebase, getWikiDoc, getRelatedDocs, deleteWikiDoc } from './wiki-firebase.js';
 import { getAuthState }                                                  from './wiki-auth.js';
 import { escapeHtml, getParam, formatDate, showToast }                  from './wiki-utils.js';
+import { initWikiSidebar }                                               from './wiki-sidebar.js';
 import {
     applyAndCacheDocTheme, applyPreloadedTheme, WIKI_DEFAULTS,
 } from './wiki-theme.js';
 import {
-    TYPE_LABELS, TYPE_ICONS,
+    TYPE_LABELS, TYPE_ICONS, TYPE_SVG,
     getThreatStyle, getDomainStyle, getAlignmentStyle,
 } from './wiki-consts.js';
 import {
@@ -167,29 +168,31 @@ async function handleDelete(doc) {
 
 function renderTopbarActions(user, isAdmin, doc) {
     const container = document.getElementById('wiki-topbar-actions');
-    if (!container || !canEdit(user, isAdmin, doc)) return;
+    if (!container) return;
 
-    const editLink = document.createElement('a');
-    editLink.href = `/wiki/editar?id=${encodeURIComponent(doc.id)}`;
-    editLink.className = 'wiki-btn wiki-btn-primary';
-    const editIcon = document.createElement('span');
-    editIcon.className = 'material-symbols-outlined';
-    editIcon.textContent = 'edit';
-    editLink.appendChild(editIcon);
-    editLink.append('Editar');
+    if (canEdit(user, isAdmin, doc)) {
+        const editLink = document.createElement('a');
+        editLink.href = `/wiki/editar?id=${encodeURIComponent(doc.id)}`;
+        editLink.className = 'wiki-btn wiki-btn-primary';
+        const editIcon = document.createElement('span');
+        editIcon.className = 'material-symbols-outlined';
+        editIcon.textContent = 'edit';
+        editLink.appendChild(editIcon);
+        editLink.append('Editar');
 
-    const delBtn = document.createElement('button');
-    delBtn.type = 'button';
-    delBtn.className = 'wiki-btn wiki-btn-danger';
-    const delIcon = document.createElement('span');
-    delIcon.className = 'material-symbols-outlined';
-    delIcon.textContent = 'delete';
-    delBtn.appendChild(delIcon);
-    delBtn.append('Excluir');
-    delBtn.addEventListener('click', () => handleDelete(doc));
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'wiki-btn wiki-btn-danger';
+        const delIcon = document.createElement('span');
+        delIcon.className = 'material-symbols-outlined';
+        delIcon.textContent = 'delete';
+        delBtn.appendChild(delIcon);
+        delBtn.append('Excluir');
+        delBtn.addEventListener('click', () => handleDelete(doc));
 
-    container.appendChild(editLink);
-    container.appendChild(delBtn);
+        container.appendChild(editLink);
+        container.appendChild(delBtn);
+    }
 }
 
 // ── Related doc card ───────────────────────────────────────────────────────────
@@ -235,6 +238,72 @@ function buildRelatedCard(relDoc) {
     return card;
 }
 
+// ── Attribute bars renderer ────────────────────────────────────────────────────
+
+const ATTR_DEFS = [
+    { key: 'corpo',        label: 'Corpo',        svg: '/image/corpo.svg',        hint: 'Resistência física e força' },
+    { key: 'velocidade',   label: 'Velocidade',   svg: '/image/velocidade.svg',   hint: 'Agilidade e precisão' },
+    { key: 'essencia',     label: 'Essência',     svg: '/image/essencia.svg',     hint: 'Influência e poder mágico' },
+    { key: 'inteligencia', label: 'Inteligência', svg: '/image/inteligencia.svg', hint: 'Capacidade de aprender e tática' },
+];
+
+function buildAttrBars(attrs) {
+    const container = document.createElement('div');
+    container.className = 'wiki-attr-bars';
+
+    // Legend (tooltip on hover)
+    const legend = document.createElement('div');
+    legend.className = 'wiki-attr-bars-legend';
+    legend.textContent = '✦ Perfil de atributos';
+    container.appendChild(legend);
+
+    const grid = document.createElement('div');
+    grid.className = 'wiki-attr-bars-grid';
+
+    ATTR_DEFS.forEach(({ key, label, svg, hint }) => {
+        const val = Math.min(10, Math.max(0, Number(attrs?.[key] ?? 5)));
+
+        const row = document.createElement('div');
+        row.className = 'wiki-attr-bar-row';
+        row.title = `${label}: ${val}/10 — ${hint}`;
+
+        const icon = document.createElement('div');
+        icon.className = 'wiki-attr-bar-icon';
+        icon.style.cssText = `mask:url('${svg}') center/contain no-repeat;-webkit-mask:url('${svg}') center/contain no-repeat`;
+        row.appendChild(icon);
+
+        const labelEl = document.createElement('span');
+        labelEl.className = 'wiki-attr-bar-label';
+        labelEl.textContent = label;
+        row.appendChild(labelEl);
+
+        // Chip-based bar (10 chips, filled based on value)
+        const chipsEl = document.createElement('div');
+        chipsEl.className = 'wiki-attr-bar-chips';
+        for (let i = 1; i <= 10; i++) {
+            const chip = document.createElement('span');
+            chip.className = 'wiki-attr-chip';
+            if (i <= val) {
+                chip.classList.add('filled');
+                if (i >= 9) chip.classList.add('chip-max');
+                else if (i >= 7) chip.classList.add('chip-high');
+            }
+            chipsEl.appendChild(chip);
+        }
+        row.appendChild(chipsEl);
+
+        const numEl = document.createElement('span');
+        numEl.className = 'wiki-attr-bar-num';
+        numEl.textContent = val;
+        row.appendChild(numEl);
+
+        grid.appendChild(row);
+    });
+
+    container.appendChild(grid);
+    return container;
+}
+
 // ── Main document renderer ─────────────────────────────────────────────────────
 
 async function renderDoc(doc, user, isAdmin) {
@@ -253,7 +322,14 @@ async function renderDoc(doc, user, isAdmin) {
 
     const typeBadge = document.createElement('span');
     typeBadge.className = 'wiki-doc-type-badge';
-    typeBadge.textContent = TYPE_LABELS[doc.type] ?? doc.type ?? '';
+    const svgPathBadge = TYPE_SVG[doc.type];
+    if (svgPathBadge) {
+        const svgIcon = document.createElement('span');
+        svgIcon.className = 'wiki-type-svg-icon';
+        svgIcon.style.cssText = `display:inline-block;width:11px;height:11px;vertical-align:middle;margin-right:4px;mask:url('${svgPathBadge}') center/contain no-repeat;-webkit-mask:url('${svgPathBadge}') center/contain no-repeat;background:currentColor`;
+        typeBadge.appendChild(svgIcon);
+    }
+    typeBadge.appendChild(document.createTextNode(TYPE_LABELS[doc.type] ?? doc.type ?? ''));
     metaRow.appendChild(typeBadge);
 
     if (doc.status === 'canonical') {
@@ -283,13 +359,12 @@ async function renderDoc(doc, user, isAdmin) {
         header.appendChild(altEl);
     }
 
-    // Prominent badges row (threat + domain)
-    const hasThreat = !!doc.threat;
-    const hasDomain = !!doc.domain;
+    // Prominent badges row (threat + domain) — hidden for place/concept where not applicable
+    const hasThreat = !!doc.threat && doc.type !== 'place' && doc.type !== 'concept';
+    const hasDomain = !!doc.domain && doc.type !== 'concept';
     if (hasThreat || hasDomain) {
         const badgeRow = document.createElement('div');
         badgeRow.className = 'wiki-badge-row';
-        badgeRow.id = 'wiki-badge-row';
         if (hasThreat) {
             const b = document.createElement('span');
             b.className = 'wiki-badge wiki-threat-badge';
@@ -325,8 +400,57 @@ async function renderDoc(doc, user, isAdmin) {
     header.appendChild(authorEl);
     wrap.appendChild(header);
 
-    // ── 2. Summary box ────────────────────────────────────────────────────────
-    if (doc.summary?.trim()) {
+    // ── 2. Hero layout — image RIGHT, summary LEFT ────────────────────────────
+    const hasImage = doc.images?.length >= 1;
+    const hasSummary = !!doc.summary?.trim();
+    const hasAttrs = (doc.type === 'creature' || doc.type === 'person') && doc.attributes;
+
+    if (hasImage || hasSummary || hasAttrs) {
+        const hero = document.createElement('div');
+        hero.className = 'wiki-doc-hero';
+
+        // Left column: summary + attribute bars
+        const leftCol = document.createElement('div');
+        leftCol.className = 'wiki-doc-hero-left';
+
+        if (hasSummary) {
+            const summaryBox = document.createElement('div');
+            summaryBox.className = 'wiki-doc-summary-box';
+            const summaryP = document.createElement('p');
+            summaryP.textContent = doc.summary;
+            summaryBox.appendChild(summaryP);
+            leftCol.appendChild(summaryBox);
+        }
+
+        if (hasAttrs) {
+            leftCol.appendChild(buildAttrBars(doc.attributes));
+        }
+
+        hero.appendChild(leftCol);
+
+        // Right column: image (first only)
+        if (hasImage) {
+            const rightCol = document.createElement('div');
+            rightCol.className = 'wiki-doc-hero-right';
+
+            const imgWrap = document.createElement('div');
+            imgWrap.className = 'wiki-doc-hero-img-wrap';
+            const img = document.createElement('img');
+            img.src     = doc.images[0].url;
+            img.alt     = doc.images[0].caption || doc.title || '';
+            img.loading = 'eager';
+            img.className = 'wiki-doc-hero-img';
+            img.addEventListener('click', () => openLightbox(doc.images[0].url, doc.images[0].caption || ''));
+            if (doc.images[0].caption) {
+                img.title = doc.images[0].caption;
+            }
+            imgWrap.appendChild(img);
+            rightCol.appendChild(imgWrap);
+            hero.appendChild(rightCol);
+        }
+
+        wrap.appendChild(hero);
+    } else if (hasSummary) {
         const summaryBox = document.createElement('div');
         summaryBox.className = 'wiki-doc-summary-box';
         const summaryP = document.createElement('p');
@@ -335,17 +459,13 @@ async function renderDoc(doc, user, isAdmin) {
         wrap.appendChild(summaryBox);
     }
 
-    // ── 3. Carousel (all images) ──────────────────────────────────────────────
-    if (doc.images?.length >= 1) {
-        const carousel = buildCarousel(doc.images);
-        if (carousel) wrap.appendChild(carousel);
-    }
-
-    // ── 4. Tags row (types, regions, alignment) ───────────────────────────────
+    // ── 3. Tags row (types, regions, alignment) ───────────────────────────────
     const freeTags = [
         ...(doc.types || []).map(t => ({ text: t, cls: 'wiki-tag' })),
         ...(doc.regions || []).map(t => ({ text: t, cls: 'wiki-tag' })),
-        ...(doc.alignment ? [{ text: doc.alignment, cls: 'wiki-alignment-badge wiki-badge', style: getAlignmentStyle(doc.alignment, dark) }] : []),
+        ...(doc.alignment && doc.type !== 'place' && doc.type !== 'concept'
+            ? [{ text: doc.alignment, cls: 'wiki-alignment-badge wiki-badge', style: getAlignmentStyle(doc.alignment, dark) }]
+            : []),
     ];
     if (freeTags.length > 0) {
         const tagsRow = document.createElement('div');
@@ -360,7 +480,7 @@ async function renderDoc(doc, user, isAdmin) {
         wrap.appendChild(tagsRow);
     }
 
-    // ── 5. Content sections with wiki-links ───────────────────────────────────
+    // ── 4. Content sections with wiki-links ───────────────────────────────────
     const nonEmptySections = (doc.content || []).filter(s => s.body?.trim());
 
     if (nonEmptySections.length > 0) {
@@ -405,7 +525,7 @@ async function renderDoc(doc, user, isAdmin) {
             wrap.appendChild(sectionEl);
         }
 
-        // ── 6. References section (from wiki-links) ───────────────────────────
+        // ── 5. References section (from wiki-links) ───────────────────────────
         if (linksMap.size > 0) {
             const refsSection = document.createElement('div');
             refsSection.className = 'wiki-references';
@@ -425,7 +545,7 @@ async function renderDoc(doc, user, isAdmin) {
         }
     }
 
-    // ── 7. Gallery (images[1+]) ───────────────────────────────────────────────
+    // ── 6. Gallery (images[1+]) ───────────────────────────────────────────────
     if (doc.images?.length > 1) {
         const gallery = document.createElement('div');
         gallery.className = 'wiki-gallery';
@@ -464,72 +584,156 @@ async function renderDoc(doc, user, isAdmin) {
         wrap.appendChild(gallery);
     }
 
-    // ── 8. Bottom actions bar ─────────────────────────────────────────────────
+    // ── 7. .md "Revelar Ficha" button ─────────────────────────────────────────
+    if (doc.mdContent && (doc.type === 'creature' || doc.type === 'person')) {
+        const revealBar = document.createElement('div');
+        revealBar.className = 'wiki-md-reveal-bar';
+        const ornament = document.createElement('div');
+        ornament.className = 'wiki-orn';
+        ornament.textContent = '· ✦ ·';
+        revealBar.appendChild(ornament);
+
+        const revealBtn = document.createElement('button');
+        revealBtn.type = 'button';
+        revealBtn.className = 'wiki-md-reveal-btn';
+        revealBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">description</span> Revelar Ficha`;
+        revealBar.appendChild(revealBtn);
+        wrap.appendChild(revealBar);
+
+        const openModal = initMdModal(doc);
+        if (openModal) revealBtn.addEventListener('click', openModal);
+    }
+
+    // ── 8. Actions bar (edit / delete) ────────────────────────────────────────
     if (canEdit(user, isAdmin, doc)) {
         const actionsBar = document.createElement('div');
         actionsBar.className = 'wiki-doc-actions-bar';
-
-        const editLink = document.createElement('a');
-        editLink.href = `/wiki/editar?id=${encodeURIComponent(doc.id)}`;
-        editLink.className = 'wiki-btn wiki-btn-primary';
-        const eIcon = document.createElement('span');
-        eIcon.className = 'material-symbols-outlined';
-        eIcon.textContent = 'edit';
-        editLink.appendChild(eIcon);
-        editLink.append('Editar');
-
-        const delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'wiki-btn wiki-btn-danger';
-        const dIcon = document.createElement('span');
-        dIcon.className = 'material-symbols-outlined';
-        dIcon.textContent = 'delete';
-        delBtn.appendChild(dIcon);
-        delBtn.append('Excluir');
-        delBtn.addEventListener('click', () => handleDelete(doc));
-
-        actionsBar.appendChild(editLink);
-        actionsBar.appendChild(delBtn);
         wrap.appendChild(actionsBar);
     }
 }
 
-// ── Identity header (mirrors ficha's sheet-header) ────────────────────────────
-
-const CREST_ICONS = {
-    creature: 'pets',
-    place:    'map',
-    person:   'person',
-    concept:  'auto_awesome',
-};
+// ── Identity header (new design) ──────────────────────────────────────────────
 
 function renderIdentityHeader(doc) {
-    const header = document.getElementById('wiki-doc-identity');
-    const crest  = document.getElementById('wiki-doc-identity-crest');
-    const title  = document.getElementById('wiki-doc-identity-title');
-    const sub    = document.getElementById('wiki-doc-identity-sub');
+    const header     = document.getElementById('wiki-doc-header-bar');
+    const crestInner = document.getElementById('wiki-doc-crest-inner');
+    const typeEl     = document.getElementById('wiki-doc-header-type');
+    const titleEl    = document.getElementById('wiki-doc-header-title');
+    const subEl      = document.getElementById('wiki-doc-header-sub');
     if (!header) return;
 
-    // Crest icon based on doc type
-    const iconName = CREST_ICONS[doc.type] || 'auto_stories';
-    crest.innerHTML = `<span class="material-symbols-outlined">${iconName}</span>`;
+    // Crest: use SVG icon mask
+    const svgPath = TYPE_SVG[doc.type];
+    if (crestInner) {
+        if (svgPath) {
+            crestInner.innerHTML = `<span class="wiki-doc-crest-svg" style="mask:url('${svgPath}') center/70% no-repeat;-webkit-mask:url('${svgPath}') center/70% no-repeat"></span>`;
+        } else {
+            crestInner.innerHTML = `<span class="material-symbols-outlined" style="font-size:26px">auto_stories</span>`;
+        }
+    }
+
+    // Type label
+    const typeLabel = TYPE_LABELS[doc.type] ?? doc.type ?? '';
+    if (typeEl) typeEl.textContent = typeLabel;
 
     // Title
-    title.textContent = doc.title ?? '';
+    if (titleEl) titleEl.textContent = doc.title ?? '';
 
-    // Subtitle: type label + optional alt-name + canonical marker
-    const typeLabel = TYPE_LABELS[doc.type] ?? doc.type ?? '';
-    const parts = [typeLabel];
-    if (doc.altName?.trim()) parts.push(doc.altName);
-    if (doc.status === 'canonical') parts.push('✦ Canônico');
-    sub.textContent = parts.join('  ·  ');
+    // Subtitle
+    if (subEl) {
+        const parts = [];
+        if (doc.altName?.trim()) parts.push(doc.altName);
+        if (doc.status === 'canonical') parts.push('✦ Canônico');
+        subEl.textContent = parts.join('  ·  ');
+        subEl.style.display = parts.length ? '' : 'none';
+    }
 
-    header.style.display = '';
+    header.style.display = 'block';
+}
+
+// ── Entry point ────────────────────────────────────────────────────────────────
+
+// ── .md modal logic ───────────────────────────────────────────────────────────
+
+function initMdModal(doc) {
+    const modalEl   = document.getElementById('wiki-md-modal');
+    const contentEl = document.getElementById('wiki-md-modal-content');
+    const titleEl   = document.getElementById('wiki-md-modal-title');
+    const closeBtn  = document.getElementById('wiki-md-close-btn');
+    const dlBtn     = document.getElementById('wiki-md-download-btn');
+    if (!modalEl || !doc.mdContent) return;
+
+    // Close handlers
+    const close = () => {
+        modalEl.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+    closeBtn?.addEventListener('click', close);
+    modalEl.addEventListener('click', e => { if (e.target === modalEl) close(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && modalEl.style.display !== 'none') close();
+    });
+
+    // Download handler
+    dlBtn?.addEventListener('click', () => {
+        const blob = new Blob([doc.mdContent], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = (doc.title || 'ficha').replace(/[^a-z0-9\-_]/gi, '_') + '.md';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    // Return opener function
+    return () => {
+        if (titleEl) titleEl.textContent = 'Ficha — ' + (doc.title || '');
+        // Render markdown as plain text (escaped) with basic formatting
+        if (contentEl) contentEl.innerHTML = renderSimpleMd(doc.mdContent);
+        modalEl.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+}
+
+/** Minimal Markdown renderer (no external lib needed) */
+function renderSimpleMd(md) {
+    if (!md) return '';
+    const escaped = md
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    return escaped
+        // Headers
+        .replace(/^#{6}\s+(.+)$/gm, '<h6>$1</h6>')
+        .replace(/^#{5}\s+(.+)$/gm, '<h5>$1</h5>')
+        .replace(/^#{4}\s+(.+)$/gm, '<h4>$1</h4>')
+        .replace(/^#{3}\s+(.+)$/gm, '<h3>$1</h3>')
+        .replace(/^#{2}\s+(.+)$/gm, '<h2>$1</h2>')
+        .replace(/^#{1}\s+(.+)$/gm, '<h1>$1</h1>')
+        // Bold + Italic
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        // Horizontal rule
+        .replace(/^---+$/gm, '<hr>')
+        // Blockquote
+        .replace(/^&gt;\s(.+)$/gm, '<blockquote>$1</blockquote>')
+        // Unordered list items
+        .replace(/^[*\-]\s+(.+)$/gm, '<li>$1</li>')
+        // Ordered list items
+        .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
+        // Paragraphs (double newline)
+        .replace(/\n\n+/g, '</p><p>')
+        // Single newlines
+        .replace(/\n/g, '<br>');
 }
 
 // ── Entry point ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Permanent dark mode for the wiki
+    document.body.classList.add('theme-dark-paper');
     initWikiFirebase();
 
     const id = getParam('id');
@@ -537,6 +741,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Apply cached theme immediately (prevents flash)
     applyPreloadedTheme(id);
+
+    // Init sidebar (background load)
+    initWikiSidebar(id);
 
     const [{ user, isAdmin }, wikiDoc] = await Promise.all([
         getAuthState(),
@@ -553,9 +760,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Apply and cache the document's theme
     applyAndCacheDocTheme(id, wikiDoc.theme ?? null);
 
-    document.title = wikiDoc.title + ' — Wiki Odisseia';
+    document.title = wikiDoc.title + ' — Enciclopédia Ascalon';
 
-    // Populate the identity header (dark leather bar, like ficha's sheet-header)
+    // Populate the identity header (new design)
     renderIdentityHeader(wikiDoc);
 
     renderTopbarActions(user, isAdmin, wikiDoc);
