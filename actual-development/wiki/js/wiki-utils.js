@@ -23,6 +23,12 @@ export function formatDate(timestamp) {
     } catch { return ''; }
 }
 
+/** Keeps only http(s) addresses. Anything else is discarded. */
+export function safeHttpUrl(url) {
+    const raw = (url || '').trim();
+    return /^https?:\/\//i.test(raw) ? raw : '';
+}
+
 export function slugifyTag(str) {
     return normalizar(str)
         .replace(/\s+/g, '-')
@@ -36,6 +42,8 @@ export const TYPE_LABELS = {
     place:    'Lugar',
     person:   'Pessoa',
     concept:  'Conceito',
+    item:     'Item',
+    group:    'Grupo',
 };
 
 export const TYPE_ICONS = {
@@ -43,6 +51,8 @@ export const TYPE_ICONS = {
     place:    'map',
     person:   'person',
     concept:  'auto_awesome',
+    item:     'swords',
+    group:    'groups',
 };
 
 /** Shows a toast notification in the bottom-right corner. */

@@ -9,7 +9,7 @@ import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { updateBestaBar, attachCalcMode } from './vitals.js';
 import { ONUS_LISTA } from '../config/onus.js';
-import { REACOES_PRESET, popularReacoesPreset } from './combat.js';
+import { REACOES_PRESET, normalizarDescricaoReacao, popularReacoesPreset } from './combat.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { ASPECTOS_BIO, ASPECTOS_TREINO } from '../config/aspectos-besta.js';
 
@@ -951,12 +951,13 @@ function criarBestaCardReacao(b, r, idx) {
     reacaoNomeInp.addEventListener('change', e => {
         const nome = e.target.value.trim();
         const preset = REACOES_PRESET[nome];
-        if (preset && reacaoDescTA && !reacaoDescTA.value.trim()) {
-            // Build clean description with placeholder labels
-            let tmpl = preset.template;
-            const labels = { inteligencia:'INT', sabedoria:'SAB', carisma:'CAR', gastoPM:'PM gastos', rd:'RD calculado', bonusDefesa:'bônus DEF', brecha:'pontos de Brecha' };
-            for (const [k,lbl] of Object.entries(labels)) tmpl = tmpl.replace(new RegExp(`\\{${k}\\}`, 'g'), `[${lbl}]`);
-            reacaoDescTA.value = tmpl; r.desc = tmpl; saveBestas();
+        if (preset && reacaoDescTA) {
+            const texto = normalizarDescricaoReacao(nome, reacaoDescTA.value);
+            if (texto !== reacaoDescTA.value) {
+                reacaoDescTA.value = texto;
+                r.desc = texto;
+                saveBestas();
+            }
         }
     });
     reacaoDescTA.addEventListener('input', e => { r.desc = e.target.value; saveBestas(); });
@@ -1519,7 +1520,15 @@ function renderBestaInstance(b, container) {
         });
     }
     const reacaoList = el.querySelector(`[data-besta-reacao-list="${b.id}"]`);
-    if (reacaoList) b.reacoes.forEach(r => reacaoList.appendChild(criarBestaCardReacao(b, r)));
+    if (reacaoList) {
+        b.reacoes.forEach(r => {
+            if (r.nome && REACOES_PRESET[r.nome]) {
+                const texto = normalizarDescricaoReacao(r.nome, r.desc);
+                if (texto !== (r.desc || '')) r.desc = texto;
+            }
+        });
+        b.reacoes.forEach(r => reacaoList.appendChild(criarBestaCardReacao(b, r)));
+    }
     const bonusList = el.querySelector(`[data-besta-bonus-list="${b.id}"]`);
     if (bonusList) b.bonusOnus.forEach(bo => bonusList.appendChild(criarBestaCardBonus(b, bo)));
     const condList = el.querySelector(`[data-besta-condicao-list="${b.id}"]`);

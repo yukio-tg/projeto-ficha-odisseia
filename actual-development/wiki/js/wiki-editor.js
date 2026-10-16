@@ -6,13 +6,13 @@ import {
     titleExists, getTagSuggestions, registerTags,
 } from './wiki-firebase.js';
 import { getAuthState, requireAuth }                     from './wiki-auth.js';
-import { escapeHtml, getParam, slugifyTag, showToast }   from './wiki-utils.js';
+import { escapeHtml, getParam, slugifyTag, showToast, safeHttpUrl } from './wiki-utils.js';
 import {
     buildThemePicker, applyDocTheme, resetDocTheme,
     clearDocThemeCache, WIKI_DEFAULTS,
 } from './wiki-theme.js';
 import { THREAT_LEVELS, DOMAIN_TYPES, ALIGNMENT_TYPES }  from './wiki-consts.js';
-import { extractAllWikiLinks, resolveWikiLinks }          from './wiki-wikilinks.js';
+import { extractLinkedDocIds }                           from './wiki-format.js';
 import { initWikiSidebar }                               from './wiki-sidebar.js';
 
 // ── Module state ──────────────────────────────────────────────────────────────
@@ -29,20 +29,22 @@ const regiaoChipMap = new Map();
 let tipoSuggestions   = [];
 let regiaoSuggestions = [];
 
-// .md file state
-let currentMdContent = null; // null = no file, string = file content
-
 // ── Type-based field visibility ────────────────────────────────────────────────
 // Fields and which types they apply to:
 const FIELD_VISIBILITY = {
-    'tag-threat-wrap':   ['creature', 'person'],    // Lugar, Conceito: sem ameaça
-    'tag-domain-wrap':   ['creature', 'place', 'person'], // Conceito: sem domínio
-    'tag-tipo-wrap':     ['creature'],              // Apenas monstro tem tipo
-    'tag-regiao-wrap':   ['creature', 'person'],    // Conceito não tem região
-    'tag-alignment-wrap':['creature', 'person'],    // Lugar e Conceito: sem alinhamento
-    'field-attrs-wrap':  ['creature', 'person'],    // Apenas monstro/pessoa
-    'field-md-wrap':     ['creature', 'person'],    // Apenas monstro/pessoa
+    'tag-threat-wrap':   ['creature', 'person', 'item', 'group'],
+    'tag-domain-wrap':   ['creature', 'place', 'person', 'item', 'group'],
+    'tag-tipo-wrap':     ['creature', 'place', 'person', 'item', 'group'],
+    'tag-regiao-wrap':   ['creature', 'person', 'group'], // Item não tem região
+    'tag-alignment-wrap':['creature', 'person', 'item', 'group'],
+    'field-attrs-wrap':  ['creature', 'person'],    // Item e Grupo: sem atributos
+    'field-md-wrap':     ['creature', 'person'],    // Item e Grupo: sem ficha
 };
+
+function typeAllows(fieldId, type) {
+    const allowed = FIELD_VISIBILITY[fieldId];
+    return Array.isArray(allowed) && allowed.includes(type);
+}
 
 function updateTypeVisibility(type) {
     for (const [id, allowedTypes] of Object.entries(FIELD_VISIBILITY)) {
@@ -164,33 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wire chip previews for attribute inputs
     initAttrChipPreviews();
-
-    // .md file upload
-    const mdFileInput = document.getElementById('wiki-md-file-input');
-    const mdPreview   = document.getElementById('wiki-md-file-preview');
-    const mdLabel     = document.getElementById('wiki-md-upload-label');
-    const mdFileName  = document.getElementById('wiki-md-file-name');
-    const mdRemove    = document.getElementById('wiki-md-file-remove');
-
-    mdFileInput?.addEventListener('change', () => {
-        const file = mdFileInput.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            currentMdContent = e.target.result;
-            if (mdFileName) mdFileName.textContent = file.name;
-            if (mdPreview)  mdPreview.style.display = 'flex';
-            if (mdLabel)    mdLabel.style.opacity = '0.4';
-        };
-        reader.readAsText(file, 'UTF-8');
-    });
-
-    mdRemove?.addEventListener('click', () => {
-        currentMdContent = null;
-        if (mdFileInput) mdFileInput.value = '';
-        if (mdPreview)   mdPreview.style.display = 'none';
-        if (mdLabel)     mdLabel.style.opacity = '';
-    });
 
     // Edit mode: load existing doc
     if (currentDocId) await loadDoc(currentDocId);
@@ -339,7 +314,7 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
 // ── Content sections builder ───────────────────────────────────────────────────
 
 function addSection(section = {}) {
-    const { heading = '', body = '', collapsible = false } = section;
+    const { heading = '', body = '' } = section;
     const builder = document.getElementById('wiki-sections-builder');
     if (!builder) return;
 
@@ -359,31 +334,6 @@ function addSection(section = {}) {
     const controls = document.createElement('div');
     controls.className = 'wiki-section-controls';
 
-    // Collapsible toggle
-    const toggleLabel = document.createElement('label');
-    toggleLabel.className = 'wiki-collapsible-toggle';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.checked = collapsible;
-    const indicator = document.createElement('span');
-    indicator.className = 'wiki-collapsible-indicator';
-    if (collapsible) {
-        const checkIcon = document.createElement('span');
-        checkIcon.className = 'material-symbols-outlined';
-        checkIcon.style.cssText = 'font-size:10px;font-variation-settings:"FILL" 1';
-        checkIcon.textContent = 'check';
-        indicator.appendChild(checkIcon);
-    }
-    cb.addEventListener('change', () => {
-        indicator.innerHTML = cb.checked
-            ? '<span class="material-symbols-outlined" style="font-size:10px;font-variation-settings:\'FILL\' 1">check</span>'
-            : '';
-    });
-    const toggleText = document.createTextNode('\u00a0Recolhível');
-    toggleLabel.appendChild(cb);
-    toggleLabel.appendChild(indicator);
-    toggleLabel.appendChild(toggleText);
-
     // Remove button
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -395,7 +345,6 @@ function addSection(section = {}) {
     removeBtn.appendChild(removeIcon);
     removeBtn.addEventListener('click', () => item.remove());
 
-    controls.appendChild(toggleLabel);
     controls.appendChild(removeBtn);
     headerRow.appendChild(headingInput);
     headerRow.appendChild(controls);
@@ -404,12 +353,48 @@ function addSection(section = {}) {
     // Body textarea
     const bodyArea = document.createElement('textarea');
     bodyArea.className = 'wiki-textarea';
-    bodyArea.placeholder = 'Conteúdo da seção...\n\nUse [[Nome do Documento]] para criar links automáticos para outros documentos da wiki.';
+    bodyArea.placeholder = 'Conteúdo da seção...\n\nCtrl+B para **negrito**, Ctrl+I para *itálico*. Veja o guia de formatação acima.';
     bodyArea.rows = 5;
     bodyArea.value = body;
+    wireFormattingShortcuts(bodyArea);
     item.appendChild(bodyArea);
 
     builder.appendChild(item);
+}
+
+// ── Formatting shortcuts (Ctrl+B / Ctrl+I) ─────────────────────────────────────
+
+/**
+ * Wraps the selection in `marker`, or — when nothing is selected — inserts the
+ * markers and leaves the caret between them so typing continues formatted.
+ * Wrapping an already-wrapped selection removes the markers again.
+ */
+function toggleMarker(textarea, marker) {
+    const { value, selectionStart: start, selectionEnd: end } = textarea;
+    const len = marker.length;
+    const before = value.slice(0, start);
+    const after  = value.slice(end);
+
+    if (before.endsWith(marker) && after.startsWith(marker)) {
+        const unwrapped = before.slice(0, -len) + value.slice(start, end) + after.slice(len);
+        textarea.value = unwrapped;
+        textarea.setSelectionRange(start - len, end - len);
+    } else {
+        textarea.value = before + marker + value.slice(start, end) + marker + after;
+        textarea.setSelectionRange(start + len, end + len);
+    }
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function wireFormattingShortcuts(textarea) {
+    textarea.addEventListener('keydown', (e) => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const key = e.key.toLowerCase();
+        if (key !== 'b' && key !== 'i') return;
+        e.preventDefault();
+        toggleMarker(textarea, key === 'b' ? '**' : '*');
+    });
 }
 
 // ── Gallery builder ────────────────────────────────────────────────────────────
@@ -534,16 +519,7 @@ async function populateForm(doc) {
         });
     }
 
-    // .md content (if previously uploaded)
-    if (doc.mdContent) {
-        currentMdContent = doc.mdContent;
-        const mdPreview  = document.getElementById('wiki-md-file-preview');
-        const mdFileName = document.getElementById('wiki-md-file-name');
-        const mdLabel    = document.getElementById('wiki-md-upload-label');
-        if (mdFileName) mdFileName.textContent = (doc.title || 'ficha') + '.md (já carregado)';
-        if (mdPreview)  mdPreview.style.display = 'flex';
-        if (mdLabel)    mdLabel.style.opacity = '0.4';
-    }
+    setVal('field-sheet-url', doc.sheetUrl || '');
 
     // Theme
     if (doc.theme && (doc.theme.fundo || doc.theme.metalico || doc.theme.pergaminho)) {
@@ -620,16 +596,14 @@ async function handleSubmit(e) {
 
     submitBtn.textContent = 'Salvando...';
 
-    // Collect sections
+    // Collect sections — sections are never collapsible
     const content = [];
     document.querySelectorAll('#wiki-sections-builder .wiki-section-item').forEach(item => {
         const headingEl = item.querySelector('.wiki-section-item-heading-input');
         const bodyEl    = item.querySelector('.wiki-textarea');
-        const cbEl      = item.querySelector('input[type="checkbox"]');
         const heading   = headingEl?.value.trim() ?? '';
         const body      = bodyEl?.value.trim() ?? '';
-        const coll      = cbEl?.checked ?? false;
-        if (heading || body) content.push({ heading, body, collapsible: coll });
+        if (heading || body) content.push({ heading, body, collapsible: false });
     });
 
     // Collect gallery images
@@ -641,21 +615,17 @@ async function handleSubmit(e) {
         if (url) images.push({ url, caption: cap });
     });
 
-    // Auto-populate relatedDocs from wiki-links
-    let relatedDocs = [];
-    try {
-        const allNames = extractAllWikiLinks(content);
-        const linksMap = await resolveWikiLinks(allNames);
-        relatedDocs = [...new Set([...linksMap.values()].map(d => d.id))];
-    } catch (e) {
-        console.warn('[wiki-editor] wiki-links resolution failed:', e);
-    }
+    // Auto-populate relatedDocs from links pointing at other wiki documents
+    const relatedDocs = extractLinkedDocIds(content).filter(id => id !== currentDocId);
 
     const docType = document.getElementById('field-type')?.value || 'creature';
 
+    const savedTypes   = typeAllows('tag-tipo-wrap', docType) ? [...tipos] : [];
+    const savedRegions = typeAllows('tag-regiao-wrap', docType) ? [...regioes] : [];
+
     // Attributes (monstro/pessoa)
     let attributes = null;
-    if (docType === 'creature' || docType === 'person') {
+    if (typeAllows('field-attrs-wrap', docType)) {
         attributes = {
             corpo:        parseInt(document.getElementById('attr-corpo')?.value, 10) || 0,
             velocidade:   parseInt(document.getElementById('attr-velocidade')?.value, 10) || 0,
@@ -669,17 +639,19 @@ async function handleSubmit(e) {
         altName:  document.getElementById('field-alt-name')?.value.trim() ?? '',
         type:     docType,
         summary:  summaryVal,
-        threat:   document.getElementById('field-threat')?.value    || '',
-        domain:   document.getElementById('field-domain')?.value    || '',
-        alignment: document.getElementById('field-alignment')?.value || '',
-        types:    [...tipos],
-        regions:  [...regioes],
+        threat:    typeAllows('tag-threat-wrap', docType) ? (document.getElementById('field-threat')?.value || '') : '',
+        domain:    typeAllows('tag-domain-wrap', docType) ? (document.getElementById('field-domain')?.value || '') : '',
+        alignment: typeAllows('tag-alignment-wrap', docType) ? (document.getElementById('field-alignment')?.value || '') : '',
+        types:    savedTypes,
+        regions:  savedRegions,
         content,
         images,
         relatedDocs,
         theme:    { ...currentTheme },
         attributes,
-        mdContent: currentMdContent,
+        sheetUrl: typeAllows('field-md-wrap', docType)
+            ? safeHttpUrl(document.getElementById('field-sheet-url')?.value)
+            : '',
     };
 
     // Status: only in create mode or for admins
@@ -690,8 +662,8 @@ async function handleSubmit(e) {
     try {
         // Register free tags for future autocomplete
         await Promise.all([
-            registerTags(tipos,   'tipo'),
-            registerTags(regioes, 'regiao'),
+            registerTags(savedTypes,   'tipo'),
+            registerTags(savedRegions, 'regiao'),
         ]);
 
         if (currentDocId) {

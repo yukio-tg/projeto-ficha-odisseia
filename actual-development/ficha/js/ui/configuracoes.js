@@ -2,29 +2,42 @@
 // Handles: level arrow in evolution table, increment values applied to stats.
 'use strict';
 
+import { getNivel } from '../core/radar-service.js';
+
 // ── Evolution table level tracking ───────────────────────────────────────────
 
 let _lastNivel = null;
-let _evoInterval = null;
+
+function nivelAtual() {
+    const radar = document.querySelector('#secao-radar .level-input');
+    if (radar) return parseInt(radar.value, 10) || getNivel();
+    return getNivel();
+}
 
 /**
- * Updates the evolution table to highlight the current character level.
- * Safe to call multiple times — no-ops if level unchanged.
+ * Highlights the character's current level and marks earlier milestones as reached.
  */
-export function updateEvoTable() {
-    const nivelInput = document.querySelector('[data-field="nivel"]');
-    const nivel = parseInt(nivelInput?.value, 10) || 1;
-
-    if (nivel === _lastNivel) return;
-    _lastNivel = nivel;
-
+export function updateEvoTable(opcoes = {}) {
+    const nivel = nivelAtual();
     const table = document.getElementById('cfg-evo-table');
     if (!table) return;
 
+    const mudou = nivel !== _lastNivel;
+    _lastNivel = nivel;
+
+    let atual = null;
     table.querySelectorAll('tbody tr').forEach(row => {
         const rowNivel = parseInt(row.dataset.nivel, 10);
-        row.classList.toggle('cfg-evo-current', rowNivel === nivel);
+        const isCurrent = rowNivel === nivel;
+        row.classList.toggle('cfg-evo-current', isCurrent);
+        row.classList.toggle('cfg-evo-reached', rowNivel < nivel);
+        if (isCurrent) atual = row;
     });
+
+    const paginaAtiva = document.getElementById('tab-configuracoes')?.classList.contains('active');
+    if (atual && paginaAtiva && (mudou || opcoes.scroll)) {
+        atual.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
 }
 
 // ── Increment helpers ─────────────────────────────────────────────────────────
@@ -69,32 +82,28 @@ export function triggerRecalc() {
  * Polls for programmatic nivel changes (e.g., ficha load) every 500ms for 5s.
  */
 export function initConfiguracoes() {
-    const nivelInput = document.querySelector('[data-field="nivel"]');
-    if (nivelInput) {
-        // User-triggered changes
-        nivelInput.addEventListener('input', updateEvoTable);
-        nivelInput.addEventListener('change', updateEvoTable);
-    }
+    const ligarNivel = () => {
+        const nivelInput = document.querySelector('#secao-radar .level-input');
+        if (!nivelInput || nivelInput.dataset.evoBound === '1') return !!nivelInput;
+        nivelInput.dataset.evoBound = '1';
+        nivelInput.addEventListener('input', () => updateEvoTable());
+        nivelInput.addEventListener('change', () => updateEvoTable());
+        return true;
+    };
 
-    // Initial update (may not be correct if ficha hasn't loaded yet)
+    ligarNivel();
     updateEvoTable();
 
-    // Poll for programmatic changes (desserializer sets .value without firing events)
-    // Run 10 times over 5 seconds after init to catch late ficha loads
-    let polls = 0;
-    _evoInterval = setInterval(() => {
-        updateEvoTable();
-        polls++;
-        if (polls >= 10) {
-            clearInterval(_evoInterval);
-            _evoInterval = null;
-        }
-    }, 500);
-
-    // Also update when a ficha:loaded event is dispatched (if available)
     document.addEventListener('ficha:loaded', () => {
-        // Give deserializer 50ms to finish setting values
-        setTimeout(updateEvoTable, 50);
+        _lastNivel = null;
+        setTimeout(() => updateEvoTable(), 50);
+    });
+
+    document.querySelectorAll('[data-tab="configuracoes"]').forEach(tab => {
+        tab.addEventListener('click', () => {
+            _lastNivel = null;
+            setTimeout(() => updateEvoTable({ scroll: true }), 0);
+        });
     });
 
     // Wire increment inputs → recalculate stats

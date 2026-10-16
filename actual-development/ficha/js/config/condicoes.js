@@ -58,7 +58,7 @@ export const CONDICOES_LISTA = [
   },
   {
     nome: "Sangrando",
-    desc: "Com um ferimento aberto. No início de seus turnos, o personagem perde 1d8+2 pontos de vida. A condição se encerra caso o personagem recuperar pelo menos 1 PV."
+    desc: "Com um ferimento aberto. No início de seus turnos, o personagem perde 1d8+2 pontos de vida. A condição se encerra caso o personagem recuperar pelo menos 1 PV. A condição não desfere dano letal, se encerrando quando alcançar 1 PV."
   },
   {
     nome: "Surpreendido",
@@ -118,7 +118,7 @@ export const CONDICOES_LISTA = [
   },
   {
     nome: "Alquebrado",
-    desc: "Todo gasto de PM em 1."
+    desc: "Aumenta todo gasto de PM em +1."
   },
   {
     nome: "Apavorado",

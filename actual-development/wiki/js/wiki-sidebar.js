@@ -1,12 +1,12 @@
 // wiki-sidebar.js — Persistent sidebar article list for all wiki pages
 import { listWikiDocs } from './wiki-firebase.js';
-import { TYPE_LABELS, TYPE_SVG } from './wiki-consts.js';
+import { TYPE_PLURALS, TYPE_SVG } from './wiki-consts.js';
 import { normalizar } from './wiki-utils.js';
 
 let _allDocs = [];
 let _currentDocId = null;
 
-const TYPE_ORDER = ['creature', 'place', 'person', 'concept'];
+const TYPE_ORDER = ['creature', 'place', 'person', 'concept', 'item', 'group'];
 
 /**
  * Initialise the sidebar: load docs, render list, wire search.
@@ -86,7 +86,7 @@ function renderSidebarList(query) {
             groupHeader.appendChild(icon);
         }
         const label = document.createElement('span');
-        label.textContent = TYPE_LABELS[type] + 's';
+        label.textContent = TYPE_PLURALS[type] || type;
         groupHeader.appendChild(label);
         listEl.appendChild(groupHeader);
 

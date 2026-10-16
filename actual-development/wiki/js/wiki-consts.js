@@ -2,12 +2,22 @@
 // Defines controlled vocabularies, colors, and labels for structured tags.
 
 // ── Document types ────────────────────────────────────────────────────────────
-export const WIKI_TYPES = ['creature', 'place', 'person', 'concept'];
+export const WIKI_TYPES = ['creature', 'place', 'person', 'concept', 'item', 'group'];
 export const TYPE_LABELS = {
     creature: 'Monstro',
     place:    'Lugar',
     person:   'Pessoa',
     concept:  'Conceito',
+    item:     'Item',
+    group:    'Grupo',
+};
+export const TYPE_PLURALS = {
+    creature: 'Monstros',
+    place:    'Lugares',
+    person:   'Pessoas',
+    concept:  'Conceitos',
+    item:     'Itens',
+    group:    'Grupos',
 };
 // Material Symbols fallbacks (used in rarely-updated contexts)
 export const TYPE_ICONS = {
@@ -15,6 +25,8 @@ export const TYPE_ICONS = {
     place:    'map',
     person:   'person',
     concept:  'auto_awesome',
+    item:     'swords',
+    group:    'groups',
 };
 // SVG icon paths (preferred — match filenames in /image/)
 export const TYPE_SVG = {
@@ -22,6 +34,8 @@ export const TYPE_SVG = {
     place:    '/image/lugar.svg',
     person:   '/image/pessoa.svg',
     concept:  '/image/conceitos.svg',
+    item:     '/image/item.svg',
+    group:    '/image/grupo.svg',
 };
 
 // ── Threat levels (Ameaça) — 20 levels, inoffensive → catastrophic ────────────

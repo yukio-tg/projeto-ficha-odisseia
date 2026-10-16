@@ -33,8 +33,8 @@
       "descricao_sucesso": "Te concede +3 RD a dano e Defesa.",
       "descricao_fracasso": "Te deixa vulnerável a danos de impacto por uma rodada.",
       "aprimoramentos": [
-        { "custo": "+2 PM", "descricao": "Você pode conjurar essa magia num ser adjacente.", "requisito": null },
-        { "custo": "+4 PM", "descricao": "Em Sucesso, o bônus de Defesa e RD aumenta para +7.", "requisito": "Requer Grau 2." }
+        { "custo": "+1 PM", "descricao": "Você pode conjurar essa magia num ser adjacente.", "requisito": null },
+        { "custo": "+3 PM", "descricao": "Em Sucesso, o bônus de Defesa e RD aumenta para +5.", "requisito": "Requer Grau 2." }
       ],
       "grau": 1
     },
@@ -206,7 +206,7 @@
       "duracao": "instantânea",
       "descricao_geral": "Você costura o corpo de um aliado, fechando feridas através da manipulação de sua alma.",
       "descricao_sucesso": "Recupera 2d8 PV.",
-      "descricao_fracasso": "Sofre 2d8 pontos de dano mágico.",
+      "descricao_fracasso": "Sofre em dano mágico um valor igual à cura que receberia.",
       "aprimoramentos": [
         { "custo": "+2 PM", "descricao": "Aumenta a vida recuperada em +2d8, mas atribui ao Fracasso a condição Fraco até o fim da cena.", "requisito": null },
         { "custo": "+4 PM", "descricao": "A alma do ser se regenera aos poucos: recupera +2 PV por rodada até deixar de ser Machucado. Para funcionar, o alvo não pode estar Machucado nem levar dano enquanto se recupera. Em Fracasso o alvo fica Sangrando até alcançar 0 PV.", "requisito": "Requer Grau 2." },
@@ -294,7 +294,7 @@
       "alvo": "1 objeto",
       "duracao": "instantânea",
       "descricao_geral": "Você desmaterializa um objeto que toque.",
-      "descricao_sucesso": "Você desfere 10d8 pontos de dano no objeto. Se este tiver seus Pontos de Vida reduzidos a 0 por essa magia, ele se desmantela e não pode mais ser consertado.",
+      "descricao_sucesso": "Você desfere 10d8 pontos de dano no objeto. Se este tiver seus Pontos de Vida reduzidos a 0 por essa magia, ele se desmantela e não pode mais ser consertado. Tentar usar essa magia num objeto empunhado por uma pessoa exige, antes do Produto-Caos, um teste de Lutar seu contra o dela.",
       "descricao_fracasso": "O objeto sofre 20 de dano.",
       "aprimoramentos": [
         { "custo": "+5 PM", "descricao": "Em Sucesso, o dano desferido ignora RD.", "requisito": null }
@@ -344,12 +344,12 @@
       "execucao": "protagonista",
       "alvo": "1 ser",
       "duracao": "cena",
-      "descricao_geral": "Você provoca alterações violentas e repulsivas no corpo de um ser, causando danos internos e deixando sequelas graves na aparência. Um alvo que sofra dessa magia não pode sofrê-la de novo, exceto o dano.",
-      "descricao_sucesso": "O alvo sofre 2d4 pontos de dano mágico, além de ficar impossibilitado de usar um dos braços, pernas (fica Lento) ou olhos (fica Cego). A mudança se mantém até o fim da cena e ainda deixa o alvo com -5 em testes de Carisma.",
+      "descricao_geral": "Você provoca alterações violentas e repulsivas no corpo de um ser, causando danos internos e deixando sequelas graves na aparência. Um alvo desta magia não pode sofrê-la de novo na mesma cena, exceto por dano.",
+      "descricao_sucesso": "O alvo sofre 2d4 pontos de dano mágico, além de ficar impossibilitado de usar um dos braços, uma das pernas (fica Lento) ou um dos olhos (fica Ofuscado). A mudança se mantém até o fim da cena e ainda deixa o alvo com -5 em testes de Carisma.",
       "descricao_fracasso": "O efeito tem um chicote em você, te imputando o mesmo ônus do inimigo (exceto o dano).",
       "aprimoramentos": [
         { "custo": "+3 PM", "descricao": "A autoestima do indivíduo é ferida e o medo toma sua alma; sua Inertidão reduz em 5.", "requisito": null },
-        { "custo": "+6 PM", "descricao": "A deformação provoca 4d4 pontos de dano e afeta até 2 membros.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "A deformação provoca 4d4 pontos de dano e afeta até 2 membros distintos.", "requisito": null },
         { "custo": "+5 PM", "descricao": "Em Fracasso, o ônus não se aplicará a você, mas em troca você sofre o dobro do dano que o alvo sofreria por essa magia.", "requisito": null }
       ],
       "grau": 2
@@ -380,14 +380,15 @@
       "execucao": "protagonista",
       "alvo": "1 pessoa",
       "duracao": "instantânea",
-      "descricao_geral": "Você altera o formato de uma alma para tentar resgatar o vigor da mesma. Diferente do normal, o custo está imbuído em seu efeito e não apresenta custo de conjuração. Você pode gastar 1 PM seu e 1 PM do alvo para recuperar 4 PV (ou 2 PM para 4 PV ao usar em si mesmo). Pode gastar até 10 PM no total para recuperar 40 PV.",
+      "descricao_geral": "Você altera o formato de uma alma para tentar resgatar o vigor da mesma. Diferente do normal, o custo está imbuído em seu efeito e não deve ser considerado custo para a conjuração. Você pode gastar 1 PM seu e 1 PM do alvo para recuperar 3 PV de qualquer um dos dois envolvidos. Só é possível recuperar até 30 PV através dessa magia.",
       "descricao_sucesso": "A magia ocorre normalmente.",
-      "descricao_fracasso": "Você e seu alvo pagam o dobro de PM no efeito (2 PM de cada para cada 2 PV).",
+      "descricao_fracasso": "O custo em PM é dobrado. Você e seu alvo pagam 2 PM para cada 3 PV recuperados.",
       "aprimoramentos": [
-        { "custo": "+4 PM", "descricao": "Você aumenta o limite para até 20 PM para 80 PV.", "requisito": null },
+        { "custo": "+0 PM", "descricao": "O alvo torna-se você: pague o dobro de PM para recuperar os PV normalmente (2 PM para cada 3 PV; em fracasso, 4 PM para cada 3 PV).", "requisito": null },
+        { "custo": "+4 PM", "descricao": "Você aumenta o limite para até 60 PV.", "requisito": null },
         { "custo": "+6 PM", "descricao": "Muda a Execução para Coesão.", "requisito": null },
         { "custo": "+0 PM", "descricao": "Seu aliado não paga PM nenhum na recuperação; em troca você deve pagar o dobro na conjuração.", "requisito": "Requer Grau 3." },
-        { "custo": "+0 PM", "descricao": "Você pode realizar o processo inverso, pagando com PVs um aumento de PM.", "requisito": "Requer Grau 3." }
+        { "custo": "+0 PM", "descricao": "Você pode realizar o processo inverso, pagando PV para receber PM temporário.", "requisito": "Requer Grau 3." }
       ],
       "grau": 2
     },
@@ -403,7 +404,7 @@
       "descricao_sucesso": "A cada rodada você pode fazer uma pergunta a este ser, que deve realizar um teste de Poder contra sua DT de Sabedoria. Para cada falha, ele deve responder a verdade. Caso o alvo tenha sucesso em dois testes seguidos, a magia se desfaz e o alvo acorda.",
       "descricao_fracasso": "O alvo acorda imediatamente e você sofre 2d8 pontos de dano mental.",
       "aprimoramentos": [
-        { "custo": "+6 PM", "descricao": "Você troca de mente com o alvo, jogando com o corpo dele mas usando seus atributos de Sabedoria e Inteligência. Se um dos corpos morrer com uma mente que não lhe pertence, o sobrevivente fica permanentemente preso no novo receptáculo. A duração torna-se permanente.", "requisito": null },
+        { "custo": "+6 PM", "descricao": "Você troca de mente com o alvo, mas uma troca involuntária só é possível se ele estiver rendido ou extremamente debilitado, física ou mentalmente. Se a troca for bem-sucedida, você joga com o corpo dele usando seus atributos de Sabedoria e Inteligência. Se um dos corpos morrer com uma mente que não lhe pertence, o sobrevivente fica permanentemente preso no novo receptáculo e a duração deixa de ser sustentada, tornando-se permanente.", "requisito": null },
         { "custo": "+5 PM", "descricao": "O efeito prende alguém dentro de uma abstração mental de seu controle. Você e o alvo ficam inconscientes. A cada rodada o ser sofre 1d8 de dano mental, só podendo sair ao encontrar um ponto fraco em suas barreiras mentais.", "requisito": "Requer Grau 4." }
       ],
       "grau": 3
@@ -615,7 +616,7 @@
       "alcance": "toque",
       "alvo": "1 arma",
       "duracao": "cena",
-      "descricao": "Ao ser invocada a bênção de Agni sobre uma arma, ela se tornará incandescente até o fim da cena. A chama não queimará seu portador, mas aumentará o dano da arma em +2d6 de Fogo. Todo alvo que sofrer mais de 10 pontos de dano pela arma será deixado Em Chamas.",
+      "descricao": "Ao ser invocada a bênção de Agni sobre uma arma, ela se tornará incandescente até o fim da cena. A chama não queimará seu portador, mas aumentará o dano da arma em +2d6 de Fogo. Todo alvo que sofrer mais de 10 pontos de dano de fogo fica Em Chamas.",
       "aprimoramentos": [
         { "custo": "+2 PM", "descricao": "Aumentará os dados de dano em +2.", "requisito": null },
         { "custo": "+4 PM", "descricao": "Reduzirá a margem de crítico em 1 e o multiplicador de crítico em 0.5.", "requisito": null },

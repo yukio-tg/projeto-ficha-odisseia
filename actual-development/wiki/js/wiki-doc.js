@@ -2,7 +2,7 @@
 
 import { initWikiFirebase, getWikiDoc, getRelatedDocs, deleteWikiDoc } from './wiki-firebase.js';
 import { getAuthState }                                                  from './wiki-auth.js';
-import { escapeHtml, getParam, formatDate, showToast }                  from './wiki-utils.js';
+import { escapeHtml, getParam, formatDate, showToast, safeHttpUrl }     from './wiki-utils.js';
 import { initWikiSidebar }                                               from './wiki-sidebar.js';
 import {
     applyAndCacheDocTheme, applyPreloadedTheme, WIKI_DEFAULTS,
@@ -12,8 +12,8 @@ import {
     getThreatStyle, getDomainStyle, getAlignmentStyle,
 } from './wiki-consts.js';
 import {
-    extractAllWikiLinks, resolveWikiLinks, renderBodyWithLinks,
-} from './wiki-wikilinks.js';
+    renderContentBody, extractLinkedDocIds,
+} from './wiki-format.js';
 import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -462,7 +462,7 @@ async function renderDoc(doc, user, isAdmin) {
     // ── 3. Tags row (types, regions, alignment) ───────────────────────────────
     const freeTags = [
         ...(doc.types || []).map(t => ({ text: t, cls: 'wiki-tag' })),
-        ...(doc.regions || []).map(t => ({ text: t, cls: 'wiki-tag' })),
+        ...(doc.type === 'item' ? [] : (doc.regions || []).map(t => ({ text: t, cls: 'wiki-tag' }))),
         ...(doc.alignment && doc.type !== 'place' && doc.type !== 'concept'
             ? [{ text: doc.alignment, cls: 'wiki-alignment-badge wiki-badge', style: getAlignmentStyle(doc.alignment, dark) }]
             : []),
@@ -484,10 +484,6 @@ async function renderDoc(doc, user, isAdmin) {
     const nonEmptySections = (doc.content || []).filter(s => s.body?.trim());
 
     if (nonEmptySections.length > 0) {
-        // Resolve wiki-links for all sections at once
-        const allNames = extractAllWikiLinks(doc.content || []);
-        const linksMap = await resolveWikiLinks(allNames);
-
         const sectionDivider = document.createElement('div');
         sectionDivider.className = 'wiki-sh';
         sectionDivider.textContent = 'Conteúdo';
@@ -497,36 +493,26 @@ async function renderDoc(doc, user, isAdmin) {
             const sectionEl = document.createElement('div');
             sectionEl.className = 'wiki-section';
 
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'wiki-section-btn';
-
-            const headingText = document.createElement('span');
-            headingText.textContent = section.heading ?? '';
-            btn.appendChild(headingText);
-
-            const arrow = document.createElement('span');
-            arrow.className = 'material-symbols-outlined wiki-section-arrow';
-            arrow.textContent = 'expand_more';
-
-            if (section.collapsible === false) {
-                arrow.style.visibility = 'hidden';
-            } else {
-                btn.addEventListener('click', () => sectionEl.classList.toggle('collapsed'));
+            if (section.heading?.trim()) {
+                const head = document.createElement('div');
+                head.className = 'wiki-section-head';
+                head.textContent = section.heading;
+                sectionEl.appendChild(head);
             }
-            btn.appendChild(arrow);
-            sectionEl.appendChild(btn);
 
             const bodyEl = document.createElement('div');
             bodyEl.className = 'wiki-section-body';
-            bodyEl.innerHTML = renderBodyWithLinks(section.body, linksMap);
+            bodyEl.innerHTML = renderContentBody(section.body);
             sectionEl.appendChild(bodyEl);
 
             wrap.appendChild(sectionEl);
         }
 
-        // ── 5. References section (from wiki-links) ───────────────────────────
-        if (linksMap.size > 0) {
+        // ── 5. References section (wiki documents linked from the body) ───────
+        const linkedIds = extractLinkedDocIds(doc.content).filter(id => id !== doc.id);
+        const linkedDocs = linkedIds.length ? await getRelatedDocs(linkedIds) : [];
+
+        if (linkedDocs.length > 0) {
             const refsSection = document.createElement('div');
             refsSection.className = 'wiki-references';
 
@@ -537,7 +523,7 @@ async function renderDoc(doc, user, isAdmin) {
 
             const refGrid = document.createElement('div');
             refGrid.className = 'wiki-references-grid';
-            for (const relDoc of linksMap.values()) {
+            for (const relDoc of linkedDocs) {
                 refGrid.appendChild(buildRelatedCard(relDoc));
             }
             refsSection.appendChild(refGrid);
@@ -584,8 +570,9 @@ async function renderDoc(doc, user, isAdmin) {
         wrap.appendChild(gallery);
     }
 
-    // ── 7. .md "Revelar Ficha" button ─────────────────────────────────────────
-    if (doc.mdContent && (doc.type === 'creature' || doc.type === 'person')) {
+    // ── 7. External sheet link ────────────────────────────────────────────────
+    const sheetUrl = (doc.type === 'creature' || doc.type === 'person') ? safeHttpUrl(doc.sheetUrl) : '';
+    if (sheetUrl) {
         const revealBar = document.createElement('div');
         revealBar.className = 'wiki-md-reveal-bar';
         const ornament = document.createElement('div');
@@ -593,15 +580,14 @@ async function renderDoc(doc, user, isAdmin) {
         ornament.textContent = '· ✦ ·';
         revealBar.appendChild(ornament);
 
-        const revealBtn = document.createElement('button');
-        revealBtn.type = 'button';
-        revealBtn.className = 'wiki-md-reveal-btn';
-        revealBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">description</span> Revelar Ficha`;
-        revealBar.appendChild(revealBtn);
+        const revealLink = document.createElement('a');
+        revealLink.className = 'wiki-md-reveal-btn';
+        revealLink.href = sheetUrl;
+        revealLink.target = '_blank';
+        revealLink.rel = 'noopener noreferrer';
+        revealLink.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">open_in_new</span> Abrir Ficha`;
+        revealBar.appendChild(revealLink);
         wrap.appendChild(revealBar);
-
-        const openModal = initMdModal(doc);
-        if (openModal) revealBtn.addEventListener('click', openModal);
     }
 
     // ── 8. Actions bar (edit / delete) ────────────────────────────────────────
@@ -649,84 +635,6 @@ function renderIdentityHeader(doc) {
     }
 
     header.style.display = 'block';
-}
-
-// ── Entry point ────────────────────────────────────────────────────────────────
-
-// ── .md modal logic ───────────────────────────────────────────────────────────
-
-function initMdModal(doc) {
-    const modalEl   = document.getElementById('wiki-md-modal');
-    const contentEl = document.getElementById('wiki-md-modal-content');
-    const titleEl   = document.getElementById('wiki-md-modal-title');
-    const closeBtn  = document.getElementById('wiki-md-close-btn');
-    const dlBtn     = document.getElementById('wiki-md-download-btn');
-    if (!modalEl || !doc.mdContent) return;
-
-    // Close handlers
-    const close = () => {
-        modalEl.style.display = 'none';
-        document.body.style.overflow = '';
-    };
-    closeBtn?.addEventListener('click', close);
-    modalEl.addEventListener('click', e => { if (e.target === modalEl) close(); });
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && modalEl.style.display !== 'none') close();
-    });
-
-    // Download handler
-    dlBtn?.addEventListener('click', () => {
-        const blob = new Blob([doc.mdContent], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = (doc.title || 'ficha').replace(/[^a-z0-9\-_]/gi, '_') + '.md';
-        a.click();
-        URL.revokeObjectURL(url);
-    });
-
-    // Return opener function
-    return () => {
-        if (titleEl) titleEl.textContent = 'Ficha — ' + (doc.title || '');
-        // Render markdown as plain text (escaped) with basic formatting
-        if (contentEl) contentEl.innerHTML = renderSimpleMd(doc.mdContent);
-        modalEl.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    };
-}
-
-/** Minimal Markdown renderer (no external lib needed) */
-function renderSimpleMd(md) {
-    if (!md) return '';
-    const escaped = md
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-    return escaped
-        // Headers
-        .replace(/^#{6}\s+(.+)$/gm, '<h6>$1</h6>')
-        .replace(/^#{5}\s+(.+)$/gm, '<h5>$1</h5>')
-        .replace(/^#{4}\s+(.+)$/gm, '<h4>$1</h4>')
-        .replace(/^#{3}\s+(.+)$/gm, '<h3>$1</h3>')
-        .replace(/^#{2}\s+(.+)$/gm, '<h2>$1</h2>')
-        .replace(/^#{1}\s+(.+)$/gm, '<h1>$1</h1>')
-        // Bold + Italic
-        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        // Horizontal rule
-        .replace(/^---+$/gm, '<hr>')
-        // Blockquote
-        .replace(/^&gt;\s(.+)$/gm, '<blockquote>$1</blockquote>')
-        // Unordered list items
-        .replace(/^[*\-]\s+(.+)$/gm, '<li>$1</li>')
-        // Ordered list items
-        .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
-        // Paragraphs (double newline)
-        .replace(/\n\n+/g, '</p><p>')
-        // Single newlines
-        .replace(/\n/g, '<br>');
 }
 
 // ── Entry point ────────────────────────────────────────────────────────────────

@@ -94,12 +94,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     padding: 4px 0 12px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--leath3) transparent;
 }
-.wiki-sidebar-list::-webkit-scrollbar { width: 3px; }
-.wiki-sidebar-list::-webkit-scrollbar-track { background: transparent; }
-.wiki-sidebar-list::-webkit-scrollbar-thumb { background: var(--leath3); border-radius: 2px; }
 
 /* Group header */
 .wiki-sidebar-group-header {

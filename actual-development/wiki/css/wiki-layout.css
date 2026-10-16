@@ -112,14 +112,12 @@
 .wiki-brand-logo {
     width: 28px;
     height: 28px;
-    object-fit: contain;
     flex-shrink: 0;
-    border-radius: 2px;
+    mask: url('/image/conceitos.svg') center/contain no-repeat;
+    -webkit-mask: url('/image/conceitos.svg') center/contain no-repeat;
+    background: var(--gold2);
     opacity: 0.9;
-    /* Tinge o SVG branco para dourado (--gold2 ≈ #c8a44a):
-       brightness(0) → preto; invert(1) → branco; sepia+saturate+hue-rotate → dourado */
-    filter: brightness(0) invert(1) sepia(1) saturate(2.5) hue-rotate(5deg) brightness(0.88);
-    transition: filter 0.18s, opacity 0.18s;
+    transition: background 0.18s, opacity 0.18s;
 }
 
 /* ── Header actions ───────────────────────────────────────────── */
@@ -270,8 +268,7 @@
     position: relative;
 }
 .wiki-brand-home:hover .wiki-brand-logo {
-    filter: brightness(0) invert(1) sepia(1) saturate(2.5) hue-rotate(5deg) brightness(1.05)
-            drop-shadow(0 0 6px rgba(200, 160, 30, 0.55));
+    background: var(--gold3);
     opacity: 1;
 }
 
@@ -516,9 +513,7 @@
     gap: 2px;
     overflow-x: auto;
     flex-shrink: 0;
-    scrollbar-width: none;
 }
-.wiki-filter-nav::-webkit-scrollbar { display: none; }
 
 .wiki-tab-btn {
     font-family: 'Cinzel', serif;
@@ -702,4 +697,52 @@
     .wiki-doc-header-bar-inner,
     .wiki-editor-header-inner { padding: 10px 14px; gap: 10px; }
     .wiki-doc-crest { width: 46px; height: 46px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   SCROLLBAR — gold inlay on leather, every wiki page
+   ═══════════════════════════════════════════════════════════════════ */
+body:has(.wiki-shell),
+body:has(.wiki-shell) * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold1) var(--leath1);
+}
+
+body:has(.wiki-shell)::-webkit-scrollbar,
+body:has(.wiki-shell) *::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+}
+
+body:has(.wiki-shell)::-webkit-scrollbar-track,
+body:has(.wiki-shell) *::-webkit-scrollbar-track {
+    background: var(--leath1);
+    box-shadow: inset 0 0 0 1px var(--leath2);
+}
+
+body:has(.wiki-shell)::-webkit-scrollbar-thumb,
+body:has(.wiki-shell) *::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--gold2) 0%, var(--gold1) 45%, var(--gold0) 100%);
+    border: 2px solid var(--leath1);
+    border-radius: 9px;
+}
+
+body:has(.wiki-shell)::-webkit-scrollbar-thumb:hover,
+body:has(.wiki-shell) *::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--gold3) 0%, var(--gold2) 50%, var(--gold1) 100%);
+}
+
+body:has(.wiki-shell)::-webkit-scrollbar-corner,
+body:has(.wiki-shell) *::-webkit-scrollbar-corner {
+    background: var(--leath0);
+}
+
+body:has(.wiki-shell) .wiki-filter-nav {
+    scrollbar-width: none;
+}
+
+body:has(.wiki-shell) .wiki-filter-nav::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
 }

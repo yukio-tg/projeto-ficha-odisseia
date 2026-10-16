@@ -105,6 +105,14 @@
     background: color-mix(in srgb, var(--gold0) 5%, transparent);
 }
 
+.cfg-evo-table tbody tr.cfg-evo-reached td {
+    color: var(--ink3);
+}
+
+.cfg-evo-table tbody tr.cfg-evo-reached td:first-child {
+    color: var(--ink2);
+}
+
 /* Current level row highlight */
 .cfg-evo-table tbody tr.cfg-evo-current {
     background: color-mix(in srgb, var(--gold0) 12%, transparent);

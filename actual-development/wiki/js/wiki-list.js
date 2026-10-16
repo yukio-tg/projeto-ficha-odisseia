@@ -216,7 +216,7 @@ function buildCard(doc) {
     // Free tags (types, regions, alignment) — max 4 total
     const freeTags = [
         ...(doc.types || []),
-        ...(doc.regions || []),
+        ...(doc.type === 'item' ? [] : (doc.regions || [])),
         ...(doc.alignment ? [doc.alignment] : []),
     ];
     if (freeTags.length > 0) {

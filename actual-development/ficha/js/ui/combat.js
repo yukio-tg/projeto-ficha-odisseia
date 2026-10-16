@@ -21,17 +21,19 @@ function getPericiaMaxDice(nomePericia) {
     return mapaDice[pericia.proficiencia] || 0;
 }
 // --- Presets de Reações Complexas ---
+const REACAO_PLACEHOLDER = /\{(inteligencia|sabedoria|carisma|gastoPM|rd|bonusDefesa|brecha)\}|\[(INT|SAB|CAR|PM gastos|RD calculado|bônus DEF|pontos de Brecha)\]|metade do dano da sua arma principal/;
+
 export const REACOES_PRESET = {
     "Brecha": {
         tipo: "recurso",
-        template: "Quando for alvo de um ataque, você recebe {inteligencia} pontos de Brecha. Pontos de Brecha podem ser gastos:\n- RD contra dano: gaste X pontos para receber X em RD contra um inimigo até o fim da rodada.\n- Dano extra: gaste X pontos para receber X em dano extra no seu próximo ataque ou método de dano.",
+        template: "Quando for alvo de um ataque, você recebe um valor igual à sua Inteligência em pontos de Brecha. Pontos de Brecha podem ser gastos para ganhar vantagens em combate:\n- Você pode gastar uma quantidade de Brecha para receber o mesmo valor em RD a dano contra um inimigo até o fim da rodada.\n- Você pode gastar uma quantidade de Brecha para receber o mesmo valor em dano extra ou bônus de ataque no seu próximo ataque ou em qualquer outro método de dano.",
         templateValor: "BRECHA: {brecha}",
         formatters: { inteligencia: () => getAtributoBase('INT') },
         requiresExtraUI: true
     },
     "Proteção Mágica": {
         tipo: "gasto-mana",
-        template: "Quando é alvo de um ataque, você pode gastar uma Reação e {gastoPM} pontos de Mana (máx. {sabedoria}) para conjurar uma proteção mágica, ganhando {rd} de RD contra aquele ataque.",
+        template: "Quando é alvo de um ataque, você pode gastar uma Reação e pontos de Mana para conjurar uma proteção mágica. Para cada 1 ponto de Mana gasto, você ganha +5 de RD contra aquele ataque. Você pode gastar um número de pontos de Mana até o seu valor de Sabedoria com esta reação.",
         templateValor: "RD: {rd}",
         formatters: {
             sabedoria: () => getAtributoBase('SAB'),
@@ -45,13 +47,13 @@ export const REACOES_PRESET = {
     },
     "Dramatizar": {
         tipo: "static",
-        template: "Quando for alvo de um ataque, você pode usar uma reação para impressionar o inimigo. O inimigo fica impressionado e sofre desvantagem em testes de ataque até o início do seu próximo turno. Caso você utilize essa mesma reação contra um mesmo inimigo mais de duas vezes na mesma rodada, você recebe RD igual ao seu Carisma ({carisma}) para resistir ao dano e fica imune à crítico.",
+        template: "Quando for alvo de um ataque, você pode usar uma reação para impressionar o inimigo, seja intimidando, dramatizando ou assustando. O inimigo fica impressionado e sofre desvantagem em testes de ataque até o início do seu próximo turno. Caso você utilize essa mesma reação contra um mesmo inimigo mais de duas vezes na mesma rodada, você recebe RD igual ao seu Carisma para resistir ao dano e fica imune a crítico.",
         templateValor: "RD: {rd}",
         formatters: { carisma: () => getAtributoBase('CAR') }
     },
     "Bloquear": {
         tipo: "calculo",
-        template: "Quando é alvo de um ataque, você pode gastar uma Reação para erguer sua guarda. Você ganha RD contra aquele ataque igual a: (Constituição x 2) + máximo do dado de Esforço = {rd}.",
+        template: "Quando é alvo de um ataque, você pode gastar uma Reação para erguer sua guarda e absorver o impacto. Você ganha RD contra aquele ataque igual a: (sua Constituição × 2) + o valor máximo do seu dado de Esforço.",
         templateValor: "RD: {rd}",
         formatters: {
             rd: () => {
@@ -63,7 +65,7 @@ export const REACOES_PRESET = {
     },
     "Esquivar": {
         tipo: "calculo",
-        template: "Quando for alvo de um ataque, você pode usar uma reação para esquivar. Você ganha um bônus de Defesa contra aquele ataque igual a: Destreza + máximo do dado de Reflexos = {bonusDefesa}.",
+        template: "Quando for alvo de um ataque, você pode usar uma reação para esquivar. Você ganha um bônus de Defesa contra aquele ataque igual a: sua Destreza + o valor máximo do seu dado de Reflexos.",
         templateValor: "DEF: {def}",
         formatters: {
             bonusDefesa: () => {
@@ -75,14 +77,21 @@ export const REACOES_PRESET = {
     },
     "Contra-atacar": {
         tipo: "calculo",
-        template: "Quando é alvo de um ataque corpo a corpo, você pode gastar uma Reação para revidar. Faça um teste de ataque contra o oponente. Se acertar, cause metade do seu dano normal (metade do dano da sua arma principal).",
+        template: "Quando é alvo de um ataque corpo a corpo, você pode gastar uma Reação Complexa para revidar imediatamente. Faça um teste de ataque contra o oponente. Se acertar, causa apenas metade do seu dano normal.",
         formatters: {}
     },
     "Ataque de Oportunidade": {
         tipo: "static",
-        template: "Quando um inimigo se move de forma que seu caminho passe por um espaço adjacente a você (entrando, saindo ou cruzando), você pode usar uma reação complexa para atacá-lo. Você só pode usar esta reação contra inimigos que não o tenham atacado em nenhum momento durante o turno atual deles. Um inimigo que já o ataca e se move no mesmo turno, pode se mover livremente por seus espaços adjacentes sem provocar este ataque."
+        template: "Quando um inimigo se move de forma que seu caminho passe por um espaço adjacente a você (entrando, saindo ou cruzando), você pode usar uma reação complexa para atacá-lo. Você só pode usar esta reação contra inimigos que não o tenham atacado em nenhum momento durante o turno atual deles. Um inimigo que já o ataca e se move no mesmo turno pode se mover livremente por seus espaços adjacentes sem provocar este ataque."
     }
 };
+
+export function normalizarDescricaoReacao(nome, desc) {
+    const preset = REACOES_PRESET[nome];
+    if (!preset) return desc || '';
+    if (!desc || !desc.trim() || REACAO_PLACEHOLDER.test(desc)) return preset.template;
+    return desc;
+}
 
 // Datalist global para autocomplete
 let datalistReacoes = null;
@@ -124,17 +133,7 @@ function gerarDescricaoPreset(nome, valoresInput = {}) {
 // (os valores ficam no setor de stats separado)
 function gerarDescricaoLimpa(nome) {
     const preset = REACOES_PRESET[nome];
-    if (!preset) return '';
-    let template = preset.template;
-    const labels = {
-        inteligencia: 'INT', sabedoria: 'SAB', carisma: 'CAR',
-        gastoPM: 'PM gastos', rd: 'RD calculado', bonusDefesa: 'bônus DEF',
-        brecha: 'pontos de Brecha'
-    };
-    for (const [key, label] of Object.entries(labels)) {
-        template = template.replace(new RegExp(`\\{${key}\\}`, 'g'), `[${label}]`);
-    }
-    return template;
+    return preset ? preset.template : '';
 }
 
 // Gera os chips de estatísticas calculadas para o setor de stats do card de reação
@@ -162,7 +161,6 @@ function gerarStatsChips(nome, valoresInput = {}) {
     } else if (nome === 'Brecha') {
         const int = getAtributoBase('INT');
         chips.push({ label: 'Brecha/ataque', valor: int });
-        chips.push({ label: '(1 PT = +1 RD ou DANO)', valor: '', sub: true });
     } else if (nome === 'Proteção Mágica') {
         const sab = getAtributoBase('SAB');
         chips.push({ label: 'Máx. RD', valor: sab * 5 });
@@ -170,7 +168,7 @@ function gerarStatsChips(nome, valoresInput = {}) {
         chips.push({ label: 'RD por PM', valor: 5, sub: true });
     } else if (nome === 'Dramatizar') {
         const car = getAtributoBase('CAR');
-        chips.push({ label: 'RD (2ª vez)', valor: car });
+        chips.push({ label: 'RD extra', valor: car });
     } else {
         // Fallback genérico via templateValor
         let valorTemplate = preset.templateValor;
@@ -1672,6 +1670,12 @@ export function setCombatState(data) {
                     ? criarCardReacaoPreset(r.preset, r.id)
                     : criarCardReacao(r.id, nome, desc);
                 restoreFields(card, r.fields);
+                const nomePreset = r.preset || nome;
+                const descEl = card.querySelector('textarea[data-field^="reacao-desc-"]');
+                if (descEl && REACOES_PRESET[nomePreset]) {
+                    const texto = normalizarDescricaoReacao(nomePreset, descEl.value);
+                    if (texto !== descEl.value) descEl.value = texto;
+                }
                 c.appendChild(card);
             });
         }
