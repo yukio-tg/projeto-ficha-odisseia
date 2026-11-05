@@ -1,0 +1,101 @@
+CONCEITOS:
+
+NOME: D(SIMPLES) d10+3d4
+Quase nada abstraído, tudo tem que ser o mais palpável possível.
+
+2 Status:
+- Saúde: 5
+- Energia: 5
+
+5 Atributos: 10 pontos entre:
+1. Corpo: Força, Resistência
+2. Mente: Inteligência
+3. Essência: Poder mágico, autoconhecimento
+4. Presença: Habilidades sociais
+5. Agilidade: Velocidade
+
+3 Especialidades
+
+3 Habilidades
+
+Até 4 Itens
+
+
+=============================================================
+
+CRIAÇÃO DE PERSONAGEM
+
+2 Status:
+- Saúde: 5
+- Energia: 5
+
+5 Atributos: 10 pontos entre:
+1. Corpo: Força, Resistência
+2. Mente: Inteligência
+3. Essência: Poder mágico, autoconhecimento
+4. Presença: Habilidades sociais
+5. Agilidade: Velocidade
+
+3 Especialidades
+
+3 Habilidades
+
+Até 4 Itens
+
+Testes: Testes são compostos por uma rolagem base (d10) + rolagens de modificadores (os d4). A soma total da rolagem é anunciada ao mestre, que então, compara com a dificuldade do teste (DT), se for maior ou igual é um sucesso, se não é um fracasso. Ele então responde de volta o resultado, sucesso ou fracasso.
+	- DT ridiculamente baixa: 3
+	- DT baixa: 5
+	- DT média: 7
+	- DT alta: 9
+	- DT díficil: 11
+	- DT extremamente díficil: 13
+	- DT ridiculamente dificil: 15
+	- DT impossível: 17
+
+Usando atributos:
+	- Testes de atributos podem ser rerolados gastando 1 ponto do atributo respectivo para tal. O novo resultado é considerado o final. Fazer isso custa 1 de energia.
+
+Energia: Realizar ação, usar habilidade, rerolar atributo ou realizar atividades muito complexas gastam 1 ponto de Energia, cumulativos entre cada um desses feitos. No começo de toda rodada todos os personagens recuperam 1 ponto de energia. Ao zerar ou negativar seus pontos de energia, você perde 1 de saúde e então reseta seus pontos de energia.
+
+Saúde: Sua integridade física, gastar muita energia desfere dano à saúde e sofrer dano TAMBÉM desfere dano à sua saúde. Ter a saúde zerada significa que seu personagem morreu. É possível recuperar Saúde com curas. Ao fim de todo combate todos os personagens recuperam 1 de Saúde.
+
+Especialidades: Um tipo de conhecimento técnico que seu personagem conheça: Lutar, Ginástica, Convencer, Intimidar, Falsificar e etc. Um conhecimento técnico pode ser usado para oferecer +1d4 em testes que tenha sentido.
+
+Habilidades: Um tipo de habilidade que seu personagem tenha, um poder, uma magia, transformação e etc. Uma habilidade pode ser usada para oferecer +1d4 em testes que tenha sentido e aumentar um dano em +1. Usar habilidades custam 1 de Energia.
+
+Itens: Cada personagem começa com 4 itens e pode carregar até 4 também. Estes podem ser divididos em 5:
+	1. Armas: Objetos que incrementam em +1 no dano e +1d4 em testes de ataque.
+	2. Proteções: Objetos que oferecem a alguém +1 de saúde máxima e +1d4 em testes de resistência a ataques.
+	3. Utensílios: Objetos que podem +1d4 em certas Especialidades ou testes que não sejam resistências ou ataques.
+	4. Curas: Objetos que podem ser gastos para recuperar 1 de Saúde de um ser adjacente. Custa um de energia e o item para realizar a cura.
+	5. Narrativos: Objetos que não ocupam espaço e não possuem propriedades mecânicas. Use com moderação!
+
+==============================================================
+
+REGRAS
+
+Atacar: Ao atacar é rolado um teste seu contra o oponente, se o seu resultado for maior ou igual que o dele, tem-se um sucesso é bom. Se menor, tem-se um fracasso e o ataque é ruim. Ao desferir um ataque olhe a tabela a seguir:
+	1. Ataque ruim: alvo perde 1 de energia.
+	2. Ataque bom: alvo perde 2 de energia.
+
+Incrementando dano: Caso 1 ataque seja feito utilizando uma arma ou habilidade que incremente no estrago. O dano do ataque é aumentado em +1 para cada caso.
+
+Crítico: Caso a rolagem de qualquer um dos dados seja igual à 10 ou 1, têm-se um fracasso crítico (1) ou sucesso crítico (10). Em casos de fracasso crítico, o mestre recebe 1 ponto de Problema. Em casos de sucesso crítico, a mesa recebe 1 ponto Criativo. Tirar um crítico nos dados, não significa sucesso ou fracasso automático, apenas implica nos pontos criativos e de problemas.
+
+Ponto de Problema: O Mestre recebe pontos de problema sempre que uma falha crítica acontece. Isso significa que o Mestre pode interferir no andar da história para criar uma situação infortuna, declarando o uso do ponto. Por exemplo, vetar o uso de uma habilidade de um jogador, derrubar um item, aplicar desvantagens e etc. Tudo isso com um álibi narrativo. O problema deve ser inserido antes da ação do jogador que será diretamente influenciado em caso de vetar Habilidade.
+
+Ponto Criativo: A mesa (grupo de jogadores) podem gastar pontos criativos para adicionarem elementos na narrativa inesperados para o mestre, trazendo situações sortudas e vantajosas aos jogadores. Caso a mesa, optar por não intervir na narração do mestre, é possível trocar o bônus por Sucessos Críticos para uma versão alternativa. Nesta versão alternativa, um sucesso crítico significa aumentar em +1 a energia máxima do personagem.
+
+Iniciativa: A iniciativa é simplificada, sempre agindo em ordem decrescente por Corpo entre os envolvidos na mesa.
+
+Alcances: O jogo não foi pensado com a ideia de alcances ou tabletop, por tanto o deslocamento é narrativo. Para estar distante de um alvo é necessário duas ações fugindo e para se aproximar a corpo-a-corpo é necessário 2 ações se aproximando. Ataques corpo-a-corpo só podem atingir seres corpo-a-corpo, ataques curta a distância podem atingir seres a até 2 ações de distância.
+
+Evolução de personagens: O sistema não conta com níveis pré-definidos. Por tanto, a evolução da mesa é ditada pelo mestre como: "Mais 2 pontos de atributo para distribuírem", "Mais uma habilidade para todos" ou "Mais 2 pontos de energia máximos para todos". O mestre determina como a mesa evoluiu e quais recompensas descrevem melhor essa conquista.
+
+Limites Acúmulos:
+	- Só é possível gastar até 3 pontos de energia para realização ações dentro de um mesmo turno.
+	- Especialidades e itens não se acumulam entre si mesmos.
+
+Uso justo:
+	- Não é interessante ficar tentando usar as regras amplas e versáteis do sistema para benefício próprio em detrimento da diversão do grupo. Isso deve ser considerado para mestres abusivos e jogadores chatos.
+	- O mestre tem palavra final sobre o andamento do jogo do que é ou não é possível.
