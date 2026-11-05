@@ -3,9 +3,15 @@
 
 import { normalizar, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
+import { isHydrating } from '../core/state.js';
+import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
 
 // ========== Configuração ==========
-const poderesLoader = createDataLoader('/ficha/data/poderes.json', 'Powers');
+const poderesLoader = createDataLoader('/ficha/data/poderes.json', 'Powers', null, {
+    onError() {
+        showCatalogWarning('tab-habilidades', 'Não foi possível carregar o catálogo de poderes. A busca do livro não está disponível.');
+    },
+});
 
 const ordemCores = [
     "Vermelho",
@@ -41,6 +47,7 @@ let cardCounter = 0;
 // ---------- Funções auxiliares ----------
 
 export function atualizarTotalPt() {
+    if (isHydrating()) return;
     if (!ptAtualInput) return;
     let soma = 0;
     document.querySelectorAll('.card-power .pt-cost-input').forEach(input => {
@@ -249,9 +256,26 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
     card.querySelector('.pt-cost-input').addEventListener('input', atualizarTotalPt);
 
     card.querySelector('.btn-remove-power').addEventListener('click', () => {
+        const snap = {
+            nome: card.querySelector('.power-name-input')?.value || '',
+            ptCost: parseInt(card.querySelector('.pt-cost-input')?.value, 10) || 0,
+            otherCosts: card.querySelector('.other-costs-input')?.value || '',
+            descricao: card.querySelector('.power-desc-textarea')?.value || '',
+            cor: card.dataset.cor || 'Vermelho',
+            collapsed: card.dataset.collapsed === 'true',
+            herancaPower: card.dataset.herancaPower === 'true',
+        };
         card.remove();
         atualizarTotalPt();
         reordenarCards();
+        offerUndo('Poder removido', () => {
+            const restored = criarCardPower(snap, '', snap.cor);
+            toggleCard(restored, snap.collapsed);
+            if (snap.herancaPower) _marcarComoPoderHeranca(restored);
+            containerCards.appendChild(restored);
+            atualizarTotalPt();
+            reordenarCards();
+        });
     });
 
     card.querySelector('.btn-summarize').addEventListener('click', () => {
@@ -335,9 +359,13 @@ function mostrarAutocomplete(query) {
         // mousedown prevents blur; click fills the input (user presses Enter to add)
         item.addEventListener('mousedown', e => e.preventDefault());
         item.addEventListener('click', () => {
-            inputBusca.value = p.nome;
-            currentSelectedColor = p.cor || "Vermelho";
+            const novoCard = criarCardPower(p, '', p.cor || 'Vermelho');
+            containerCards.appendChild(novoCard);
+            atualizarTotalPt();
+            reordenarCards();
+            currentSelectedColor = null;
             atualizarCategoryDot();
+            inputBusca.value = '';
             fecharAutocomplete();
             inputBusca.focus();
         });
@@ -441,6 +469,7 @@ export async function initPowers() {
 
     // Remove cards estáticos de exemplo
     document.querySelectorAll('.powers-container .card-power').forEach(card => card.remove());
+    bindEmptyHint(containerCards, '.card-power', 'Nenhum poder ainda.');
 
     document.body.addEventListener('input', (e) => {
         if (e.target.classList?.contains('pt-cost-input')) atualizarTotalPt();

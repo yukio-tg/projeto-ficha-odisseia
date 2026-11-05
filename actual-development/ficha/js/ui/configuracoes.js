@@ -3,13 +3,14 @@
 'use strict';
 
 import { getNivel } from '../core/radar-service.js';
+import { isModoRegras } from '../core/state.js';
 
 // ── Evolution table level tracking ───────────────────────────────────────────
 
 let _lastNivel = null;
 
 function nivelAtual() {
-    const radar = document.querySelector('#secao-radar .level-input');
+    const radar = document.querySelector(NIVEL_INPUT_SELECTOR);
     if (radar) return parseInt(radar.value, 10) || getNivel();
     return getNivel();
 }
@@ -66,13 +67,22 @@ export function applyIncrement(base, flat, pct) {
     return Math.floor(afterPct);
 }
 
+export const NIVEL_INPUT_SELECTOR = '#secao-radar .level-input';
+
 /**
  * Triggers a full recalculation via the nivel input event.
  * Used when increment values change.
  */
 export function triggerRecalc() {
-    const nivelEl = document.querySelector('[data-field="nivel"]');
+    const nivelEl = document.querySelector(NIVEL_INPUT_SELECTOR);
     if (nivelEl) nivelEl.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+// Incremento não dispara o nível. Quem registra aqui aplica a fórmula na hora.
+let _aoIncrementar = null;
+
+export function definirAoIncrementar(fn) {
+    _aoIncrementar = typeof fn === 'function' ? fn : null;
 }
 
 // ── Wiring ────────────────────────────────────────────────────────────────────
@@ -83,7 +93,7 @@ export function triggerRecalc() {
  */
 export function initConfiguracoes() {
     const ligarNivel = () => {
-        const nivelInput = document.querySelector('#secao-radar .level-input');
+        const nivelInput = document.querySelector(NIVEL_INPUT_SELECTOR);
         if (!nivelInput || nivelInput.dataset.evoBound === '1') return !!nivelInput;
         nivelInput.dataset.evoBound = '1';
         nivelInput.addEventListener('input', () => updateEvoTable());
@@ -106,11 +116,12 @@ export function initConfiguracoes() {
         });
     });
 
-    // Wire increment inputs → recalculate stats
+    // No modo Regras o incremento entra na fórmula agora.
+    // No modo Livre o número fica escrito até o botão Recalcular.
     document.querySelectorAll('.cfg-incr-input').forEach(inp => {
         inp.addEventListener('input', () => {
-            triggerRecalc();
             document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+            if (isModoRegras() && _aoIncrementar) _aoIncrementar();
         });
     });
 }

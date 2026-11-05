@@ -419,6 +419,23 @@ a span:hover {
     color: var(--blood2);
 }
 
+.header-buttons .material-symbols-outlined,
+.header-login .material-symbols-outlined,
+#recalc-btn .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-size: 22px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+}
+
+#recalc-btn .material-symbols-outlined {
+    font-size: 18px;
+    margin-right: 2px;
+}
+
 #autocalc-switch,
 #autosave-switch,
 #manual-save {

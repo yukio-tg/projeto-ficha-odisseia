@@ -1,19 +1,21 @@
-/* dashboard.css — estilos do Dashboard Odisseia (copiado de public/style.css) */
+/* dashboard.css — nomes locais apontam para a paleta compartilhada. */
+@import url('./css/palette.css');
+
 :root {
-    --bg-dark: #1a0e08;
-    --bg-panel: #2a150a;
-    --bg-section: #1f0f07;
-    --border-gold: #8b6914;
-    --border-light: #c9a227;
-    --accent-gold: #d4a843;
-    --accent-red: #8b2020;
-    --accent-copper: #b5651d;
-    --text-parchment: #e8d5a3;
-    --text-light: #f5e8c8;
-    --text-muted: #9a7d5a;
-    --text-dim: #6b5535;
-    --input-bg: rgba(139, 105, 20, 0.08);
-    --scrollbar: #8b6914;
+    --bg-dark: var(--leath0);
+    --bg-panel: var(--leath1);
+    --bg-section: var(--leath0);
+    --border-gold: var(--gold0);
+    --border-light: var(--gold2);
+    --accent-gold: var(--gold2);
+    --accent-red: var(--blood1);
+    --accent-copper: var(--attr-con);
+    --text-parchment: var(--p1);
+    --text-light: var(--p0);
+    --text-muted: var(--gold1);
+    --text-dim: var(--gold0);
+    --input-bg: color-mix(in srgb, var(--gold0) 8%, transparent);
+    --scrollbar: var(--gold0);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -57,7 +59,7 @@ body {
     color: var(--accent-gold);
     margin-bottom: 14px;
     padding-bottom: 8px;
-    border-bottom: 1px solid rgba(139,105,20,0.4);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 40%, transparent);
 }
 .fichas-lista { min-height: 80px; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-gold); border-radius: 5px; padding: 12px; margin: 10px 0; color: var(--text-muted); }
 .important-input {
@@ -90,12 +92,12 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
     border: 1px solid var(--border-gold);
     border-radius: 6px;
     padding: 18px 28px;
-    background: linear-gradient(135deg, rgba(139,105,20,0.10) 0%, rgba(80,45,10,0.20) 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--gold0) 10%, transparent) 0%, color-mix(in srgb, var(--leath2) 20%, transparent) 100%);
     transition: background 0.22s, border-color 0.22s, color 0.22s, box-shadow 0.22s;
     font-family: 'Cinzel Decorative', serif;
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(212,168,67,0.12);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--gold2) 12%, transparent);
 }
 .wiki-nav-bridge::before {
     content: '';
@@ -116,11 +118,11 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
 .wiki-nav-bridge-icon {
     width: 36px;
     height: 36px;
-    mask: url('/image/conceitos.svg') center/contain no-repeat;
-    -webkit-mask: url('/image/conceitos.svg') center/contain no-repeat;
-    background: var(--accent-gold);
-    opacity: 0.75;
     flex-shrink: 0;
+    opacity: 0.75;
+    background: var(--accent-gold);
+    mask: var(--icon) center/contain no-repeat;
+    -webkit-mask: var(--icon) center/contain no-repeat;
 }
 .wiki-nav-bridge-text {
     display: flex;
@@ -152,10 +154,10 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
     opacity: 0.7;
 }
 .wiki-nav-bridge:hover {
-    background: linear-gradient(135deg, rgba(139,105,20,0.18) 0%, rgba(80,45,10,0.32) 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--gold0) 18%, transparent) 0%, color-mix(in srgb, var(--leath2) 32%, transparent) 100%);
     border-color: var(--border-light);
     color: var(--text-light);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(212,168,67,0.2);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 color-mix(in srgb, var(--gold2) 20%, transparent);
 }
 .wiki-nav-bridge:hover .wiki-nav-bridge-arrow {
     transform: translateX(4px);
@@ -209,14 +211,9 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
     width: 22px;
     height: 22px;
     flex-shrink: 0;
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    /* background-color é definido inline com computeGold3() */
     opacity: 0.9;
+    mask: var(--icon) center/contain no-repeat;
+    -webkit-mask: var(--icon) center/contain no-repeat;
 }
 .ficha-btn {
     background: transparent;
@@ -229,7 +226,7 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
 }
 .ficha-btn:hover { opacity: 0.8; }
 .ficha-btn-abrir  { color: var(--accent-gold); border: 1px solid var(--border-gold); }
-.ficha-btn-excluir { color: #c0392b; border: 1px solid #c0392b; }
+.ficha-btn-excluir { color: var(--hab-bio-color); border: 1px solid var(--hab-bio-color); }
 .ficha-btn-remover { color: var(--text-muted); border: 1px solid var(--text-dim); font-size: 11px; }
 
 /* ── Seção "Compartilhadas comigo" ── */
@@ -241,5 +238,5 @@ fieldset { display: block; border: 0; padding: 0; margin: 0; }
     text-transform: uppercase;
     margin-bottom: 8px;
     padding-bottom: 6px;
-    border-bottom: 1px solid rgba(139, 105, 20, 0.3);
+    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 30%, transparent);
 }

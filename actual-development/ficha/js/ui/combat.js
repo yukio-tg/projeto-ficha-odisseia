@@ -5,6 +5,8 @@ import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.
 import { uid, normalizar, escapeHtml } from '../core/utils.js';
 import { setupAccordion } from '../core/dom-helpers.js';
 import { ONUS_LISTA } from '../config/onus.js';
+import { isHydrating, shouldWriteLevelAction } from '../core/state.js';
+import { bindEmptyHint } from './escrita-ui.js';
 
 function normalizePresetClass(nome) {
     if (!nome) return '';
@@ -411,6 +413,8 @@ export function atualizarAcoesPorNivel() {
         acoesSection.style.display = nivel >= 8 ? '' : 'none';
     }
 
+    if (isHydrating()) return;
+
     // Define valores padrão baseados no nível
     let protagonistas = 1;
     let coesao = 1;
@@ -420,13 +424,17 @@ export function atualizarAcoesPorNivel() {
     if (nivel >= 13) coesao = 2;
     if (nivel >= 8) reacoes = 2;
 
-    // Aplica nos campos
-    const protInput = document.querySelector('[data-field="acoes-protagonistas"]');
-    const coesaoInput = document.querySelector('[data-field="acoes-coesao"]');
-    const reacoesInput = document.querySelector('[data-field="acoes-reacoes"]');
-    if (protInput) protInput.value = protagonistas;
-    if (coesaoInput) coesaoInput.value = coesao;
-    if (reacoesInput) reacoesInput.value = reacoes;
+    // A tabela só escreve se o jogador não tiver fixado o valor à mão.
+    const porCampo = [
+        ['acoes-protagonistas', protagonistas],
+        ['acoes-coesao', coesao],
+        ['acoes-reacoes', reacoes],
+    ];
+    porCampo.forEach(([field, value]) => {
+        if (!shouldWriteLevelAction(field)) return;
+        const el = document.querySelector(`[data-field="${field}"]`);
+        if (el) el.value = value;
+    });
 }
 
 // ============================================================
@@ -1477,6 +1485,7 @@ function adicionarBonus() {
 // ============================================================
 
 export function atualizarAtaquesAcerto(respeitarFoco = true) {
+    if (isHydrating()) return;
     document.querySelectorAll('#ataques-container .combat-card--ataque').forEach(card => {
         if (typeof card._sincronizarAcerto === 'function') {
             const acertoInput = card.querySelector('.ataque-acerto');
@@ -1494,7 +1503,7 @@ function initCombatExtras() {
     // Notes char counter (if present on another tab)
     const notesTA = document.getElementById('notes-textarea');
     const notesCount = document.getElementById('notes-char-count');
-    if (notesTA && notesCount) {
+    if (notesTA && notesCount && !notesTA.readOnly) {
         notesTA.addEventListener('input', () => {
             const n = notesTA.value.length;
             notesCount.textContent = `${n} caractere${n !== 1 ? 's' : ''}`;
@@ -1593,6 +1602,7 @@ export function initCombat() {
     atualizarAcoesPorNivel();
     atualizarAvisoReacoes();
     atualizarAtaquesAcerto(false);
+    bindEmptyHint(document.getElementById('ataques-container'), '.combat-card--ataque', 'Nenhum ataque ainda.');
 
     document.addEventListener('reacoes:atualizar-stats', atualizarTodasStatsBars);
 }

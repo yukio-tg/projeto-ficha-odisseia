@@ -461,10 +461,86 @@
     .stbl .col-total {
         width: 44px;
     }
-    /* Reduz tamanho dos pips para caber em telas pequenas */
-    .prof-pip {
+    #tab-pericias {
+        min-width: 0;
+        overflow-x: auto;
+    }
+
+    .stbl .col-prof {
+        width: auto;
+        min-width: 230px;
+    }
+
+    .prof-pips {
+        gap: 0;
+    }
+
+    /* Alvo de 44px; o círculo visível continua em 16px. */
+    .prof-pip,
+    .prof-pip.active,
+    .prof-pip[data-level].active {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .prof-pip::after {
+        content: '';
+        position: absolute;
         width: 16px;
         height: 16px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 1.5px solid var(--p3);
+        box-sizing: border-box;
+        pointer-events: none;
+    }
+
+    .prof-pip[data-level="1"].active,
+    .prof-pip[data-level="2"].active,
+    .prof-pip[data-level="3"].active,
+    .prof-pip[data-level="4"].active,
+    .prof-pip[data-level="5"].active {
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+
+    .prof-pip.active::after {
+        background: var(--blood1);
+        border-color: var(--blood0);
+    }
+
+    .prof-pip[data-level="1"].active::after {
+        background: #7a7a6a;
+        border-color: #555;
+    }
+
+    .prof-pip[data-level="2"].active::after {
+        background: var(--gold0);
+        border-color: var(--gold1);
+    }
+
+    .prof-pip[data-level="3"].active::after {
+        background: var(--blood1);
+        border-color: var(--blood0);
+    }
+
+    .prof-pip[data-level="4"].active::after {
+        background: var(--mana1);
+        border-color: var(--mana0);
+    }
+
+    .prof-pip[data-level="5"].active::after {
+        background: var(--tunic1);
+        border-color: var(--tunic0);
     }
     /* Ajusta input de bônus */
     .pericia-bonus {

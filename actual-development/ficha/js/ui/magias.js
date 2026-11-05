@@ -3,14 +3,21 @@
 
 import { normalizar as normalizarMagia, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
+import { isHydrating } from '../core/state.js';
 import { getFontes, addSpellToFonte, removeSpellFromFonte, validateSpellForFonte, setFonteDeusa, transferSpellBetweenFontes } from '../core/item-effects.js';
+import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
 
 // ========== Configuração ==========
-const magiasLoader = createDataLoader('/ficha/data/magias.json', 'Magias', 'magias');
+const magiasLoader = createDataLoader('/ficha/data/magias.json', 'Magias', 'magias', {
+    onError() {
+        showCatalogWarning('tab-magias', 'Não foi possível carregar o catálogo de magias. A busca do livro não está disponível.');
+    },
+});
 let cardMagiaCounter = 0;
 
 // ========== Limite Arcano ==========
 function atualizarLaAtual() {
+    if (isHydrating()) return;
     const laAtualInput = document.querySelector('[data-field="la-atual"]');
     if (!laAtualInput) return;
 
@@ -276,6 +283,7 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
 
     // Remover
     card.querySelector('.btn-magic-remove').addEventListener('click', () => {
+        const snap = snapshotMagia(card);
         // Release Fonte capacity if linked
         if (card.dataset.fonteId && card.dataset.fonteFe) {
             removeSpellFromFonte(card.dataset.fonteId, parseInt(card.dataset.fonteFe, 10) || 0, card);
@@ -284,6 +292,13 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
         card.remove();
         atualizarLaAtual();
         if (sheetEl) atualizarVisibilidadeGraus(sheetEl);
+        offerUndo('Magia removida', () => {
+            inserirMagiaSalva(snap, snap.tipo, { religarFonte: true });
+            atualizarLaAtual();
+            if (snap.tipo) ativarTab(snap.tipo);
+            document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+        });
+        document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
     });
 
     // Editar
@@ -681,9 +696,8 @@ function mostrarAutocompleteMagias(inputEl, query) {
             <span class="autocomplete-magia-tipo">${escapeHtml(tipoLabel)}</span>`;
         item.addEventListener('mousedown', e => e.preventDefault());
         item.addEventListener('click', () => {
-            inputEl.value = m.nome;
             fecharAutocompleteMagias();
-            inputEl.focus();
+            adicionarMagia(inputEl, m);
         });
         dropdown.appendChild(item);
     });
@@ -801,14 +815,15 @@ function promptFonteSelection(spellGrau, spellFe, spellDeusa) {
 }
 
 // ========== Adição de Magia ==========
-function adicionarMagia(inputEl) {
-    const nome = inputEl.value.trim();
+function adicionarMagia(inputEl, magiaPronta = null) {
+    const nome = (magiaPronta?.nome || inputEl.value).trim();
 
-    // Busca no JSON
+    // Busca no JSON — o clique na sugestão já traz o registro do catálogo
     const magiaNorm = normalizarMagia(nome);
-    const magiaBD = (!magiasLoader.hasError() && !magiasLoader.isLoading() && nome !== '')
-        ? magiasLoader.getData().find(m => normalizarMagia(m.nome) === magiaNorm)
-        : null;
+    const magiaBD = magiaPronta
+        || ((!magiasLoader.hasError() && !magiasLoader.isLoading() && nome !== '')
+            ? magiasLoader.getData().find(m => normalizarMagia(m.nome) === magiaNorm)
+            : null);
 
     if (magiaBD) {
         // Magia encontrada no JSON
@@ -941,6 +956,8 @@ export async function initMagias() {
     // Adicionar
     btnAdicionar.addEventListener('click', () => adicionarMagia(inputBusca));
 
+    bindEmptyHint(document.querySelector('.magics-container'), '.magic-card', 'Nenhuma magia ainda.');
+
     // Atualiza LA atual se cards já existirem (caso de carregamento de estado salvo)
     atualizarLaAtual();
 
@@ -1010,36 +1027,82 @@ export function getMagiasState() {
     return result;
 }
 
+function snapshotMagia(card) {
+    const tipo = card.dataset.tipo;
+    const grau = card.dataset.grau || '1';
+    const la = parseInt(card.querySelector('.magic-la-input')?.value, 10) || 1;
+    const nome = card.querySelector('.magic-nome')?.textContent || '';
+    const custo = card.querySelector('.magic-custo')?.textContent || '';
+    const getInfo = key => card.querySelector(`[data-info-key="${key}"] .magic-info-value`)?.textContent || '';
+    const descFerom = card.querySelector('.magic-desc--feromancia');
+    let descricao = '';
+    let descricao_sucesso = '';
+    let descricao_fracasso = '';
+    if (descFerom) {
+        descricao = descFerom.querySelector('.magic-desc-efeito')?.textContent || '';
+        descricao_sucesso = descFerom.querySelector('.magic-desc-sucesso')?.textContent.replace(/^Sucesso:\s*/i, '') || '';
+        descricao_fracasso = descFerom.querySelector('.magic-desc-fracasso')?.textContent.replace(/^Fracasso:\s*/i, '') || '';
+    } else {
+        descricao = card.querySelector('.magic-desc p')?.textContent || '';
+    }
+    const aprimoramentos = [];
+    card.querySelectorAll('.apr-item').forEach(item => {
+        aprimoramentos.push({
+            custo: item.querySelector('.apr-custo')?.textContent || '',
+            descricao: item.querySelector('.apr-desc')?.textContent || '',
+            requisito: item.querySelector('.apr-req')?.textContent || '',
+        });
+    });
+    return {
+        tipo, grau, la, nome, custo, descricao, descricao_sucesso, descricao_fracasso,
+        aprimoramentos,
+        execucao: getInfo('execucao'), alcance: getInfo('alcance'),
+        area: getInfo('area'), alvo: getInfo('alvo'),
+        duracao: getInfo('duracao'), resistencia: getInfo('resistencia'),
+        divindade: getInfo('divindade'),
+        fonteId: card.dataset.fonteId || null,
+        fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
+    };
+}
+
+function inserirMagiaSalva(m, tipo, { religarFonte = false } = {}) {
+    const sheet = document.querySelector(`[data-magic-sheet="${tipo}"]`);
+    if (!sheet || !m) return null;
+    const magiaData = {
+        nome: m.nome, custo: m.custo, la: m.la, fe: m.la,
+        execucao: m.execucao, alcance: m.alcance, area: m.area,
+        alvo: m.alvo, duracao: m.duracao, resistencia: m.resistencia,
+        divindade: m.divindade, descricao: m.descricao,
+        descricao_geral: m.descricao, descricao_sucesso: m.descricao_sucesso,
+        descricao_fracasso: m.descricao_fracasso,
+        aprimoramentos: m.aprimoramentos || [],
+        tipo, grau: m.grau,
+    };
+    const grauKey = grauToKey(m.grau);
+    const grauDiv = sheet.querySelector(`.${grauKey}`);
+    if (!grauDiv) return null;
+    const card = criarCardMagia(magiaData, tipo, String(m.grau));
+    if (m.fonteId) {
+        card.dataset.fonteId = m.fonteId;
+        card.dataset.fonteFe = m.fonteFe || 1;
+        anexarFonteBadge(card, m.fonteId);
+        if (religarFonte) {
+            addSpellToFonte(m.fonteId, parseInt(m.fonteFe, 10) || 1, m.grau, m.nome || '', card);
+        }
+    }
+    const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
+    innerContainer.appendChild(card);
+    atualizarVisibilidadeGraus(sheet);
+    return card;
+}
+
 export function setMagiasState(data) {
     if (!data) return;
     document.querySelectorAll('.magic-sheet').forEach(sheet => {
         const tipo = sheet.dataset.magicSheet;
         if (!data[tipo]) return;
         sheet.querySelectorAll('.magic-card').forEach(c => c.remove());
-        data[tipo].forEach(m => {
-            const magiaData = {
-                nome: m.nome, custo: m.custo, la: m.la, fe: m.la,
-                execucao: m.execucao, alcance: m.alcance, area: m.area,
-                alvo: m.alvo, duracao: m.duracao, resistencia: m.resistencia,
-                divindade: m.divindade, descricao: m.descricao,
-                descricao_geral: m.descricao, descricao_sucesso: m.descricao_sucesso,
-                descricao_fracasso: m.descricao_fracasso,
-                aprimoramentos: m.aprimoramentos || [],
-                tipo, grau: m.grau,
-            };
-            const grauKey = grauToKey(m.grau);
-            const grauDiv = sheet.querySelector(`.${grauKey}`);
-            if (!grauDiv) return;
-            const card = criarCardMagia(magiaData, tipo, String(m.grau));
-            if (m.fonteId) {
-                card.dataset.fonteId = m.fonteId;
-                card.dataset.fonteFe = m.fonteFe || 1;
-                anexarFonteBadge(card, m.fonteId);
-            }
-            const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
-            innerContainer.appendChild(card);
-        });
-        atualizarVisibilidadeGraus(sheet);
+        data[tipo].forEach(m => inserirMagiaSalva(m, tipo));
     });
     atualizarLaAtual();
 }

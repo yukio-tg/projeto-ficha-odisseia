@@ -1,6 +1,7 @@
 import { HERANCA_DATA, HIERARQUIA_ORDEM } from '../config/herancas.js';
 import { getNivel, getRadarAttrWrap, adjustRadarMaxPoints } from './radar-service.js';
-import { autoCalcEnabled } from './state.js';
+import { autoCalcEnabled, isHydrating, isExplicitRecalc, isModoRegras } from './state.js';
+import { herancaBonusJaAplicado } from './bonus-guard.js';
 
 // ── Estado de bônus aplicado ──────────────────────────────────────────────────
 
@@ -147,6 +148,23 @@ let currentChoiceValue = null;
 // Só atualiza dinheiro se o nome realmente mudou.
 let _lastHerancaNomeParaDinheiro = null;
 
+/** Depois do load, o primeiro cálculo não pode tratar o nome salvo como "herança nova" e resetar o A$. */
+export function notarHerancaDinheiroRestaurada() {
+    _lastHerancaNomeParaDinheiro = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
+}
+
+function publishMirroredField(field, value) {
+    const next = value == null ? '' : String(value);
+    document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
+        if (el.value === next) return;
+        el.value = next;
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    document.querySelectorAll(`[data-mirror="${field}"]`).forEach(el => {
+        if (el.value !== next) el.value = next;
+    });
+}
+
 // ── Funções de atributo ───────────────────────────────────────────────────────
 
 function adjustRadarBaseAttribute(attr, delta) {
@@ -202,7 +220,7 @@ function inicializarSelectEscolha(data) {
 
     if (!select._listenerAdded) {
         select.addEventListener('change', () => {
-            if (!autoCalcEnabled) return;
+            if (!autoCalcEnabled && !isExplicitRecalc()) return;
             const newValue = select.value;
             if (newValue && newValue !== currentChoiceValue) {
                 removerBonusAtuais();
@@ -295,10 +313,34 @@ export function limitarCheckboxes() {
     }
 }
 
+export function atualizarAvisoFormulaHeranca() {
+    const input = document.querySelector('[data-field="heranca-nome"]');
+    if (!input) return;
+    const nome = input.value.trim().toLowerCase();
+    const semFormula = !!nome && !Object.prototype.hasOwnProperty.call(HERANCA_DATA, nome);
+    const mostrar = semFormula && (isModoRegras() || isExplicitRecalc());
+    let note = document.getElementById('heranca-sem-formula');
+    if (!mostrar) {
+        note?.remove();
+        return;
+    }
+    if (!note) {
+        note = document.createElement('p');
+        note.id = 'heranca-sem-formula';
+        note.style.cssText = 'margin:4px 0 0;font-size:11px;line-height:1.3;color:var(--blood2,#8a2a2a);';
+        const anchor = input.closest('.grouped') || input;
+        anchor.insertAdjacentElement('afterend', note);
+    }
+    note.textContent = 'Esta herança não tem fórmula.';
+}
+
 export function atualizarFortuna() {
     const herancaNome = (document.querySelector('[data-field="heranca-nome"]')?.value || '').trim();
     const chave = herancaNome.toLowerCase();
-    const data = HERANCA_DATA[chave] || { hierarquia: 'pobre', dinheiro: 0 };
+    const data = HERANCA_DATA[chave];
+    atualizarAvisoFormulaHeranca();
+    // Fora da tabela: o nome é conteúdo. Não troca dinheiro nem hierarquia por "pobre".
+    if (!data) return;
     const nivel = getNivel();
 
     let indiceBase = HIERARQUIA_ORDEM.indexOf(data.hierarquia);
@@ -314,23 +356,12 @@ export function atualizarFortuna() {
     const indiceFinal = Math.min(indiceBase + aumento, HIERARQUIA_ORDEM.length - 1);
     const novaHierarquia = HIERARQUIA_ORDEM[indiceFinal];
 
-    // Update ALL hierarquia elements (tab-geral + tab-inventário)
-    document.querySelectorAll('[data-field="hierarquia"]').forEach(el => {
-        if (el.value !== novaHierarquia) {
-            el.value = novaHierarquia;
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-    });
+    publishMirroredField('hierarquia', novaHierarquia);
 
     // Só atualiza A$ (dinheiro) se o nome da herança mudou — bônus/checkboxes/nível não devem alterá-lo
     if (herancaNome !== _lastHerancaNomeParaDinheiro) {
         _lastHerancaNomeParaDinheiro = herancaNome;
-        document.querySelectorAll('[data-field="dinheiro"]').forEach(el => {
-            if (el.value !== String(data.dinheiro)) {
-                el.value = data.dinheiro;
-                el.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        });
+        publishMirroredField('dinheiro', data.dinheiro);
     }
 
     document.dispatchEvent(new CustomEvent('fortuna:atualizado'));
@@ -357,7 +388,12 @@ function _dispararPoderHeranca() {
 // ── Ponto de entrada principal ────────────────────────────────────────────────
 
 export function atualizarHeranca() {
-    if (!autoCalcEnabled) return;
+    // Hidratação: o save já tem os atributos com o bônus. Reaplicar empilha.
+    // A flag restaurada é o sinal de que o bônus já está no DOM; sair aqui
+    // também impede atualizarFortuna de reescrever dinheiro e hierarquia.
+    if (isHydrating()) return;
+    atualizarAvisoFormulaHeranca();
+    if (!autoCalcEnabled && !isExplicitRecalc()) return;
     limitarCheckboxes();
     atualizarFortuna();
 
@@ -373,7 +409,12 @@ export function atualizarHeranca() {
     //
     // Também sincroniza herancaAttrBonusAplicado (sem tocar no DOM) para que
     // removerBonusAtuais() funcione corretamente numa troca de herança futura.
-    if (_bonusAprendizadoFlag && aprendizadoAtivo && chave && chave === _herancaNomeAplicado) {
+    if (herancaBonusJaAplicado({
+        bonusAprendizadoFlag: _bonusAprendizadoFlag,
+        aprendizadoAtivo,
+        chave,
+        chaveAplicada: _herancaNomeAplicado,
+    })) {
         _syncHerancaAttrBonus(chave);
         // Para heranças tipo 'choice': mantém o container de seleção visível
         const data = HERANCA_DATA[chave];

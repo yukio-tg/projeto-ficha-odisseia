@@ -12,9 +12,41 @@ const TYPE_ORDER = ['creature', 'place', 'person', 'concept', 'item', 'group'];
  * Initialise the sidebar: load docs, render list, wire search.
  * @param {string|null} currentDocId - Highlight this doc in the list (doc viewer page).
  */
+function wireWikiMenu(sidebar) {
+    const btn = document.getElementById('wiki-menu-btn');
+    if (!sidebar || !btn || btn.dataset.wired === '1') return;
+    btn.dataset.wired = '1';
+
+    let backdrop = document.querySelector('.wiki-sidebar-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('button');
+        backdrop.type = 'button';
+        backdrop.className = 'wiki-sidebar-backdrop';
+        backdrop.setAttribute('aria-label', 'Fechar artigos');
+        document.body.appendChild(backdrop);
+    }
+
+    const setOpen = (open) => {
+        document.body.classList.toggle('wiki-sidebar-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+
+    btn.addEventListener('click', () => {
+        setOpen(!document.body.classList.contains('wiki-sidebar-open'));
+    });
+    backdrop.addEventListener('click', () => setOpen(false));
+    sidebar.addEventListener('click', (event) => {
+        if (event.target.closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') setOpen(false);
+    });
+}
+
 export async function initWikiSidebar(currentDocId = null) {
     _currentDocId = currentDocId;
     const sidebar = document.getElementById('wiki-sidebar');
+    wireWikiMenu(sidebar);
     if (!sidebar) return;
 
     try {

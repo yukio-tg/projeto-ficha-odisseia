@@ -72,6 +72,7 @@ export function createAutocomplete(config) {
             const div = document.createElement('div');
             div.className = itemClass;
             div.innerHTML = renderItem(item);
+            div.addEventListener('mousedown', e => e.preventDefault());
             div.addEventListener('click', () => {
                 onSelect(item);
                 close();

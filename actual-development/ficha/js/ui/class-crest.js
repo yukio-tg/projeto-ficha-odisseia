@@ -18,7 +18,7 @@ const CLASS_SVG_MAP = {
 
 const SVG_BASE_PATH = '/image/';
 const FALLBACK_HTML = '⚜';
-const FAVICON_DEFAULT = '/image/odisseia-logo.ico';
+const FAVICON_DEFAULT = '/favicon.ico';
 
 /** Cache de conteúdo SVG já transformado, indexado pelo slug. */
 const _cache = {};
@@ -72,7 +72,9 @@ function atualizarFavicon(icoPath) {
         link.type = 'image/x-icon';
         document.head.appendChild(link);
     }
-    if (link.href !== href) link.href = href;
+    const next = new URL(href, window.location.href).href;
+    if (link.href === next) return;
+    link.href = next;
 }
 
 /**
@@ -81,9 +83,15 @@ function atualizarFavicon(icoPath) {
  */
 async function atualizarCrest(crest, nomeClasse) {
     const key = slug(nomeClasse);
-    const nome = CLASS_SVG_MAP[key];
+    const nome = CLASS_SVG_MAP[key] || '';
+
+    if (crest.dataset.crestClass === nome) {
+        atualizarFavicon(nome ? `/image/${nome}.ico` : null);
+        return;
+    }
 
     if (!nome) {
+        crest.dataset.crestClass = '';
         crest.innerHTML = FALLBACK_HTML;
         atualizarFavicon(null);
         return;
@@ -91,11 +99,13 @@ async function atualizarCrest(crest, nomeClasse) {
 
     const svgHTML = await carregarSVG(nome);
     if (!svgHTML) {
+        crest.dataset.crestClass = '';
         crest.innerHTML = FALLBACK_HTML;
         atualizarFavicon(null);
         return;
     }
 
+    crest.dataset.crestClass = nome;
     crest.innerHTML = svgHTML;
     atualizarFavicon(`/image/${nome}.ico`);
 }

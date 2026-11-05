@@ -9,6 +9,7 @@
  * @param {string} path        URL path to the JSON file
  * @param {string} label       Human-readable label for console logs (e.g. "Inventário")
  * @param {string} [arrayKey]  If the JSON wraps the array in an object, the key to extract (e.g. "itens", "magias")
+ * @param {{ onError?: (err: unknown) => void }} [hooks]  Optional. onError runs after a failed fetch; existing callers can omit it.
  * @returns {object}           { load(), getData(), isLoading(), hasError() }
  *
  * Usage:
@@ -17,7 +18,7 @@
  *   const items = loader.getData(); // []
  *   if (loader.hasError()) { ... }
  */
-export function createDataLoader(path, label, arrayKey = null) {
+export function createDataLoader(path, label, arrayKey = null, hooks = null) {
     let data = [];
     let loading = true;
     let error = false;
@@ -40,6 +41,11 @@ export function createDataLoader(path, label, arrayKey = null) {
             console.error(`[${label}] Erro ao carregar ${path}:`, err);
             data = [];
             error = true;
+            try {
+                hooks?.onError?.(err);
+            } catch (hookErr) {
+                console.error(`[${label}] onError falhou:`, hookErr);
+            }
         } finally {
             loading = false;
         }

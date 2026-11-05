@@ -577,33 +577,31 @@
 .item-raridade-glyph .item-raridade-select::after,
 .item-raridade-glyph .item-estado-select::after { display: none; }
 
+.item-body-left {
+    width: auto;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 4px;
+}
 .item-body-left::before,
 .item-body-left::after {
-    position: absolute;
-    right: -4px;
+    position: static;
     font-family: 'Cinzel', serif;
-    font-size: 6.5px;
-    letter-spacing: 0.06em;
+    font-size: 11px;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--ink3);
-    opacity: 0;
+    color: var(--ink1);
+    opacity: 1;
     pointer-events: none;
-    transition: opacity 0.15s;
     white-space: nowrap;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
+    writing-mode: horizontal-tb;
+    line-height: 1;
 }
 .item-body-left::before {
-    content: 'Rar.';
-    top: 0;
+    content: 'Raridade';
 }
 .item-body-left::after {
-    content: 'Est.';
-    bottom: 0;
-}
-.item-body-left:hover::before,
-.item-body-left:hover::after {
-    opacity: 0.55;
+    content: 'Estado';
 }
 
 /* ── Textarea (center) ───────────────────────────────────────── */

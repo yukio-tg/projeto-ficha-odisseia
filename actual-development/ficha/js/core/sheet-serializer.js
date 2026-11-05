@@ -5,17 +5,30 @@ import {
     herancaAttrBonusAplicado,
     getBonusAprendizadoFlag,
     setBonusAprendizadoRestaurado,
+    notarHerancaDinheiroRestaurada,
 } from './heranca-logic.js';
 import { getSkillsState, setSkillsState } from '../ui/skills.js';
 import { getPowersState, setPowersState } from '../ui/powers.js';
 import { getMagiasState, setMagiasState } from '../ui/magias.js';
 import { getCombatState, setCombatState } from '../ui/combat.js';
-import { getInventarioState, setInventarioState } from '../ui/inventory.js';
+import { getInventarioState, setInventarioState, syncMirroredFields } from '../ui/inventory.js';
 import { getItemEffectsState, setItemEffectsState } from './item-effects.js';
-import { getAnotacoesState, setAnotacoesState } from '../ui/anotacoes.js';
+import { getAnotacoesState, setAnotacoesState, adoptLegacyNotes } from '../ui/anotacoes.js';
 import { getBestasState, setBestasState } from '../ui/besta.js';
-import { getRadarAttrWrap } from './radar-service.js';
-import { manualOverrides } from './state.js';
+import { getRadarAttrWrap, adoptRadarInputs } from './radar-service.js';
+import {
+    manualOverrides,
+    autoCalcEnabled,
+    sheetMode,
+    restoreSheetMode,
+    beginHydration,
+    endHydration,
+    isHydrating,
+    noteSheetRestored,
+    setStableSnapshot,
+    getStableSnapshot,
+} from './state.js';
+import { syncModoUi } from '../ui/header.js';
 
 const ATTRS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 
@@ -46,6 +59,8 @@ function deserializeFields(fields) {
             }
         });
     });
+    // O espelho (inventário) não tem data-field; a fonte (Geral) acaba de ser preenchida.
+    syncMirroredFields();
 }
 
 // ─── Radar (nível + atributos) ───────────────────────────────────────────────
@@ -78,12 +93,14 @@ function deserializeRadar(radar) {
         if (attrInput && radar.attrs?.[attr] !== undefined) attrInput.value = radar.attrs[attr];
         if (modInput && radar.mods?.[attr] !== undefined) modInput.value = radar.mods[attr];
     });
-    // Dispara input no radar para recalcular tudo
-    radarDiv.querySelector('.level-input')?.dispatchEvent(new Event('input', { bubbles: true }));
-    ATTRS.forEach(attr => {
-        const wrap = getRadarAttrWrap(attr);
-        wrap?.querySelector('.attr-input')?.dispatchEvent(new Event('input', { bubbles: true }));
-    });
+    // Não dispara input/change: isso reexecuta o autocalc e reescreve o save.
+    // O modelo interno do radar é alinhado aos inputs, com o teto de herança já restaurado.
+    const bonusTeto = Object.values(herancaAttrBonusAplicado).reduce((a, b) => a + (Number(b) || 0), 0);
+    try {
+        adoptRadarInputs({ maxPointsBonus: bonusTeto });
+    } catch (e) {
+        console.warn('[Serializer] Não foi possível alinhar o radar sem recalcular:', e);
+    }
 }
 
 // ─── Base values para campos modificados por armadura ────────────────────────
@@ -116,8 +133,22 @@ function deserializeProtectionBases(bases) {
 
 // ─── API pública ─────────────────────────────────────────────────────────────
 
+function clonePlain(data) {
+    try {
+        return JSON.parse(JSON.stringify(data));
+    } catch (e) {
+        console.warn('[Serializer] Snapshot não clonável, usando a referência original.', e);
+        return data;
+    }
+}
+
 export function serializeSheet() {
-    return {
+    // Durante a restauração o DOM ainda está sendo escrito. A cópia carregada
+    // é a fonte da verdade — fotografar agora gravaria um meio-cálculo.
+    if (isHydrating() && getStableSnapshot()) {
+        return clonePlain(getStableSnapshot());
+    }
+    const snap = {
         fields: serializeFields(),
         radar: serializeRadar(),
         pericias: getSkillsState(),
@@ -136,38 +167,54 @@ export function serializeSheet() {
         bonusAprendizadoFlag: getBonusAprendizadoFlag(),
         // Mantido para retrocompatibilidade com versões anteriores do save.
         herancaAttrBonus: { ...herancaAttrBonusAplicado },
+        autoCalcEnabled,
+        sheetMode,
     };
+    setStableSnapshot(clonePlain(snap));
+    return snap;
 }
 
 export function deserializeSheet(data) {
     if (!data) return;
+    beginHydration();
+    try {
+        noteSheetRestored();
+        setStableSnapshot(clonePlain(data));
 
-    // ── RESTAURA A FLAG DE BÔNUS ──────────────────────────────────────────────
-    // Deve ocorrer ANTES de qualquer evento que dispare atualizarHeranca().
-    // setBonusAprendizadoRestaurado aceita:
-    //   • bonusAprendizadoFlag explícito (saves novos)
-    //   • undefined → inferência automática via campos heranca-nome / aprendizadoDaVida
-    //     (retrocompatibilidade com saves antigos que não possuem o campo)
-    // Também sincroniza herancaAttrBonusAplicado para que mudanças de herança
-    // após o reload possam remover o bônus antigo corretamente.
-    setBonusAprendizadoRestaurado(data.bonusAprendizadoFlag, data.fields);
+        // ── RESTAURA A FLAG DE BÔNUS ──────────────────────────────────────────────
+        // Deve ocorrer ANTES de qualquer evento que dispare atualizarHeranca().
+        // setBonusAprendizadoRestaurado aceita:
+        //   • bonusAprendizadoFlag explícito (saves novos)
+        //   • undefined → inferência automática via campos heranca-nome / aprendizadoDaVida
+        //     (retrocompatibilidade com saves antigos que não possuem o campo)
+        // Também sincroniza herancaAttrBonusAplicado para que mudanças de herança
+        // após o reload possam remover o bônus antigo corretamente.
+        setBonusAprendizadoRestaurado(data.bonusAprendizadoFlag, data.fields);
 
-    // Restore manual overrides FIRST so calc functions respect them during deserialization
-    manualOverrides.clear();
-    if (Array.isArray(data.manualOverrides)) {
-        data.manualOverrides.forEach(f => manualOverrides.add(f));
+        restoreSheetMode(data);
+
+        // Restore manual overrides FIRST so calc functions respect them during deserialization
+        manualOverrides.clear();
+        if (Array.isArray(data.manualOverrides)) {
+            data.manualOverrides.forEach(f => manualOverrides.add(f));
+        }
+        deserializeFields(data.fields);
+        notarHerancaDinheiroRestaurada();
+        deserializeRadar(data.radar);
+        if (data.pericias) setSkillsState(data.pericias);
+        if (data.inventario) setInventarioState(data.inventario);
+        // Bases antes dos efeitos. Com base restaurada, recalcProtectionBonuses
+        // sai cedo na hidratação e não soma o bônus de novo.
+        deserializeProtectionBases(data.protectionBases);
+        if (data.itemEffects) setItemEffectsState(data.itemEffects);
+        if (data.poderes) setPowersState(data.poderes);
+        if (data.magias) setMagiasState(data.magias);
+        if (data.combate) setCombatState(data.combate);
+        if (data.anotacoes) setAnotacoesState(data.anotacoes);
+        adoptLegacyNotes(data.fields?.['anotacoes-geral']);
+        if (data.bestas) setBestasState(data.bestas);
+        syncModoUi();
+    } finally {
+        endHydration();
     }
-    deserializeFields(data.fields);
-    deserializeRadar(data.radar);
-    if (data.pericias) setSkillsState(data.pericias);
-    if (data.inventario) setInventarioState(data.inventario);
-    // Restore base values BEFORE setItemEffectsState calls recalcProtectionBonuses,
-    // so the bonus is applied on top of the correct base (not the already-modified value).
-    deserializeProtectionBases(data.protectionBases);
-    if (data.itemEffects) setItemEffectsState(data.itemEffects);
-    if (data.poderes) setPowersState(data.poderes);
-    if (data.magias) setMagiasState(data.magias);
-    if (data.combate) setCombatState(data.combate);
-    if (data.anotacoes) setAnotacoesState(data.anotacoes);
-    if (data.bestas) setBestasState(data.bestas);
 }

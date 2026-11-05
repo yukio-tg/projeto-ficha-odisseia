@@ -15,6 +15,9 @@ let _sharedWith = [];
 let _isPublic = false;
 let _publicPermission = 'read';
 
+// A rule de leitura exige conta. O texto não pode prometer que o link basta.
+const PUBLIC_LABEL = 'Ficha pública — é preciso entrar no site; o link sozinho não abre a ficha';
+
 /**
  * Inicializa o popup de compartilhamento.
  * Deve ser chamado apenas para o dono da ficha.
@@ -65,6 +68,9 @@ function closeSharePopup() {
 }
 
 function renderSharePopup() {
+    const publicLabel = document.getElementById('share-public-label');
+    if (publicLabel) publicLabel.textContent = PUBLIC_LABEL;
+
     // --- Toggle público ---
     const toggle = document.getElementById('share-public-toggle');
     toggle.checked = _isPublic;

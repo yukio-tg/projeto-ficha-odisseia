@@ -6,6 +6,7 @@ import { setupAccordion } from '../core/dom-helpers.js';
 import { INERTIDAO_TAMANHO } from '../core/calculation.js';
 import { periciasData, buildD20Html } from './skills.js';
 import { createDataLoader } from '../core/data-loader.js';
+import { showCatalogWarning } from './escrita-ui.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { updateBestaBar, attachCalcMode } from './vitals.js';
 import { ONUS_LISTA } from '../config/onus.js';
@@ -45,8 +46,16 @@ const HAB_TYPES = {
 
 const MAGIC_TYPES = ['arcanismo','feromancia','teurgia'];
 
-const poderesLoader = createDataLoader('/ficha/data/poderes.json','Besta-Poderes');
-const magiasLoader  = createDataLoader('/ficha/data/magias.json','Besta-Magias','magias');
+const poderesLoader = createDataLoader('/ficha/data/poderes.json', 'Besta-Poderes', null, {
+    onError() {
+        showCatalogWarning('tab-besta', 'Não foi possível carregar o catálogo de poderes.');
+    },
+});
+const magiasLoader = createDataLoader('/ficha/data/magias.json', 'Besta-Magias', 'magias', {
+    onError() {
+        showCatalogWarning('tab-besta', 'Não foi possível carregar o catálogo de magias.');
+    },
+});
 
 // ── State ──────────────────────────────────────────────────────────────────
 
@@ -125,7 +134,7 @@ export function checkBestaTabVisibility() {
     const vinculo = (document.querySelector('[data-field="besta-nome"]')?.value  || '').trim().toLowerCase();
     const show    = classe === 'treinador' || (vinculo !== '' && vinculo !== 'nenhum');
 
-    document.querySelectorAll('#tabs li[data-tab="besta"], #mobile-tabs li[data-tab="besta"]')
+    document.querySelectorAll('#tabs li[data-tab="besta"], #mobile-more-sheet [data-tab="besta"]')
         .forEach(li => { li.style.display = show ? '' : 'none'; });
 }
 

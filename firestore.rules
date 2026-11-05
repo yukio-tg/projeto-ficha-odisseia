@@ -57,16 +57,64 @@ service cloud.firestore {
     }
 
     // ── users collection ──────────────────────────────────────────────────
-    // Qualquer usuário autenticado pode ler perfis (necessário para lookup email→uid).
-    // O próprio usuário pode escrever em qualquer campo do seu perfil.
-    // Qualquer autenticado pode atualizar apenas sharedSheetIds (para registrar fichas compartilhadas).
+    // Leitura: qualquer autenticado (lookup email→uid).
+    // Escrita geral: só o próprio perfil.
+    // sharedSheetIds de outro perfil: só o dono da ficha, e só aquele id
+    // (convite em addToUserSharedSheets). Depois de transferir a ficha, o
+    // editor que era dono pode remover esse único id da lista do novo dono.
     match /users/{uid} {
+      function sharedIds(data) {
+        return data.get('sharedSheetIds', []);
+      }
+
+      function onlySharedSheetIdsChanged() {
+        return request.resource.data.diff(resource.data)
+               .affectedKeys().hasOnly(['sharedSheetIds']);
+      }
+
+      function addedSharedIds() {
+        return sharedIds(request.resource.data).removeAll(sharedIds(resource.data));
+      }
+
+      function removedSharedIds() {
+        return sharedIds(resource.data).removeAll(sharedIds(request.resource.data));
+      }
+
+      function oneSharedIdDelta() {
+        return (addedSharedIds().size() == 1 && removedSharedIds().size() == 0)
+            || (addedSharedIds().size() == 0 && removedSharedIds().size() == 1);
+      }
+
+      function deltaSharedId() {
+        return addedSharedIds().size() == 1 ? addedSharedIds()[0] : removedSharedIds()[0];
+      }
+
+      function sheetPath(id) {
+        return /databases/$(database)/documents/sheets/$(id);
+      }
+
+      function ownsDeltaSheet() {
+        return exists(sheetPath(deltaSharedId()))
+            && get(sheetPath(deltaSharedId())).data.owner == request.auth.uid;
+      }
+
+      function editorRemovesSheetFromNewOwner() {
+        return removedSharedIds().size() == 1
+            && addedSharedIds().size() == 0
+            && exists(sheetPath(deltaSharedId()))
+            && get(sheetPath(deltaSharedId())).data.owner == uid
+            && request.auth.uid in get(sheetPath(deltaSharedId())).data.get('sharedUidsEdit', []);
+      }
+
       allow read:  if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
       allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data)
-                                           .affectedKeys()
-                                           .hasOnly(['sharedSheetIds']);
+                    && request.auth.uid != uid
+                    && onlySharedSheetIdsChanged()
+                    && (
+                      (oneSharedIdDelta() && ownsDeltaSheet())
+                      || editorRemovesSheetFromNewOwner()
+                    );
     }
 
     match /sheets/{sheetId} {
@@ -88,9 +136,11 @@ service cloud.firestore {
 
       function onlyDataFields() {
         return request.resource.data.diff(resource.data)
-               .affectedKeys().hasOnly(['data', 'name', 'updatedAt']);
+               .affectedKeys().hasOnly(['data', 'name', 'updatedAt', 'theme']);
       }
 
+      // "Público" ainda exige conta. O texto do compartilhamento diz isso.
+      // Presença continua só para autenticados, no bloco abaixo.
       allow read:   if request.auth != null && (isOwner() || hasReadAccess());
       allow create: if request.auth != null
                     && request.resource.data.owner == request.auth.uid;

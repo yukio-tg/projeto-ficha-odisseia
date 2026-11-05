@@ -350,7 +350,8 @@ body.mode-readonly .page-wrap {
 /* Re-habilita os botões de minimizar/expandir dentro dos cards */
 body.mode-readonly .page-wrap .btn-summarize,
 body.mode-readonly .page-wrap .btn-magic-minimize,
-body.mode-readonly .page-wrap .besta-collapse-toggle {
+body.mode-readonly .page-wrap .besta-collapse-toggle,
+body.mode-readonly .page-wrap .play-open-editor {
     pointer-events: auto;
     cursor: pointer;
 }

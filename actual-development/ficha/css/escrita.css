@@ -1,0 +1,179 @@
+/* Superfície de escrita: prévia de notas, listas vazias, desfazer e impressão. */
+
+.notes-textarea--mirror {
+    cursor: pointer;
+    resize: none;
+}
+
+.sheet-empty-hint {
+    margin: 8px 2px 12px;
+    font-family: 'IM Fell English', Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--ink3);
+}
+
+.sheet-empty-hint[hidden] {
+    display: none;
+}
+
+.catalog-load-error {
+    margin: 8px 0 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--blood2);
+    border-radius: 4px;
+    color: var(--blood2);
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    line-height: 1.45;
+}
+
+.anot-paste-note {
+    margin: 6px 16px 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: var(--blood2);
+}
+
+#export-json-btn {
+    background: none;
+    border: none;
+    color: var(--gold1);
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    margin-left: 12px;
+    padding: 4px 2px;
+}
+
+#export-json-btn:hover {
+    color: var(--gold2);
+}
+
+.card-undo-toast {
+    position: fixed;
+    z-index: 80;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: calc(100vw - 24px);
+    padding: 8px 10px 8px 14px;
+    background: var(--leath1);
+    color: var(--gold2);
+    border: 1px solid var(--gold1);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+}
+
+.card-undo-toast button {
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--gold1);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--gold3);
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+}
+
+@media (max-width: 600px) {
+    .card-undo-toast {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media print {
+    html,
+    body {
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    .app {
+        display: block !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .sidebar,
+    .sidebar-mobile-nav,
+    .sheet-header,
+    .mobile-more-sheet,
+    #theme-panel,
+    #readonly-banner,
+    .card-undo-toast,
+    .anot-lightbox,
+    .magic-editor-overlay,
+    .play-jump-row,
+    .mobile-rulebook-row,
+    .autocomplete-powers-dropdown,
+    .autocomplete-magias-dropdown,
+    .autocomplete-itens-dropdown,
+    .custom-autocomplete-dropdown,
+    .besta-dropdown {
+        display: none !important;
+    }
+
+    .sheet,
+    .page-wrap {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        min-height: 0 !important;
+    }
+
+    .page-wrap {
+        padding-bottom: 0 !important;
+    }
+
+    .page-wrap > .page {
+        display: block !important;
+        page-break-before: always;
+    }
+
+    #tab-geral {
+        page-break-before: auto !important;
+    }
+
+    /* Espelho de mesa: a ficha completa já entra no fluxo. */
+    #tab-mesa {
+        display: none !important;
+        page-break-before: auto !important;
+    }
+
+    .magic-sheet {
+        display: block !important;
+        height: auto !important;
+    }
+
+    .magic-sheet:not(:has(.magic-card)) {
+        display: none !important;
+    }
+
+    .anot-editor,
+    .notes-textarea--mirror {
+        max-height: none !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    .body-power,
+    .magic-card-body,
+    .item-card-body {
+        display: block !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+}

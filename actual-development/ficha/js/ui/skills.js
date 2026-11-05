@@ -1,5 +1,5 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
-import { autoCalcEnabled, manualOverrides } from '../core/state.js';
+import { autoCalcEnabled, manualOverrides, isHydrating } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
 let afterSkillsUpdate = null;
 
@@ -242,7 +242,7 @@ export function atualizarPericias(force = false) {
 
     // Atualizar Defesa (Destreza + 10) — respeita override manual
     const defesaInput = document.querySelector('[data-field="defesa"]');
-    if (defesaInput && !manualOverrides.has('defesa')) {
+    if (defesaInput && !manualOverrides.has('defesa') && !isHydrating()) {
         const destrezaVal = valoresAttr['DES'] || 0;
         defesaInput.value = destrezaVal + 10;
     }
@@ -312,7 +312,12 @@ export function atualizarPericias(force = false) {
         }
     });
 
-    // Atualiza inertidão, contador de proficiência e cálculos gerais (PV, PM, etc.)
+    // Durante a hidratação os totais da tabela acompanham os atributos restaurados,
+    // mas PV/defesa/inércia ficam como foram salvos.
+    if (isHydrating()) {
+        atualizarContadorProficiencia();
+        return;
+    }
     atualizarInertidao();
     atualizarContadorProficiencia();
     calcStats();

@@ -73,6 +73,31 @@ export function adjustRadarMaxPoints(delta) {
     radarInstance.updateTotal();
 }
 
+/**
+ * Copia nível e atributos já escritos nos inputs para o modelo do radar
+ * e redesenha, sem disparar input/change (isso recalcularia a ficha).
+ * maxPointsBonus preserva o teto do Aprendizado de Vida já salvo.
+ */
+export function adoptRadarInputs({ maxPointsBonus = 0 } = {}) {
+    if (!radarInstance) return;
+    const level = getNivel();
+    radarInstance.levelVal = level;
+    radarInstance.maxPoints = 10 + level + (Number(maxPointsBonus) || 0);
+    radarInstance.attrs.forEach((attr, i) => {
+        const wrap = getRadarAttrWrap(attr.abbr);
+        if (!wrap) return;
+        const raw = wrap.querySelector('.attr-input')?.value;
+        const n = parseInt(raw, 10);
+        if (!Number.isNaN(n)) radarInstance.values[i] = n;
+        const mod = wrap.querySelector('.mod-input')?.value;
+        if (mod != null) radarInstance.modValues[i] = mod;
+    });
+    radarInstance.draw();
+    radarInstance.updateTotal();
+    radarInstance.updateHexGlow();
+    radarInstance.updateLegendTiers();
+}
+
 export function getAtributoTotal(attr) {
     const wrap = getRadarAttrWrap(attr);
     if (!wrap) return 0;

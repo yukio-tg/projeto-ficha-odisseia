@@ -5,10 +5,16 @@ import { normalizar, escapeHtml, capitalize } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { verificarOverflow, syncFieldToDisplay } from '../core/dom-helpers.js';
+import { isHydrating } from '../core/state.js';
 import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged, onFonteNomeChanged } from '../core/item-effects.js';
+import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
 
 // ========== Configuração ==========
-const itensLoader = createDataLoader('/ficha/data/itens.json', 'Inventário', 'itens');
+const itensLoader = createDataLoader('/ficha/data/itens.json', 'Inventário', 'itens', {
+    onError() {
+        showCatalogWarning('tab-inventario', 'Não foi possível carregar o catálogo de itens. A busca do livro não está disponível.');
+    },
+});
 let cardCounter = 0;
 
 // Mapeamento de raridades para cores e ordem
@@ -147,6 +153,7 @@ function atualizarContadoresRaridade() {
 
 // ========== Soma do peso total (inteiro) ==========
 function atualizarPesoTotal() {
+    if (isHydrating()) return;
     if (!invAtualInput) return;
     let totalPeso = 0;
     document.querySelectorAll('.item-card').forEach(card => {
@@ -381,12 +388,7 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
         let qtd = parseInt(qtdInput.value, 10) || 1;
         if (qtd > 1) { qtdInput.value = qtd - 1; qtdInput.dispatchEvent(new Event('input', { bubbles: true })); }
         else {
-            const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
-            onItemRemoved(cardId, cat, getCardItemData(card));
-            card.remove();
-            atualizarPesoTotal();
-            atualizarContadoresRaridade();
-            salvarInventarioLocal();
+            descartarItem(card);
         }
     });
     btnInc.addEventListener('click', () => {
@@ -460,14 +462,7 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
     if (valor2Input) valor2Input.addEventListener('input', salvarInventarioLocal);
 
     const btnRemove = card.querySelector('.btn-item-remove');
-    btnRemove.addEventListener('click', () => {
-        const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
-        onItemRemoved(cardId, cat, getCardItemData(card));
-        card.remove();
-        atualizarPesoTotal();
-        atualizarContadoresRaridade();
-        salvarInventarioLocal();
-    });
+    btnRemove.addEventListener('click', () => descartarItem(card));
 
     // Trigger cross-tab effects for non-básico categories
     setTimeout(() => {
@@ -477,6 +472,56 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
             onItemAdded(cardId, categoria, getCardItemData(card));
         }
     }, 0);
+    return card;
+}
+
+function snapshotItem(card) {
+    return {
+        id: card.dataset.cardId,
+        nome: card.querySelector('.item-nome-input')?.value || '',
+        quantidade: parseInt(card.querySelector('.item-quantidade')?.value, 10) || 1,
+        pesoUnit: parseInt(card.querySelector('.item-peso-unit')?.value, 10) || 0,
+        raridade: card.dataset.raridade || 'banal',
+        estado: card.querySelector('.item-estado-select')?.value || ESTADOS.PADRAO.value,
+        categoria: card.querySelector('.item-categoria-select')?.value || 'básico',
+        descricao: card.querySelector('.item-desc-textarea')?.value || '',
+        valor1: card.querySelector('.item-valor1')?.value || '',
+        valor2: card.querySelector('.item-valor2')?.value || '',
+        itemSource: card.dataset.itemSource || '',
+    };
+}
+
+function restaurarItem(data) {
+    if (!containerItems || !data) return;
+    const card = criarCardItem(null, data.nome, data);
+    if (data.itemSource) card.dataset.itemSource = data.itemSource;
+    containerItems.appendChild(card);
+    reordenarItems();
+    atualizarPesoTotal();
+    atualizarContadoresRaridade();
+    document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+}
+
+function descartarItem(card) {
+    const snap = snapshotItem(card);
+    const cardId = card.dataset.cardId;
+    const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
+    onItemRemoved(cardId, cat, getCardItemData(card));
+    card.remove();
+    atualizarPesoTotal();
+    atualizarContadoresRaridade();
+    salvarInventarioLocal();
+    offerUndo('Item removido', () => restaurarItem(snap));
+    document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+}
+
+function colocarItem(itemData, nomeForcado) {
+    const card = criarCardItem(itemData, nomeForcado);
+    containerItems.appendChild(card);
+    reordenarItems();
+    atualizarPesoTotal();
+    atualizarContadoresRaridade();
+    salvarInventarioLocal();
     return card;
 }
 
@@ -504,12 +549,7 @@ function adicionarItemDoBusca() {
     const nomeDigitado = inputBusca.value.trim();
 
     if (nomeDigitado === '') {
-        const card = criarCardItem(null, '');
-        containerItems.appendChild(card);
-        reordenarItems();
-        atualizarPesoTotal();
-        atualizarContadoresRaridade();
-        salvarInventarioLocal();
+        colocarItem(null, '');
         if (autocompleteInstance) autocompleteInstance.close();
         return;
     }
@@ -519,12 +559,7 @@ function adicionarItemDoBusca() {
         const nomeNorm = normalizar(nomeDigitado);
         itemEncontrado = itensLoader.getData().find(i => normalizar(i.nome) === nomeNorm);
     }
-    const card = criarCardItem(itemEncontrado, nomeDigitado);
-    containerItems.appendChild(card);
-    reordenarItems();
-    atualizarPesoTotal();
-    atualizarContadoresRaridade();
-    salvarInventarioLocal();
+    colocarItem(itemEncontrado, nomeDigitado);
     inputBusca.value = '';
     if (autocompleteInstance) autocompleteInstance.close();
     inputBusca.focus();
@@ -556,7 +591,10 @@ export async function initInventory() {
             const raridadeObj = RARIDADES.find(r => r.nome.toLowerCase() === (item.raridade || 'banal').toLowerCase()) || RARIDADES[0];
             return `<span class="autocomplete-raridade-dot" style="background-color:${raridadeObj.cor}"></span><strong>${escapeHtml(item.nome)}</strong><small>${item.categoria || ''}</small>`;
         },
-        onSelect: (item) => { inputBusca.value = item.nome; },
+        onSelect: (item) => {
+            inputBusca.value = '';
+            colocarItem(item, item.nome || '');
+        },
         onEnter: adicionarItemDoBusca
     });
 
@@ -573,11 +611,10 @@ export async function initInventory() {
         atualizarContadoresRaridade();
     });
 
-    // Bidirectional sync: since both tab-geral and tab-inventario now use
-    // the same data-field attributes, we sync all elements sharing [data-field="dinheiro"]
-    // and [data-field="hierarquia"] bidirectionally.
-    setupBidirectionalSync('dinheiro');
-    setupBidirectionalSync('hierarquia');
+    // Bidirectional sync: a Geral é a fonte (data-field). O inventário espelha
+    // sem o mesmo data-field, para o save não ficar com o último nó do DOM.
+    bindFieldMirror('dinheiro');
+    bindFieldMirror('hierarquia');
 
     // Also listen for hierarquia changes to update raridade counters
     document.querySelectorAll('[data-field="hierarquia"]').forEach(el => {
@@ -596,29 +633,54 @@ export async function initInventory() {
         invAtualInput.addEventListener('change', verificarInvOverflow);
     }
 
+    bindEmptyHint(containerItems, '.item-card', 'Nenhum item ainda.');
+
     console.log('[Inventário] Inicializado com sucesso');
 }
 
-// ========== Bidirectional Sync for shared data-fields ==========
-function setupBidirectionalSync(fieldName) {
-    const elements = document.querySelectorAll(`[data-field="${fieldName}"]`);
-    if (elements.length < 2) return;
+// ========== Espelho de dinheiro / hierarquia ==========
+// A fonte fica na aba Geral (data-field). O inventário é data-mirror, sem o
+// mesmo data-field, para serializeFields e querySelector não divergirem.
+export function syncMirroredFields() {
+    ['dinheiro', 'hierarquia'].forEach(field => {
+        const source = document.querySelector(`[data-field="${field}"]`);
+        if (!source) return;
+        document.querySelectorAll(`[data-mirror="${field}"]`).forEach(el => {
+            el.value = source.value;
+        });
+    });
+}
 
-    let syncing = false;
-    elements.forEach(source => {
-        const handler = () => {
-            if (syncing) return;
-            syncing = true;
-            const val = source.value;
-            elements.forEach(target => {
-                if (target !== source && target.value !== val) {
-                    target.value = val;
-                    target.dispatchEvent(new Event('change', { bubbles: true }));
-                }
+function bindFieldMirror(field) {
+    const source = document.querySelector(`[data-field="${field}"]`);
+    const mirrors = [...document.querySelectorAll(`[data-mirror="${field}"]`)];
+    if (!source || mirrors.length === 0) return;
+
+    let lock = false;
+    const pushToMirrors = () => {
+        if (lock) return;
+        lock = true;
+        mirrors.forEach(el => {
+            if (el.value !== source.value) el.value = source.value;
+        });
+        lock = false;
+    };
+    source.addEventListener('input', pushToMirrors);
+    source.addEventListener('change', pushToMirrors);
+
+    mirrors.forEach(mirror => {
+        const pull = (eventName) => {
+            if (lock) return;
+            lock = true;
+            const changed = source.value !== mirror.value;
+            source.value = mirror.value;
+            mirrors.forEach(el => {
+                if (el !== mirror && el.value !== mirror.value) el.value = mirror.value;
             });
-            syncing = false;
+            lock = false;
+            if (changed) source.dispatchEvent(new Event(eventName, { bubbles: true }));
         };
-        source.addEventListener('input', handler);
-        source.addEventListener('change', handler);
+        mirror.addEventListener('input', () => pull('input'));
+        mirror.addEventListener('change', () => pull('change'));
     });
 }

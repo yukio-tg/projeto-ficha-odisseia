@@ -1,5 +1,5 @@
 import { getNivel, getAtributoTotal } from './radar-service.js';
-import { autoCalcEnabled, manualOverrides } from './state.js';
+import { autoCalcEnabled, isHydrating, isExplicitRecalc, isModoRegras, podeSobrescrever } from './state.js';
 import { refreshAllBars } from '../ui/vitals.js';
 import { getIncrFlat, getIncrPct, applyIncrement } from '../ui/configuracoes.js';
 
@@ -12,9 +12,34 @@ export const INERTIDAO_TAMANHO = {
     'tam-colossal': 17
 };
 
+function calculoPodeEscrever() {
+    if (isHydrating()) return false;
+    return autoCalcEnabled || isExplicitRecalc();
+}
+
+export function atualizarAvisoFormulaClasse() {
+    const input = document.querySelector('[data-field="classe-nome"]');
+    if (!input) return;
+    const nome = input.value.trim().toLowerCase();
+    const semFormula = !!nome && !Object.prototype.hasOwnProperty.call(FORMULAS, nome);
+    const mostrar = semFormula && (isModoRegras() || isExplicitRecalc());
+    let note = document.getElementById('classe-sem-formula');
+    if (!mostrar) {
+        note?.remove();
+        return;
+    }
+    if (!note) {
+        note = document.createElement('p');
+        note.id = 'classe-sem-formula';
+        note.style.cssText = 'margin:4px 0 0;font-size:11px;line-height:1.3;color:var(--blood2,#8a2a2a);';
+        input.insertAdjacentElement('afterend', note);
+    }
+    note.textContent = 'Esta classe não tem fórmula.';
+}
+
 export function atualizarInertidao() {
-    if (!autoCalcEnabled) return;
-    if (manualOverrides.has('inertidao-base')) return;
+    if (!calculoPodeEscrever()) return;
+    if (!podeSobrescrever('inertidao-base')) return;
     const nivel = getNivel();
     const tamanho = document.querySelector('[data-field="tamanho"]')?.value || 'tam-medio';
     const bonus = INERTIDAO_TAMANHO[tamanho] ?? 7;
@@ -23,8 +48,8 @@ export function atualizarInertidao() {
 }
 
 export function atualizarDtSab() {
-    if (!autoCalcEnabled) return;
-    if (manualOverrides.has('dt-sab')) return;
+    if (!calculoPodeEscrever()) return;
+    if (!podeSobrescrever('dt-sab')) return;
     const nivel = getNivel();
     const sab = getAtributoTotal('SAB');
     const valor = 10 + Math.floor(nivel / 2) + sab;
@@ -59,8 +84,8 @@ function atualizarVital(prefix, maxVal, skipAtualUpdate = false) {
     const oldMax = parseInt(maxInput.value) || 0;
     const oldAtual = parseInt(atualInput.value) || 0;
 
-    const totalManual = manualOverrides.has(`${prefix}-total`);
-    const atualManual = manualOverrides.has(`${prefix}-atual`);
+    const totalManual = !podeSobrescrever(`${prefix}-total`);
+    const atualManual = !podeSobrescrever(`${prefix}-atual`);
 
     // Effective max: use manually-set value if overridden, otherwise the computed one
     const effectiveMax = totalManual ? oldMax : maxVal;
@@ -142,9 +167,11 @@ export function updateFeVisibility() {
 
 // ========== CÁLCULO PRINCIPAL ==========
 export function calcStats() {
-    if (!autoCalcEnabled) return;
+    if (!calculoPodeEscrever()) return;
+    atualizarAvisoFormulaClasse();
     const classe = getClasseNormalizada();
     const formulas = FORMULAS[classe];
+    // Sem fórmula: não sobrescreve PV/PM/etc. O aviso acima diz que não calculou.
     if (!formulas) return;
 
     const nivel = getNivel();
@@ -192,7 +219,7 @@ export function calcStats() {
 
     // Atualiza o campo total na interface e dispara evento
     const invTotalInput = document.querySelector('[data-field="inv-total"]');
-    if (invTotalInput && !manualOverrides.has('inv-total')) {
+    if (invTotalInput && podeSobrescrever('inv-total')) {
         invTotalInput.value = invMax;
         invTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
@@ -240,7 +267,7 @@ export function calcStats() {
     // Só atualiza o total e garante que o atual não ultrapasse o novo máximo
     // mas NÃO sobrescreve o atual com o máximo (o atual é controlado pelos cards de poder)
     const ptTotalInput = document.querySelector('[data-field="pt-total"]');
-    if (ptTotalInput && !manualOverrides.has('pt-total')) {
+    if (ptTotalInput && podeSobrescrever('pt-total')) {
         ptTotalInput.value = ptMax;
     }
     calculatedLimits.pt = ptMax;
@@ -249,14 +276,14 @@ export function calcStats() {
 
     // ===== TRATAMENTO ESPECIAL PARA LA =====
     const laTotalInput = document.querySelector('[data-field="la-total"]');
-    if (laTotalInput && !manualOverrides.has('la-total')) {
+    if (laTotalInput && podeSobrescrever('la-total')) {
         laTotalInput.value = laMax;
         // Dispara evento 'input' para que o watcher de magias.js reaja ao novo total
         laTotalInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     const laAtualInput = document.querySelector('[data-field="la-atual"]');
-    if (laAtualInput && !manualOverrides.has('la-atual')) {
+    if (laAtualInput && podeSobrescrever('la-atual')) {
         let oldAtual = parseInt(laAtualInput.value) || 0;
         let novoAtual = oldAtual;
         if (oldAtual > laMax) novoAtual = laMax;
@@ -277,18 +304,18 @@ export function calcStats() {
         if (feMaxInput) {
             const oldMax = parseInt(feMaxInput.value) || 0;
             const oldAtual = feAtualInput ? parseInt(feAtualInput.value) || 0 : 0;
-            if (!manualOverrides.has('fe-atual') && feAtualInput) {
+            if (podeSobrescrever('fe-atual') && feAtualInput) {
                 if (oldAtual === oldMax || oldMax === 0) {
                     feAtualInput.value = feMax;
                 } else if (oldAtual > feMax) {
                     feAtualInput.value = feMax;
                 }
             }
-            if (!manualOverrides.has('fe-total')) feMaxInput.value = feMax;
+            if (podeSobrescrever('fe-total')) feMaxInput.value = feMax;
         }
     } else {
         const feMaxInput = document.querySelector('[data-field="fe-total"]');
-        if (feMaxInput && !manualOverrides.has('fe-total')) feMaxInput.value = 0;
+        if (feMaxInput && podeSobrescrever('fe-total')) feMaxInput.value = 0;
     }
 
     // Reaplica classe de overflow (caso pt-total tenha mudado)

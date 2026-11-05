@@ -86,6 +86,14 @@
     flex-shrink: 0;
 }
 
+@media (max-width: 600px) {
+    .anot-toolbar-btn {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 12px;
+    }
+}
+
 /* ── Rich-text editor body ── */
 .anot-editor {
     min-height: 260px;
@@ -138,6 +146,30 @@
 .anot-editor b,
 .anot-editor strong {
     color: var(--ink0);
+}
+
+.anot-editor em {
+    font-style: italic;
+}
+
+.anot-editor img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 8px 0;
+}
+
+.anot-editor table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+}
+
+.anot-editor td,
+.anot-editor th {
+    border: 1px solid var(--p3);
+    padding: 4px 6px;
+    vertical-align: top;
 }
 
 /* ── Gallery section ── */

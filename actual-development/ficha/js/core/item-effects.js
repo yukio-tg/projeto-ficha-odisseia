@@ -4,7 +4,8 @@
 import { uid } from './utils.js';
 import { getAtributoBase } from './radar-service.js';
 import { criarCardAtaque } from '../ui/combat.js';
-import { manualOverrides } from './state.js';
+import { isHydrating, isExplicitRecalc, isModoLivre, podeSobrescrever } from './state.js';
+import { devePularRecalcProtecao, temBaseRestaurada, aplicarBonusSobreBase } from './bonus-guard.js';
 import { getIncrFlat, applyIncrement, getIncrPct } from '../ui/configuracoes.js';
 
 // ════════════════════════════════════════════════════════════════
@@ -183,7 +184,7 @@ function getBaseDeslocamento() {
 function storeBaseDeslocamento() {
     const input = document.querySelector('[data-field="deslocamento"]');
     if (!input) return;
-    if (!input.dataset.baseValue) {
+    if (!temBaseRestaurada(input.dataset.baseValue)) {
         input.dataset.baseValue = input.value;
     }
 }
@@ -208,7 +209,19 @@ export function onProtectionRemoved(cardId) {
     saveItemEffectsState();
 }
 
+export function reaplicarBonusProtecao() {
+    recalcProtectionBonuses();
+}
+
 function recalcProtectionBonuses() {
+    // Hidratação: o visível já é o salvo, então sai. Fora dela, a RD soma o
+    // bônus na base restaurada — sem base, o visível viraria base e empilharia.
+    if (devePularRecalcProtecao({
+        hydrating: isHydrating(),
+        modoLivre: isModoLivre(),
+        explicitRecalc: isExplicitRecalc(),
+    })) return;
+
     storeBaseDeslocamento();
 
     let totalDefBonus = 0;
@@ -223,7 +236,7 @@ function recalcProtectionBonuses() {
 
     // Apply to Defesa — skip if user has manually overridden it
     const defesaInput = document.querySelector('[data-field="defesa"]');
-    if (defesaInput && !manualOverrides.has('defesa')) {
+    if (defesaInput && podeSobrescrever('defesa')) {
         const baseDefesa = (getAtributoBase('DES') || 0) + 10;
         // Aplica incremento de Configurações (DEF flat)
         const defFlat = getIncrFlat('def');
@@ -234,17 +247,16 @@ function recalcProtectionBonuses() {
 
     // Apply to RD — skip if user has manually overridden it
     const rdInput = document.querySelector('[data-field="rd"]');
-    if (rdInput && !manualOverrides.has('rd')) {
-        if (!rdInput.dataset.baseValue) rdInput.dataset.baseValue = rdInput.value;
-        const baseRd = parseInt(rdInput.dataset.baseValue, 10) || 0;
-        rdInput.value = baseRd + totalRdBonus;
+    if (rdInput && podeSobrescrever('rd')) {
+        if (!temBaseRestaurada(rdInput.dataset.baseValue)) rdInput.dataset.baseValue = rdInput.value;
+        rdInput.value = aplicarBonusSobreBase(rdInput.dataset.baseValue, rdInput.value, totalRdBonus);
         rdInput.dataset.protBonus = totalRdBonus;
         rdInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     // Apply to Deslocamento (percentage reduction + Configurações increment)
     const deslInput = document.querySelector('[data-field="deslocamento"]');
-    if (deslInput && !manualOverrides.has('deslocamento')) {
+    if (deslInput && podeSobrescrever('deslocamento')) {
         const baseDesl = getBaseDeslocamento();
         const reducedDesl = baseDesl * (1 - totalDeslocReduction);
         // Aplica incrementos de Configurações (flat + porcentagem)

@@ -1,4 +1,9 @@
+import { escapeHtml } from '../core/utils.js';
+
 let _currentState = { html: '', galeria: [] };
+
+const IMAGE_DATA_URL_MAX = 1_500_000;
+const IMAGE_FILE_MAX = 1024 * 1024;
 
 function loadState() {
     return _currentState;
@@ -10,7 +15,9 @@ function saveState(state) {
 }
 
 export function getAnotacoesState() {
-    return { html: _currentState.html || '', galeria: [...(_currentState.galeria || [])] };
+    const editor = document.getElementById('anot-editor');
+    const html = editor ? editor.innerHTML : (_currentState.html || '');
+    return { html, galeria: [...(_currentState.galeria || [])] };
 }
 
 export function setAnotacoesState(data) {
@@ -19,7 +26,10 @@ export function setAnotacoesState(data) {
     const editor = document.getElementById('anot-editor');
     if (editor) editor.innerHTML = _currentState.html;
     const page = document.getElementById('tab-anotacoes');
-    if (!page) return;
+    if (!page) {
+        syncNotesMirror();
+        return;
+    }
     const gallerySection = page.querySelector('.anot-gallery-section');
     if (gallerySection) {
         const grid = gallerySection.querySelector('.anot-gallery-grid');
@@ -30,6 +40,268 @@ export function setAnotacoesState(data) {
             renderGallery(gallerySection, state);
         }
     }
+    syncNotesMirror();
+}
+
+/** Copia anotacoes-geral uma vez, só se o editor ainda não tem conteúdo. */
+export function adoptLegacyNotes(legacy) {
+    const text = String(legacy ?? '').trim();
+    if (!text) return;
+    const current = getAnotacoesState();
+    if (!htmlIsEmpty(current.html)) return;
+    setAnotacoesState({
+        html: plainToHtml(text),
+        galeria: current.galeria || [],
+    });
+}
+
+function htmlIsEmpty(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    if (tmp.querySelector('img, table, ul, ol, li')) return false;
+    return !(tmp.textContent || '').replace(/\u00a0/g, ' ').trim();
+}
+
+function plainToHtml(text) {
+    return String(text).replace(/\r\n/g, '\n').split(/\n{2,}/).filter(block => block.length).map(block => {
+        const inner = escapeHtml(block).replace(/\n/g, '<br>');
+        return `<p>${inner || '<br>'}</p>`;
+    }).join('');
+}
+
+function syncNotesMirror() {
+    const ta = document.getElementById('notes-textarea');
+    if (!ta) return;
+    const editor = document.getElementById('anot-editor');
+    const text = editor
+        ? (editor.innerText || '').replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim()
+        : '';
+    ta.value = text;
+    const count = document.getElementById('notes-char-count');
+    if (count) {
+        count.textContent = text
+            ? 'Prévia — clique para editar na aba Anotações'
+            : 'Nenhuma anotação ainda — clique para escrever';
+    }
+}
+
+function openNotesTab() {
+    document.querySelector('#tabs li[data-tab="anotacoes"]')?.click();
+}
+
+function isSafeImageSrc(src) {
+    const value = String(src || '').trim();
+    if (/^https?:\/\//i.test(value)) {
+        return value.length < 2000 && !/[\s<>"']/.test(value);
+    }
+    if (!/^data:image\/(png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=\s]+$/i.test(value)) return false;
+    return value.length <= IMAGE_DATA_URL_MAX;
+}
+
+function insertHtmlAtCursor(editor, html) {
+    if (!html) return;
+    editor.focus();
+    const sel = window.getSelection();
+    if (sel && !editor.contains(sel.anchorNode)) {
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+    document.execCommand('insertHTML', false, html);
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function flashPasteNote(editor, message) {
+    const host = editor.parentElement;
+    if (!host) return;
+    let note = host.querySelector('.anot-paste-note');
+    if (!note) {
+        note = document.createElement('p');
+        note.className = 'anot-paste-note';
+        note.setAttribute('role', 'status');
+        editor.insertAdjacentElement('afterend', note);
+    }
+    note.textContent = message;
+    setTimeout(() => {
+        if (note.textContent === message) note.textContent = '';
+    }, 3000);
+}
+
+function sanitizeClipboardHtml(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const frag = document.createDocumentFragment();
+    doc.body.childNodes.forEach(node => {
+        const clean = sanitizeClipboardNode(node);
+        if (!clean) return;
+        if (clean.nodeType === Node.DOCUMENT_FRAGMENT_NODE) frag.append(...clean.childNodes);
+        else frag.appendChild(clean);
+    });
+    const wrap = document.createElement('div');
+    wrap.appendChild(frag);
+    return wrap.innerHTML;
+}
+
+function sanitizeClipboardNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent);
+    if (node.nodeType !== Node.ELEMENT_NODE) return null;
+    const tag = node.tagName;
+    if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'TEMPLATE') return null;
+    if (tag === 'B') return wrapAllowed('strong', node);
+    if (tag === 'I') return wrapAllowed('em', node);
+    if (tag === 'IMG') return sanitizeClipboardImage(node);
+    const allowed = new Set(['P', 'BR', 'UL', 'OL', 'LI', 'STRONG', 'EM', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'H2', 'H3']);
+    if (!allowed.has(tag)) return unwrapClipboard(node);
+    const el = document.createElement(tag.toLowerCase());
+    if (tag === 'TD' || tag === 'TH') {
+        const colspan = node.getAttribute('colspan');
+        const rowspan = node.getAttribute('rowspan');
+        if (colspan && /^[1-9]\d?$/.test(colspan)) el.colSpan = Number(colspan);
+        if (rowspan && /^[1-9]\d?$/.test(rowspan)) el.rowSpan = Number(rowspan);
+    }
+    appendSanitizedChildren(node, el);
+    return el;
+}
+
+function wrapAllowed(tagName, node) {
+    const el = document.createElement(tagName);
+    appendSanitizedChildren(node, el);
+    return el;
+}
+
+function unwrapClipboard(node) {
+    const frag = document.createDocumentFragment();
+    appendSanitizedChildren(node, frag);
+    return frag;
+}
+
+function appendSanitizedChildren(node, parent) {
+    node.childNodes.forEach(child => {
+        const clean = sanitizeClipboardNode(child);
+        if (!clean) return;
+        if (clean.nodeType === Node.DOCUMENT_FRAGMENT_NODE) parent.append(...clean.childNodes);
+        else parent.appendChild(clean);
+    });
+}
+
+function sanitizeClipboardImage(node) {
+    const src = node.getAttribute('src') || '';
+    if (!isSafeImageSrc(src)) return null;
+    const img = document.createElement('img');
+    img.src = src.trim();
+    img.alt = node.getAttribute('alt') || '';
+    return img;
+}
+
+function imageFileFromClipboard(data) {
+    const items = data?.items ? [...data.items] : [];
+    const fromItems = items.find(item => item.kind === 'file' && /^image\/(png|jpeg|gif|webp)$/i.test(item.type));
+    if (fromItems) return fromItems.getAsFile();
+    const files = data?.files ? [...data.files] : [];
+    return files.find(file => /^image\/(png|jpeg|gif|webp)$/i.test(file.type)) || null;
+}
+
+function readImageFile(file, editor) {
+    if (!file) return;
+    if (file.size > IMAGE_FILE_MAX) {
+        flashPasteNote(editor, 'Imagem grande demais para entrar no texto.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+        const src = String(reader.result || '');
+        if (!isSafeImageSrc(src)) {
+            flashPasteNote(editor, 'Esse formato de imagem não entra no texto.');
+            return;
+        }
+        insertHtmlAtCursor(editor, `<img src="${src}" alt="">`);
+    };
+    reader.readAsDataURL(file);
+}
+
+function bindEditorPaste(editor) {
+    editor.addEventListener('paste', e => {
+        e.preventDefault();
+        const data = e.clipboardData;
+        const html = data?.getData('text/html') || '';
+        const plain = data?.getData('text/plain') || '';
+        const clean = html ? sanitizeClipboardHtml(html) : '';
+        if (clean && !htmlIsEmpty(clean)) {
+            insertHtmlAtCursor(editor, clean);
+            return;
+        }
+        const file = imageFileFromClipboard(data);
+        if (file) {
+            readImageFile(file, editor);
+            return;
+        }
+        if (plain) insertHtmlAtCursor(editor, plainToHtml(plain));
+    });
+}
+
+function bindInsertImage(editor, bar) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'anot-toolbar-btn';
+    btn.title = 'Inserir imagem no texto';
+    btn.innerHTML = '<span class="material-symbols-outlined">add_photo_alternate</span>';
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/png,image/jpeg,image/gif,image/webp';
+    input.hidden = true;
+    input.addEventListener('change', () => {
+        const file = input.files?.[0];
+        input.value = '';
+        readImageFile(file, editor);
+    });
+
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    btn.addEventListener('click', () => {
+        const url = window.prompt('URL da imagem (https://). Deixe em branco para escolher um arquivo.');
+        if (url === null) return;
+        const trimmed = url.trim();
+        if (!trimmed) {
+            input.click();
+            return;
+        }
+        if (!isSafeImageSrc(trimmed)) {
+            flashPasteNote(editor, 'Use uma URL http(s) ou uma imagem pequena embutida.');
+            return;
+        }
+        insertHtmlAtCursor(editor, `<img src="${escapeHtml(trimmed)}" alt="">`);
+    });
+
+    bar.append(btn, input);
+}
+
+function bindNotesMirror() {
+    const ta = document.getElementById('notes-textarea');
+    if (!ta || ta.dataset.notesMirror === '1') return;
+    ta.dataset.notesMirror = '1';
+    ta.readOnly = true;
+    ta.removeAttribute('data-field');
+    ta.classList.add('notes-textarea--mirror');
+    const open = () => openNotesTab();
+    ta.addEventListener('click', open);
+    ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            open();
+        }
+    });
+    const footer = document.querySelector('.notes-and-keeps .notes-footer');
+    if (footer && !document.getElementById('notes-open-tab')) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.id = 'notes-open-tab';
+        btn.className = 'notes-pin-btn';
+        btn.textContent = 'Abrir anotações';
+        btn.addEventListener('click', open);
+        footer.appendChild(btn);
+    }
+    syncNotesMirror();
 }
 
 // ─── Toolbar ───────────────────────────────────────────────────────────────
@@ -98,6 +370,7 @@ function buildToolbar(editor) {
     editor.addEventListener('mouseup', () => updateToolbarState(bar, editor));
     editor.addEventListener('selectionchange', () => updateToolbarState(bar, editor));
 
+    bindInsertImage(editor, bar);
     return bar;
 }
 
@@ -305,15 +578,11 @@ export function initAnotacoes() {
     if (state.html) editor.innerHTML = state.html;
 
     const toolbar = buildToolbar(editor);
-
-    editor.addEventListener('paste', e => {
-        e.preventDefault();
-        const text = e.clipboardData?.getData('text/plain') || '';
-        document.execCommand('insertText', false, text);
-    });
+    bindEditorPaste(editor);
 
     let saveTimer = null;
     editor.addEventListener('input', () => {
+        syncNotesMirror();
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => {
             state.html = editor.innerHTML;
@@ -330,4 +599,5 @@ export function initAnotacoes() {
 
     page.appendChild(editorSection);
     page.appendChild(gallerySection);
+    bindNotesMirror();
 }

@@ -6,16 +6,16 @@ import { initBars } from './ui/vitals.js';
 import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
 import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
-import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader } from './ui/header.js';
+import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader, syncModoUi } from './ui/header.js';
 import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset, checkMorrendoCondition } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
 import { atualizarHeranca, herancaAttrBonusAplicado } from './core/heranca-logic.js';
-import { autoCalcEnabled, setAutoCalcEnabled } from './core/state.js';
+import { autoCalcEnabled, setSheetMode, isModoRegras, MODO_LIVRE, MODO_REGRAS, addManualOverride, isHydrating, consumeSheetRestored, beginExplicitRecalc, endExplicitRecalc, liberarDerivadosParaRecalculo } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility, atualizarDtSab } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
 import { initMagias } from './ui/magias.js';
 import { initInventory } from './ui/inventory.js';
-import { initItemEffects } from './core/item-effects.js';
+import { initItemEffects, reaplicarBonusProtecao } from './core/item-effects.js';
 import { initBesta } from './ui/besta.js';
 import { initAnotacoes } from './ui/anotacoes.js';
 import { initClassCrest, refreshCrest } from './ui/class-crest.js';
@@ -27,15 +27,19 @@ import {
     saveSheetTheme, extractSheetTheme
 } from './core/firebase-service.js';
 import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
+import { shouldApplyRemoteSnapshot, fingerprintSheet } from './core/save-guard.js';
 import { initSharePopup } from './ui/share.js';
 import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
-import { addManualOverride } from './core/state.js';
-import { initConfiguracoes, updateEvoTable } from './ui/configuracoes.js';
+import { initConfiguracoes, updateEvoTable, definirAoIncrementar } from './ui/configuracoes.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
 let suppressSave = false;
 let autoSaveEnabled = true;
 let saveTimer = null;
+let saveInFlight = false;
+let pendingSaves = 0;
+let saveChain = Promise.resolve();
+const sentFingerprints = new Set();
 let currentUser = null;
 let currentSheetId = null;
 let currentPermission = null; // 'owner' | 'edit' | 'read'
@@ -110,31 +114,53 @@ function sanitizeForFirestore(value, path = '') {
     return value;
 }
 
-async function performSave() {
-    if (!currentUser || !currentSheetId) return;
-    try {
-        const rawData = serializeSheet();
-        const data = sanitizeForFirestore(rawData); // defensive: removes any remaining nested arrays
-        const name = data.fields?.['personagem-nome'] || 'Sem nome';
-        if (currentPermission === 'owner') {
-            await saveSheetData(currentSheetId, currentUser.uid, name, data);
-        } else {
-            await saveSheetDataOnly(currentSheetId, name, data);
-        }
-        showSaved();
-        _hasUnsavedChanges = false;
-    } catch (e) {
+function rememberSent(data) {
+    const fp = fingerprintSheet(data);
+    sentFingerprints.add(fp);
+    while (sentFingerprints.size > 8) {
+        const oldest = sentFingerprints.values().next().value;
+        sentFingerprints.delete(oldest);
+    }
+    return fp;
+}
+
+async function writeSheetOnce() {
+    const rawData = serializeSheet();
+    const data = sanitizeForFirestore(rawData); // defensive: removes any remaining nested arrays
+    rememberSent(data);
+    const name = data.fields?.['personagem-nome'] || 'Sem nome';
+    if (currentPermission === 'owner') {
+        await saveSheetData(currentSheetId, currentUser.uid, name, data);
+    } else {
+        await saveSheetDataOnly(currentSheetId, name, data);
+    }
+    showSaved();
+    _hasUnsavedChanges = false;
+}
+
+function performSave() {
+    if (!currentUser || !currentSheetId) return Promise.resolve();
+    pendingSaves += 1;
+    saveInFlight = true;
+    const run = saveChain.then(writeSheetOnce, writeSheetOnce);
+    saveChain = run.then(() => {
+        pendingSaves -= 1;
+        if (pendingSaves === 0) saveInFlight = false;
+    }, (e) => {
+        pendingSaves -= 1;
+        if (pendingSaves === 0) saveInFlight = false;
         console.error('[Save] Erro ao salvar:', e);
-        if (e.code === 'permission-denied') {
+        if (e?.code === 'permission-denied') {
             showError('Seu acesso a esta ficha foi revogado.');
         } else {
-            showError(e.message);
+            showError(e?.message);
         }
-    }
+    });
+    return saveChain;
 }
 
 function triggerAutoSave() {
-    if (suppressSave || !autoSaveEnabled) return;
+    if (suppressSave || isHydrating() || !autoSaveEnabled) return;
     _hasUnsavedChanges = true;
     showNonSaved();
     clearTimeout(saveTimer);
@@ -225,29 +251,28 @@ function setupRealtimeSync(sheetId) {
             }
             if (!snap.exists()) return;
 
-            // Ignora snapshots com escrita local pendente (nosso próprio dado sendo refletido)
-            if (snap.metadata.hasPendingWrites) return;
-
-            // Para editores/donos: aguarda não haver salvamento local em curso
-            if (currentPermission !== 'read' && saveTimer !== null) return;
+            // Escrita local ainda não confirmada: o eco chega de novo com hasPendingWrites false.
+            if (snap.metadata.hasPendingWrites && currentPermission !== 'read') return;
 
             const remoteData = snap.data()?.data;
             if (!remoteData) return;
 
-            // Aplica dados remotos sem disparar autosave
-            suppressSave = true;
-            try {
-                deserializeSheet(remoteData);
-                refreshHeader();
-                applyPortraitUrl(remoteData?.fields?.['retrato-url'] || '');
-                refreshCrest(); // atualiza crest com a classe recebida remotamente
-                checkMorrendoCondition(); // re-check after remote sync
-                if (currentPermission !== 'read') showSaved();
-            } finally {
-                // setTimeout garante que eventos síncronos do deserialize sejam
-                // absorvidos antes de reativar o autosave
-                setTimeout(() => { suppressSave = false; }, 50);
-            }
+            const applyRemote = shouldApplyRemoteSnapshot({
+                permission: currentPermission,
+                saveInFlight,
+                saveTimerActive: saveTimer !== null,
+                remoteFingerprint: fingerprintSheet(remoteData),
+                knownSentFingerprints: sentFingerprints,
+            });
+            if (!applyRemote) return;
+
+            // deserializeSheet segura a hidratação até os timers de 0 ms e 60 ms.
+            deserializeSheet(remoteData);
+            refreshHeader();
+            applyPortraitUrl(remoteData?.fields?.['retrato-url'] || '');
+            refreshCrest(); // atualiza crest com a classe recebida remotamente
+            checkMorrendoCondition(); // re-check after remote sync
+            if (currentPermission !== 'read') showSaved();
         },
         (err) => {
             console.error('[Realtime] Listener error:', err);
@@ -342,11 +367,32 @@ async function initAllModules() {
     initConfiguracoes();
 }
 
+function recalcularSobDemanda() {
+    if (isHydrating()) return;
+    beginExplicitRecalc();
+    liberarDerivadosParaRecalculo();
+    try {
+        atualizarHeranca();
+        atualizarPericias(true);
+        atualizarInertidao();
+        calcStats();
+        atualizarDtSab();
+        reaplicarBonusProtecao();
+        atualizarAcoesPorNivel();
+        atualizarAvisoReacoes();
+        document.dispatchEvent(new Event('reacoes:atualizar-stats'));
+    } finally {
+        endExplicitRecalc();
+    }
+    document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+}
+
 function wireCalculations() {
     setTimeout(() => {
         const levelInput = document.querySelector('#secao-radar .level-input');
         if (levelInput) {
             levelInput.addEventListener('input', () => {
+                updateVisibilityByLevel();
                 if (autoCalcEnabled) {
                     atualizarInertidao();
                     atualizarHeranca();
@@ -355,7 +401,6 @@ function wireCalculations() {
                     // É necessário re-adicionar o bônus de herança ao novo maxPoints de nível.
                     const herancaBonus = Object.values(herancaAttrBonusAplicado).reduce((a, b) => a + b, 0);
                     if (herancaBonus > 0) adjustRadarMaxPoints(herancaBonus);
-                    updateVisibilityByLevel();
                     calcStats();
                     atualizarAcoesPorNivel();
                     atualizarAvisoReacoes();
@@ -366,8 +411,8 @@ function wireCalculations() {
 
         const alinhamentoInput = document.querySelector('[data-field="alinhamento-nome"]');
         if (alinhamentoInput) {
-            alinhamentoInput.addEventListener('input', () => { if (autoCalcEnabled) updateFeVisibility(); });
-            alinhamentoInput.addEventListener('change', () => { if (autoCalcEnabled) updateFeVisibility(); });
+            alinhamentoInput.addEventListener('input', () => updateFeVisibility());
+            alinhamentoInput.addEventListener('change', () => updateFeVisibility());
         }
 
         document.querySelector('#secao-radar')?.addEventListener('input', (e) => {
@@ -416,7 +461,8 @@ function wireCalculations() {
             'pt-total', 'la-total', 'la-atual', 'inv-total',
             'fe-total', 'fe-atual', 'inertidao-base', 'dt-sab',
             // Protection-affected fields (overwritten by recalcProtectionBonuses)
-            'defesa', 'rd', 'deslocamento'
+            'defesa', 'rd', 'deslocamento',
+            'acoes-protagonistas', 'acoes-coesao', 'acoes-reacoes',
         ];
         CALC_FIELDS.forEach(field => {
             document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
@@ -435,15 +481,27 @@ function wireCalculations() {
             });
         });
 
-        atualizarInertidao();
-        atualizarHeranca();
-        updateVisibilityByLevel();
-        calcStats();
-        updateFeVisibility();
-        atualizarAcoesPorNivel();
-        atualizarAvisoReacoes();
-        atualizarAtaquesAcerto(false);
-        checkMorrendoCondition(); // initial check after load
+        // Ficha restaurada: os listeners acima valem para a próxima edição.
+        // Esta rodada não recalcula por cima do que acabou de ser salvo.
+        const restored = consumeSheetRestored();
+        if (!restored) {
+            atualizarInertidao();
+            atualizarHeranca();
+            updateVisibilityByLevel();
+            calcStats();
+            updateFeVisibility();
+            atualizarAcoesPorNivel();
+            atualizarAvisoReacoes();
+            atualizarAtaquesAcerto(false);
+            checkMorrendoCondition();
+        } else {
+            updateVisibilityByLevel();
+            const alinhamento = document.querySelector('[data-field="alinhamento-nome"]')?.value.trim().toLowerCase() || 'nenhum';
+            const feCard = document.querySelector('.vital-card-fe');
+            if (feCard) feCard.style.display = alinhamento === 'nenhum' ? 'none' : '';
+            atualizarAvisoReacoes();
+            checkMorrendoCondition();
+        }
     }, 600);
 }
 
@@ -503,10 +561,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
+    definirAoIncrementar(() => {
+        calcStats();
+        atualizarInertidao();
+        atualizarDtSab();
+        reaplicarBonusProtecao();
+    });
+
     await initAllModules();
 
-    // Carrega dados sem disparar autosave
-    suppressSave = true;
+    // Carrega dados sem disparar autosave. A hidratação cobre os eventos
+    // síncronos e os timers de 0 ms / 60 ms; o autocalc de 600 ms é pulado.
     try {
         if (sheetDoc.data) deserializeSheet(sheetDoc.data);
         refreshHeader(); // atualiza header-title e header-eyebrow com os dados carregados
@@ -518,8 +583,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
         console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);
-    } finally {
-        setTimeout(() => { suppressSave = false; }, 50);
     }
 
     // Aplica o tema salvo no Firestore (sobrepõe o cache local se houver)
@@ -566,6 +629,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (targetTab) document.querySelector(`#tabs li[data-tab="${targetTab}"]`)?.click();
     });
 
+    if (!document.documentElement.dataset.exportBound) {
+        document.documentElement.dataset.exportBound = '1';
+        document.addEventListener('ficha:export-json', () => {
+            const data = serializeSheet();
+            const nome = String(data.fields?.['personagem-nome'] || 'ficha').trim() || 'ficha';
+            const safe = nome.replace(/[^\w\u00C0-\u024f\- ]+/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'ficha';
+            const file = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${safe}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+    }
+
     // Aplica UI de acordo com a permissão
     if (perm === 'read') {
         applyReadOnlyMode(ownerEmail);
@@ -586,15 +667,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         initSharePopup(sheetId, user, sheetDoc);
     }
 
-    // Botão autocalc
+    // Modo Regras / Livre. Trocar não recalcula e não apaga o que está escrito.
     const autocalcBtn = document.getElementById('autocalc-switch');
-    if (autocalcBtn) {
+    if (autocalcBtn && autocalcBtn.dataset.modoBound !== '1') {
+        autocalcBtn.dataset.modoBound = '1';
         autocalcBtn.addEventListener('click', () => {
-            setAutoCalcEnabled(!autoCalcEnabled);
-            autocalcBtn.classList.toggle('active', autoCalcEnabled);
-            if (autoCalcEnabled) { atualizarHeranca(); atualizarPericias(true); }
+            setSheetMode(isModoRegras() ? MODO_LIVRE : MODO_REGRAS);
+            syncModoUi();
+            document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
         });
     }
+    document.addEventListener('ficha:recalcular', () => recalcularSobDemanda());
 
     // Botão de toggle de auto-save
     const autoSaveBtn = document.getElementById('autosave-switch');
@@ -612,7 +695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         manualSaveBtn.addEventListener('click', () => {
             clearTimeout(saveTimer);
             saveTimer = null;
-            atualizarPericias(true);
+            if (autoCalcEnabled) atualizarPericias(true);
             performSave();
         });
     }
@@ -628,7 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             clearTimeout(saveTimer);
             saveTimer = null;
-            atualizarPericias(true);
+            if (autoCalcEnabled) atualizarPericias(true);
             performSave();
         }
     });
@@ -652,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             saveTimer = null;
             _suppressBeforeUnload = true; // suprime o dialog de "não salvo"
             try {
-                atualizarPericias(true);
+                if (autoCalcEnabled) atualizarPericias(true);
                 await performSave();
             } catch { /* ignora erros de save — navega mesmo assim */ }
             window.location.href = '/index.html';
