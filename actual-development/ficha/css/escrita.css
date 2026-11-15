@@ -36,11 +36,12 @@
     border: none;
     color: var(--gold1);
     cursor: pointer;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    margin-left: 12px;
-    padding: 4px 2px;
+    margin: 0;
+    padding: 0;
+}
+
+#export-json-btn .material-symbols-outlined {
+    font-size: 20px;
 }
 
 #export-json-btn:hover {

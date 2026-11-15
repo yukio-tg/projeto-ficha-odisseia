@@ -973,19 +973,17 @@
         gap: 4px;
         min-height: 44px;
         min-width: 44px;
-        padding: 0 10px;
+        padding: 0;
         grid-row: 1;
         grid-column: 3;
         align-self: center;
         text-decoration: none;
+        position: relative;
+        z-index: 3;
         color: var(--gold2);
-        font-family: 'Cinzel', serif;
-        font-size: 13px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        border: 1px solid color-mix(in srgb, var(--gold1) 55%, transparent);
-        border-radius: 6px;
-        background: color-mix(in srgb, var(--gold1) 8%, transparent);
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
     }
 
     .header-home-link .material-symbols-outlined {
@@ -1014,6 +1012,52 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    /* Vista de jogo: uma faixa com nome e ícones, sem a linha vazia de login. */
+    body.is-play .header-body {
+        grid-template-rows: auto auto;
+        gap: 0 8px;
+        padding: 6px 10px 4px;
+    }
+
+    body.is-play .header-login {
+        display: none !important;
+    }
+
+    body.is-play .header-crest {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    body.is-play .header-title {
+        font-size: 16px;
+    }
+
+    body.is-play .header-buttons {
+        grid-row: 2;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    body.is-play .header-buttons::after {
+        content: none;
+    }
+
+    .play-vital {
+        min-width: 0;
+        overflow: hidden;
+        padding: 10px 6px 12px;
+    }
+
+    .play-vital-now {
+        font-size: clamp(36px, 12vw, 56px);
+    }
+
+    .play-vital-max {
+        font-size: 16px;
     }
 
     /* Row 2, full width: login info + action buttons */

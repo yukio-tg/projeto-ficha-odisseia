@@ -54,6 +54,7 @@ export function initTabs() {
             activePage.classList.add('active');
             if (wrap) wrap.scrollTop = 0;
         }
+        document.body.classList.toggle('is-play', tabId === 'mesa');
         if (tabId === 'mesa') play.refresh();
     }
 

@@ -312,12 +312,12 @@ function agrupar(lista, perfil) {
 
 function textoContexto(perfil) {
     const quem = perfil.classe
-        ? `${perfil.classe}, nível ${perfil.nivel || 0}`
-        : `personagem de nível ${perfil.nivel || 0}`;
-    const ramo = perfil.ramo ? `, ramo ${perfil.ramo}` : '';
+        ? `${perfil.classe} · nv ${perfil.nivel || 0}`
+        : `Nível ${perfil.nivel || 0}`;
+    const ramo = perfil.ramo ? ` · ${perfil.ramo}` : '';
     const sem = !perfil.alinhamento || normalizar(perfil.alinhamento) === 'nenhum';
-    const alin = sem ? ', sem alinhamento' : `, ${perfil.alinhamento}`;
-    return `Eu leio ${quem}${ramo}${alin}. O que esta ficha pode receber está nesta lista. Colocar na ficha grava o item.`;
+    const alin = sem ? '' : ` · ${perfil.alinhamento}`;
+    return `${quem}${ramo}${alin}`;
 }
 
 function pintar() {
