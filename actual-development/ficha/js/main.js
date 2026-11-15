@@ -76,8 +76,10 @@ function showError(msg) {
     const el = document.getElementById('problem-save');
     if (el) {
         el.style.display = 'flex';
+        const text = msg || 'Erro desconhecido';
         const logEl = el.querySelector('.save-error-msg');
-        if (logEl) logEl.textContent = msg || 'Erro desconhecido';
+        if (logEl) logEl.textContent = text;
+        el.title = text;
     }
     document.getElementById('saved')?.style.setProperty('display', 'none');
     document.getElementById('non-saved')?.style.setProperty('display', 'none');

@@ -293,10 +293,10 @@
     border: none;
     color: var(--gold1);
     opacity: 0.85;
-    font-variation-settings: 'FILL' 0, 'wght' 300;
-    margin: 0 0px 0 20px;
-    transition: all .1s;
-    translate: 0 2px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    margin: 0;
+    padding: 0;
+    transition: background .12s, color .12s, opacity .12s;
     cursor: pointer;
 }
 #share-btn:hover {

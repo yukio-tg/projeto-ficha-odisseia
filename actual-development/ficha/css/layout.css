@@ -280,10 +280,10 @@ a span:hover {
 }
 
 .header-body {
-    padding: 16px 28px 10px;
+    padding: 10px 16px 8px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
@@ -331,26 +331,32 @@ a span:hover {
 }
 
 .header-text {
-    flex: 1;
-    min-width: 140px;
+    flex: 1 1 120px;
+    min-width: 0;
 }
 
 .header-eyebrow {
     font-family: 'Cinzel', serif;
     font-size: 9.6px;
-    letter-spacing: 0.42em;
+    letter-spacing: 0.28em;
     color: var(--gold1);
     text-transform: uppercase;
     margin-bottom: 3px;
     opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-title {
     font-family: 'Cinzel Decorative', serif;
-    font-size: clamp(18px, 3vw, 30px);
+    font-size: clamp(18px, 3vw, 28px);
     color: var(--gold3);
-    letter-spacing: 0.06em;
-    line-height: 1;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     text-shadow:
         0 2px 12px rgba(0, 0, 0, 0.8),
         0 0 30px color-mix(in srgb, var(--gold1) 30%, transparent);
@@ -358,9 +364,24 @@ a span:hover {
 
 .header-info {
     display: flex;
-    flex-direction: column;
-    gap: 0;
-    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex: 0 1 auto;
+    min-width: 0;
+    margin-left: auto;
+}
+
+.header-login {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    letter-spacing: 0.03em;
 }
 
 .owner-sheet,
@@ -375,12 +396,25 @@ a span:hover {
     justify-content: end;
 }
 
+.owner-sheet,
+.logged {
+    min-width: 0;
+    gap: 4px;
+}
+
+.owner-account-name,
+.your-account-name {
+    min-width: 0;
+    max-width: 11em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .owner-sheet span,
-.logged span,
-#saved span,
-#non-saved span,
-#problem-save span {
-    margin-right: 5px;
+.logged span {
+    margin-right: 0;
+    flex-shrink: 0;
 }
 
 .owner-sheet {
@@ -399,10 +433,18 @@ a span:hover {
 }
 
 .not-logged a {
-    color: var(--gold3);
+    color: var(--gold2);
     opacity: 1;
-    margin: 0 0.2em;
-    text-shadow: 0 0 1px var(--gold3);
+    margin: 0;
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 10px;
+    line-height: 1;
+    padding: 7px 10px;
+    border: 1px solid color-mix(in srgb, var(--gold1) 50%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--gold1) 8%, transparent);
 }
 
 .not-logged a:hover {
@@ -432,8 +474,8 @@ a span:hover {
 }
 
 #recalc-btn .material-symbols-outlined {
-    font-size: 18px;
-    margin-right: 2px;
+    font-size: 20px;
+    margin-right: 0;
 }
 
 #autocalc-switch,
@@ -443,10 +485,10 @@ a span:hover {
     border: none;
     color: var(--gold1);
     opacity: 0.85;
-    font-variation-settings: 'FILL' 0, 'wght' 300;
-    margin: 0 0px 0 20px;
-    transition: all .1s;
-    translate: 0 2px;
+    font-variation-settings: 'FILL' 0, 'wght' 400;
+    margin: 0;
+    padding: 0;
+    transition: background .12s, color .12s, opacity .12s;
 }
 
 #autocalc-switch.active,
