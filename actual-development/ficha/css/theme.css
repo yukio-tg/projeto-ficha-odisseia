@@ -5,11 +5,11 @@
     background: none;
     border: none;
     color: var(--gold1);
-    opacity: 0.85;
-    font-variation-settings: 'FILL' 0, 'wght' 400;
-    margin: 0;
-    padding: 0;
-    transition: background .12s, color .12s, opacity .12s;
+    opacity: 0.72;
+    font-variation-settings: 'FILL' 0, 'wght' 300;
+    margin: 0 0 0 18px;
+    transition: color .15s, opacity .15s, font-variation-settings .15s;
+    translate: 0 2px;
     cursor: pointer;
 }
 

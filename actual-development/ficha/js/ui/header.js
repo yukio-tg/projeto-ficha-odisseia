@@ -9,7 +9,7 @@ function aplicarTravaCamposDerivados(regras) {
         document.querySelectorAll(`[data-field="${field}"]`).forEach(el => {
             if (el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA') return;
             el.readOnly = regras;
-            el.classList.toggle('combat-input--readonly', regras);
+            el.classList.remove('combat-input--readonly');
             el.title = regras
                 ? 'Calculado no modo Regras. Mude para Livre para editar, ou use Recalcular.'
                 : '';
@@ -20,16 +20,19 @@ function aplicarTravaCamposDerivados(regras) {
 function garantirBotaoRecalcular() {
     const wrap = document.querySelector('.header-autocalc');
     if (!wrap || document.getElementById('recalc-btn')) return;
+    wrap.style.display = 'inline-flex';
+    wrap.style.alignItems = 'center';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.id = 'recalc-btn';
-    btn.title = 'Recalcular derivados, perícias e incrementos';
-    btn.setAttribute('aria-label', 'Recalcular');
     const icon = document.createElement('span');
     icon.className = 'material-symbols-outlined';
     icon.setAttribute('aria-hidden', 'true');
     icon.textContent = 'refresh';
-    btn.append(icon);
+    const text = document.createElement('span');
+    text.className = 'header-btn-label';
+    text.textContent = 'Recalcular';
+    btn.append(icon, text);
     btn.addEventListener('click', () => {
         document.dispatchEvent(new CustomEvent('ficha:recalcular'));
     });
@@ -46,12 +49,8 @@ function garantirBotaoExportar() {
     btn.type = 'button';
     btn.id = 'export-json-btn';
     btn.title = 'Exportar JSON da ficha';
-    btn.setAttribute('aria-label', 'Exportar JSON');
-    const icon = document.createElement('span');
-    icon.className = 'material-symbols-outlined';
-    icon.setAttribute('aria-hidden', 'true');
-    icon.textContent = 'download';
-    btn.append(icon);
+    btn.setAttribute('aria-label', 'Exportar JSON da ficha');
+    btn.textContent = 'JSON';
     btn.addEventListener('click', () => {
         document.dispatchEvent(new CustomEvent('ficha:export-json'));
     });
@@ -69,14 +68,16 @@ export function syncModoUi() {
     if (btn) {
         btn.classList.toggle('active', regras);
         btn.setAttribute('aria-pressed', regras ? 'true' : 'false');
-        const modo = regras ? 'Modo Regras' : 'Modo Livre';
         btn.title = regras
-            ? 'Modo Regras — derivados seguem o livro. Clique para o modo Livre.'
-            : 'Modo Livre — o número escrito fica. Clique para o modo Regras.';
-        btn.setAttribute('aria-label', modo);
-        btn.querySelector('.modo-label')?.remove();
-        const icon = btn.querySelector('.material-symbols-outlined');
-        if (icon) icon.textContent = regras ? 'calculate' : 'edit_note';
+            ? 'Modo Regras — o que foi elencado no Livre permanece. Nível e campos sensíveis seguem o livro.'
+            : 'Modo Livre — números digitados e incrementos ficam por cima do livro.';
+        let label = btn.querySelector('.modo-label');
+        if (!label) {
+            label = document.createElement('span');
+            label.className = 'modo-label header-btn-label';
+            btn.appendChild(label);
+        }
+        label.textContent = regras ? 'Regras' : 'Livre';
     }
     const recalc = document.getElementById('recalc-btn');
     if (recalc) {
@@ -85,6 +86,7 @@ export function syncModoUi() {
     aplicarTravaCamposDerivados(regras);
     atualizarAvisoFormulaClasse();
     atualizarAvisoFormulaHeranca();
+    document.dispatchEvent(new CustomEvent('ficha:modo-sync'));
 }
 
 /** Extrai o primeiro nome (primeira palavra antes de espaço) do nome completo. */
@@ -138,8 +140,5 @@ export function updateAuthHeader(user) {
 /** Preenche o nome do dono da ficha no header (substitui o valor hardcoded). */
 export function updateOwnerHeader(ownerEmail) {
     const ownerEl = document.querySelector('.owner-account-name');
-    const wrap = document.querySelector('.owner-sheet');
-    const name = (ownerEmail || '').trim();
-    if (ownerEl) ownerEl.textContent = name || '—';
-    if (wrap) wrap.style.display = name ? 'flex' : 'none';
+    if (ownerEl) ownerEl.textContent = ownerEmail || '—';
 }

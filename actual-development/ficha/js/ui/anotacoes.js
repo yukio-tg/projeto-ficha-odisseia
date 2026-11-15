@@ -26,10 +26,7 @@ export function setAnotacoesState(data) {
     const editor = document.getElementById('anot-editor');
     if (editor) editor.innerHTML = _currentState.html;
     const page = document.getElementById('tab-anotacoes');
-    if (!page) {
-        syncNotesMirror();
-        return;
-    }
+    if (!page) return;
     const gallerySection = page.querySelector('.anot-gallery-section');
     if (gallerySection) {
         const grid = gallerySection.querySelector('.anot-gallery-grid');
@@ -40,7 +37,6 @@ export function setAnotacoesState(data) {
             renderGallery(gallerySection, state);
         }
     }
-    syncNotesMirror();
 }
 
 /** Copia anotacoes-geral uma vez, só se o editor ainda não tem conteúdo. */
@@ -67,26 +63,6 @@ function plainToHtml(text) {
         const inner = escapeHtml(block).replace(/\n/g, '<br>');
         return `<p>${inner || '<br>'}</p>`;
     }).join('');
-}
-
-function syncNotesMirror() {
-    const ta = document.getElementById('notes-textarea');
-    if (!ta) return;
-    const editor = document.getElementById('anot-editor');
-    const text = editor
-        ? (editor.innerText || '').replace(/\u00a0/g, ' ').replace(/\n{3,}/g, '\n\n').trim()
-        : '';
-    ta.value = text;
-    const count = document.getElementById('notes-char-count');
-    if (count) {
-        count.textContent = text
-            ? 'Prévia — clique para editar na aba Anotações'
-            : 'Nenhuma anotação ainda — clique para escrever';
-    }
-}
-
-function openNotesTab() {
-    document.querySelector('#tabs li[data-tab="anotacoes"]')?.click();
 }
 
 function isSafeImageSrc(src) {
@@ -274,34 +250,6 @@ function bindInsertImage(editor, bar) {
     });
 
     bar.append(btn, input);
-}
-
-function bindNotesMirror() {
-    const ta = document.getElementById('notes-textarea');
-    if (!ta || ta.dataset.notesMirror === '1') return;
-    ta.dataset.notesMirror = '1';
-    ta.readOnly = true;
-    ta.removeAttribute('data-field');
-    ta.classList.add('notes-textarea--mirror');
-    const open = () => openNotesTab();
-    ta.addEventListener('click', open);
-    ta.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            open();
-        }
-    });
-    const footer = document.querySelector('.notes-and-keeps .notes-footer');
-    if (footer && !document.getElementById('notes-open-tab')) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.id = 'notes-open-tab';
-        btn.className = 'notes-pin-btn';
-        btn.textContent = 'Abrir anotações';
-        btn.addEventListener('click', open);
-        footer.appendChild(btn);
-    }
-    syncNotesMirror();
 }
 
 // ─── Toolbar ───────────────────────────────────────────────────────────────
@@ -582,7 +530,6 @@ export function initAnotacoes() {
 
     let saveTimer = null;
     editor.addEventListener('input', () => {
-        syncNotesMirror();
         clearTimeout(saveTimer);
         saveTimer = setTimeout(() => {
             state.html = editor.innerHTML;
@@ -599,5 +546,4 @@ export function initAnotacoes() {
 
     page.appendChild(editorSection);
     page.appendChild(gallerySection);
-    bindNotesMirror();
 }

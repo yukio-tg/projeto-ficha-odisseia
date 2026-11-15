@@ -1,7 +1,7 @@
 import { getNivel, getAtributoTotal } from './radar-service.js';
 import { autoCalcEnabled, isHydrating, isExplicitRecalc, isModoRegras, podeSobrescrever } from './state.js';
 import { refreshAllBars } from '../ui/vitals.js';
-import { getIncrFlat, getIncrPct, applyIncrement } from '../ui/configuracoes.js';
+import { incrementar } from './incrementos.js';
 
 export const INERTIDAO_TAMANHO = {
     'tam-minusculo': 0,
@@ -166,56 +166,103 @@ export function updateFeVisibility() {
 }
 
 // ========== CÁLCULO PRINCIPAL ==========
-export function calcStats() {
-    if (!calculoPodeEscrever()) return;
-    atualizarAvisoFormulaClasse();
+
+function invBaseDaClasse(classe, forca) {
+    if (classe === 'coração' || classe === 'engenhoso') return 7 + forca;
+    if (classe === 'terrível' || classe === 'teurgista' || classe === 'feromântico') return 5 + forca;
+    if (classe === 'treinador' || classe === 'arcanista' || classe === 'certeiro') return 2 + forca;
+    // fallback (caso classe não reconhecida) – usa o antigo ou 5+FOR
+    return 5 + forca;
+}
+
+/**
+ * Vitais do livro para a classe atual, sem escrever na ficha.
+ * `base` é o valor antes da camada de incrementos de cada campo; `final`, depois.
+ * No Monstro, a base do PM já leva o PV com os incrementos de PV.
+ * Sem fórmula para a classe, devolve null.
+ */
+export function calcularVitais() {
     const classe = getClasseNormalizada();
     const formulas = FORMULAS[classe];
-    // Sem fórmula: não sobrescreve PV/PM/etc. O aviso acima diz que não calculou.
-    if (!formulas) return;
+    if (!formulas) return null;
 
     const nivel = getNivel();
     const con = getAtributoTotal('CON');
     const car = getAtributoTotal('CAR');
     const int = getAtributoTotal('INT');
     const sab = getAtributoTotal('SAB');
-    const forc = getAtributoTotal('FOR');
+    const forca = getAtributoTotal('FOR');
 
-    let pvMax = Math.floor(formulas.pv.base + con + nivel * (formulas.pv.per + con / 2));
-    let pmBase = Math.floor(formulas.pm.base + car + nivel * (formulas.pm.per + car / 2));
-    let ptMax = Math.floor(formulas.pt.base + int + nivel * (formulas.pt.per + int / 2));
+    const base = {};
+    const final = {};
 
-    // ── Apply increments (Configurações tab) ──
-    // Order: Auto → Flat addition → Percentage
-    pvMax  = applyIncrement(pvMax,  getIncrFlat('pv'), getIncrPct('pv'));
-    pmBase = applyIncrement(pmBase, getIncrFlat('pm'), getIncrPct('pm'));
-    ptMax  = applyIncrement(ptMax,  getIncrFlat('pt'), 0);
-    let laMax;
+    base.pv = Math.floor(formulas.pv.base + con + nivel * (formulas.pv.per + con / 2));
+    const pmBase = Math.floor(formulas.pm.base + car + nivel * (formulas.pm.per + car / 2));
+    base.pt = Math.floor(formulas.pt.base + int + nivel * (formulas.pt.per + int / 2));
+
     if (typeof formulas.la === 'function') {
         const baseLa = formulas.la(sab, nivel);
         const perLa = typeof formulas.laPer === 'function' ? formulas.laPer(sab, nivel) : (formulas.laPer || 0);
-        laMax = Math.floor(baseLa + nivel * perLa);
+        base.la = Math.floor(baseLa + nivel * perLa);
     } else {
-        laMax = Math.floor(formulas.la + nivel * (formulas.laPer || 0));
+        base.la = Math.floor(formulas.la + nivel * (formulas.laPer || 0));
     }
-    laMax = applyIncrement(laMax, getIncrFlat('la'), 0);
-    let invMax = 0;
-    const forca = getAtributoTotal('FOR');
-    const classeInv = getClasseNormalizada();
+    base.inv = invBaseDaClasse(classe, forca);
 
-    if (classeInv === 'coração' || classeInv === 'engenhoso') {
-        invMax = 7 + forca;
-    } else if (classeInv === 'terrível' || classeInv === 'teurgista' || classeInv === 'feromântico') {
-        invMax = 5 + forca;
-    } else if (classeInv === 'treinador' || classeInv === 'arcanista' || classeInv === 'certeiro') {
-        invMax = 2 + forca;
+    // Incrementos do modo Livre: camada sobre a base do livro, campo a campo.
+    final.pv = incrementar('pv', base.pv);
+    final.pt = incrementar('pt', base.pt);
+    final.la = incrementar('la', base.la);
+    final.inv = incrementar('inv', base.inv);
+
+    const alinhamento = document.querySelector('[data-field="alinhamento-nome"]')?.value.trim().toLowerCase() || 'nenhum';
+    const feAtivo = alinhamento !== 'nenhum';
+    const isMonstro = document.querySelector('[data-field="monstro"]')?.checked ?? false;
+
+    let feLivro;
+    if (isMonstro) {
+        // Novo PM = PV_normal + floor(pmBase / 2)
+        // Se feAtivo, subtrai feMax (calculado normalmente) do resultado
+        if (feAtivo) {
+            feLivro = pmBase - Math.floor(pmBase / 2);
+            base.pm = final.pv + Math.floor(pmBase / 2) - feLivro;
+        } else {
+            base.pm = final.pv + Math.floor(pmBase / 2);
+            feLivro = 0;
+        }
+    } else if (feAtivo) {
+        base.pm = Math.floor(pmBase / 2);
+        feLivro = pmBase - base.pm;
     } else {
-        // fallback (caso classe não reconhecida) – usa o antigo ou 5+FOR
-        invMax = 5 + forca;
+        base.pm = pmBase;
+        feLivro = 0;
+    }
+    final.pm = incrementar('pm', base.pm);
+
+    if (feAtivo) {
+        base.fe = feLivro;
+        final.fe = incrementar('fe', feLivro);
+    } else {
+        base.fe = null;
+        final.fe = 0;
     }
 
-    // Apply INV increment
-    invMax = applyIncrement(invMax, getIncrFlat('inv'), 0);
+    return { base, final, feAtivo, isMonstro };
+}
+
+export function calcStats() {
+    if (!calculoPodeEscrever()) return;
+    atualizarAvisoFormulaClasse();
+    const vitais = calcularVitais();
+    // Sem fórmula: não sobrescreve PV/PM/etc. O aviso acima diz que não calculou.
+    if (!vitais) return;
+    const { final, feAtivo, isMonstro } = vitais;
+    const ptMax = final.pt;
+    const laMax = final.la;
+    const invMax = final.inv;
+    const pvMax = final.pv;
+    const pmMax = final.pm;
+    const feMax = final.fe;
 
     // Atualiza o campo total na interface e dispara evento
     const invTotalInput = document.querySelector('[data-field="inv-total"]');
@@ -226,41 +273,14 @@ export function calcStats() {
     // Exporta o limite para outros módulos (ex: inventory.js) — sempre atualiza o limite interno
     calculatedLimits.inv = invMax;
 
-    const alinhamento = document.querySelector('[data-field="alinhamento-nome"]')?.value.trim().toLowerCase() || 'nenhum';
-    const feAtivo = alinhamento !== 'nenhum';
     const feCard = document.querySelector('.vital-card-fe');
     if (feCard) feCard.style.display = feAtivo ? '' : 'none';
 
-    const isMonstro = document.querySelector('[data-field="monstro"]')?.checked ?? false;
     const pvCard = document.querySelector('.vital-card-hp');
     if (pvCard) pvCard.style.display = isMonstro ? 'none' : '';
 
-    let pmMax, feMax;
-    if (isMonstro) {
-        // Novo PM = PV_normal + floor(pmBase / 2)
-        // Se feAtivo, subtrai feMax (calculado normalmente) do resultado
-        if (feAtivo) {
-            feMax = pmBase - Math.floor(pmBase / 2);
-            pmMax = pvMax + Math.floor(pmBase / 2) - feMax;
-        } else {
-            pmMax = pvMax + Math.floor(pmBase / 2);
-            feMax = 0;
-        }
-        // Ainda atualiza PV nos campos (ocultos) para preservar o valor
-        atualizarVital('pv', pvMax);
-    } else {
-        if (feAtivo) {
-            pmMax = Math.floor(pmBase / 2);
-            feMax = pmBase - pmMax;
-        } else {
-            pmMax = pmBase;
-            feMax = 0;
-        }
-        atualizarVital('pv', pvMax);
-    }
-
-    // Apply PM percentage increment (flat already applied to pmBase above)
-    pmMax = applyIncrement(pmMax, 0, getIncrPct('pm'));
+    // No Monstro o PV fica nos campos (ocultos) para preservar o valor
+    atualizarVital('pv', pvMax);
     atualizarVital('mana', pmMax);
 
     // ===== TRATAMENTO ESPECIAL PARA PT =====
@@ -296,9 +316,6 @@ export function calcStats() {
 
     // Fé (se ativo)
     if (feAtivo) {
-        // Apply FE increment
-        feMax = applyIncrement(feMax, getIncrFlat('fe'), getIncrPct('fe'));
-
         const feAtualInput = document.querySelector('[data-field="fe-atual"]');
         const feMaxInput = document.querySelector('[data-field="fe-total"]');
         if (feMaxInput) {

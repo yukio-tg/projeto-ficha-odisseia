@@ -1,15 +1,15 @@
 import './config/classes.js';
 import './config/herancas.js';
-import { initRadar, updateRadarTheme, adjustRadarMaxPoints } from './core/radar-service.js';
+import { initRadar, updateRadarTheme } from './core/radar-service.js';
 import { initAutocomplete } from './ui/autocomplete.js';
-import { initBars } from './ui/vitals.js';
+import { initBars, refreshAllBars } from './ui/vitals.js';
 import { initPortrait, applyPortraitUrl } from './ui/portrait.js';
 import { initSkills, atualizarPericias, setAfterSkillsUpdate } from './ui/skills.js';
 import { initTabs } from './ui/tabs.js';
 import { initHeaderSync, refreshHeader, updateAuthHeader, updateOwnerHeader, syncModoUi } from './ui/header.js';
 import { initCombat, atualizarAcoesPorNivel, atualizarAvisoReacoes, atualizarAtaquesAcerto, popularReacoesPreset, checkMorrendoCondition } from './ui/combat.js';
 import { initHerancaToggle } from './ui/heranca-toggle.js';
-import { atualizarHeranca, herancaAttrBonusAplicado } from './core/heranca-logic.js';
+import { atualizarHeranca } from './core/heranca-logic.js';
 import { autoCalcEnabled, setSheetMode, isModoRegras, MODO_LIVRE, MODO_REGRAS, addManualOverride, isHydrating, consumeSheetRestored, beginExplicitRecalc, endExplicitRecalc, liberarDerivadosParaRecalculo } from './core/state.js';
 import { atualizarInertidao, calcStats, updateVisibilityByLevel, updateFeVisibility, atualizarDtSab } from './core/calculation.js';
 import { initPowers } from './ui/powers.js';
@@ -30,7 +30,8 @@ import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { shouldApplyRemoteSnapshot, fingerprintSheet } from './core/save-guard.js';
 import { initSharePopup } from './ui/share.js';
 import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
-import { initConfiguracoes, updateEvoTable, definirAoIncrementar } from './ui/configuracoes.js';
+import { initIncrementosUi, recalcularCampos, camposDoLog, sincronizarTetoAtributos } from './ui/incrementos-ui.js';
+import { initGrimorio } from './ui/grimorio-ui.js';
 
 // ── Estado global ────────────────────────────────────────────────────────────
 let suppressSave = false;
@@ -76,10 +77,8 @@ function showError(msg) {
     const el = document.getElementById('problem-save');
     if (el) {
         el.style.display = 'flex';
-        const text = msg || 'Erro desconhecido';
         const logEl = el.querySelector('.save-error-msg');
-        if (logEl) logEl.textContent = text;
-        el.title = text;
+        if (logEl) logEl.textContent = msg || 'Erro desconhecido';
     }
     document.getElementById('saved')?.style.setProperty('display', 'none');
     document.getElementById('non-saved')?.style.setProperty('display', 'none');
@@ -364,9 +363,15 @@ async function initAllModules() {
     initHerancaToggle();
     initItemEffects();
     await Promise.all([initPowers(), initMagias(), initInventory(), initBesta()]);
+    initGrimorio();
     initAnotacoes();
     initClassCrest();
-    initConfiguracoes();
+    initIncrementosUi();
+}
+
+function atualizarHerancaETeto() {
+    atualizarHeranca();
+    sincronizarTetoAtributos();
 }
 
 function recalcularSobDemanda() {
@@ -374,7 +379,7 @@ function recalcularSobDemanda() {
     beginExplicitRecalc();
     liberarDerivadosParaRecalculo();
     try {
-        atualizarHeranca();
+        atualizarHerancaETeto();
         atualizarPericias(true);
         atualizarInertidao();
         calcStats();
@@ -397,12 +402,9 @@ function wireCalculations() {
                 updateVisibilityByLevel();
                 if (autoCalcEnabled) {
                     atualizarInertidao();
-                    atualizarHeranca();
-                    // Após mudança de nível, o RadarRPG reseta maxPoints para o valor base.
-                    // atualizarHeranca faz remove + re-apply (net 0 em maxPoints).
-                    // É necessário re-adicionar o bônus de herança ao novo maxPoints de nível.
-                    const herancaBonus = Object.values(herancaAttrBonusAplicado).reduce((a, b) => a + b, 0);
-                    if (herancaBonus > 0) adjustRadarMaxPoints(herancaBonus);
+                    // O RadarRPG volta o teto para 10 + nível a cada mudança de nível.
+                    // O teto absoluto soma de novo herança e incrementos do modo Livre.
+                    atualizarHerancaETeto();
                     calcStats();
                     atualizarAcoesPorNivel();
                     atualizarAvisoReacoes();
@@ -426,15 +428,15 @@ function wireCalculations() {
 
         const herancaInput = document.querySelector('[data-field="heranca-nome"]');
         if (herancaInput) {
-            herancaInput.addEventListener('input', atualizarHeranca);
-            herancaInput.addEventListener('change', atualizarHeranca);
+            herancaInput.addEventListener('input', atualizarHerancaETeto);
+            herancaInput.addEventListener('change', atualizarHerancaETeto);
         }
 
         [
             document.querySelector('[data-field="aumentoDeFortuna"]'),
             document.querySelector('[data-field="aprendizadoDaVida"]'),
             document.querySelector('[data-field="habilidadeAdquirida"]')
-        ].forEach(cb => cb?.addEventListener('change', atualizarHeranca));
+        ].forEach(cb => cb?.addEventListener('change', atualizarHerancaETeto));
 
         document.querySelector('[data-field="monstro"]')?.addEventListener('change', () => {
             if (autoCalcEnabled) calcStats();
@@ -448,7 +450,7 @@ function wireCalculations() {
         const classeInput = document.querySelector('[data-field="classe-nome"]');
         if (classeInput) {
             classeInput.addEventListener('input', () => {
-                if (autoCalcEnabled) { atualizarHeranca(); calcStats(); atualizarAcoesPorNivel(); atualizarAvisoReacoes(); }
+                if (autoCalcEnabled) { atualizarHerancaETeto(); calcStats(); atualizarAcoesPorNivel(); atualizarAvisoReacoes(); }
                 checkMorrendoCondition();
             });
             classeInput.addEventListener('change', () => {
@@ -488,7 +490,7 @@ function wireCalculations() {
         const restored = consumeSheetRestored();
         if (!restored) {
             atualizarInertidao();
-            atualizarHeranca();
+            atualizarHerancaETeto();
             updateVisibilityByLevel();
             calcStats();
             updateFeVisibility();
@@ -563,13 +565,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
     }
 
-    definirAoIncrementar(() => {
-        calcStats();
-        atualizarInertidao();
-        atualizarDtSab();
-        reaplicarBonusProtecao();
-    });
-
     await initAllModules();
 
     // Carrega dados sem disparar autosave. A hidratação cobre os eventos
@@ -581,7 +576,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyPortraitUrl(sheetDoc.data?.fields?.['retrato-url'] || '');
         refreshCrest(); // atualiza crest com a classe carregada (deserialize não dispara eventos)
         // Notifica módulos que precisam reagir ao carregamento da ficha
-        setTimeout(() => document.dispatchEvent(new Event('ficha:loaded')), 60);
+        setTimeout(() => {
+            document.dispatchEvent(new Event('ficha:loaded'));
+            refreshAllBars();
+        }, 60);
     } catch (e) {
         console.error('[Load] Erro ao deserializar:', e);
         showError('Erro ao carregar: ' + e.message);
@@ -669,13 +667,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         initSharePopup(sheetId, user, sheetDoc);
     }
 
-    // Modo Regras / Livre. Trocar não recalcula e não apaga o que está escrito.
+    // Livre → Regras conserva o número que está na ficha. Regras → Livre
+    // reaplica o log por cima da base. Nível, classe e os outros campos
+    // sensíveis continuam chamando o cálculo do livro por conta própria.
     const autocalcBtn = document.getElementById('autocalc-switch');
     if (autocalcBtn && autocalcBtn.dataset.modoBound !== '1') {
         autocalcBtn.dataset.modoBound = '1';
         autocalcBtn.addEventListener('click', () => {
-            setSheetMode(isModoRegras() ? MODO_LIVRE : MODO_REGRAS);
+            const proximo = isModoRegras() ? MODO_LIVRE : MODO_REGRAS;
+            setSheetMode(proximo);
             syncModoUi();
+            if (proximo === MODO_LIVRE) recalcularCampos(camposDoLog());
             document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
         });
     }

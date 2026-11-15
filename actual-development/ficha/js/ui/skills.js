@@ -1,6 +1,7 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
 import { autoCalcEnabled, manualOverrides, isHydrating } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
+import { incrementar } from '../core/incrementos.js';
 let afterSkillsUpdate = null;
 
 const D20_TEXT = 'd20';
@@ -188,10 +189,14 @@ export function renderizarTabelaPericias() {
     });
 }
 
-function atualizarContadorProficiencia() {
+/** Teto do livro (o nível) com a camada de incrementos do modo Livre. */
+export function getTetoPericias() {
+    return Math.max(0, incrementar('skill', getNivel()));
+}
+
+export function atualizarContadorProficiencia() {
     const totalGasto = periciasEstado.reduce((sum, p) => sum + p.proficiencia, 0);
-    const nivel = getNivel();
-    const maxPontos = nivel;
+    const maxPontos = getTetoPericias();
 
     const gastoEl = document.getElementById('proficiencia-gasto');
     const maxEl = document.getElementById('proficiencia-max');
@@ -244,7 +249,8 @@ export function atualizarPericias(force = false) {
     const defesaInput = document.querySelector('[data-field="defesa"]');
     if (defesaInput && !manualOverrides.has('defesa') && !isHydrating()) {
         const destrezaVal = valoresAttr['DES'] || 0;
-        defesaInput.value = destrezaVal + 10;
+        const protBonus = parseInt(defesaInput.dataset.protBonus, 10) || 0;
+        defesaInput.value = incrementar('def', destrezaVal + 10 + protBonus);
     }
 
     // Blocos de atributos (na aba perícias)
