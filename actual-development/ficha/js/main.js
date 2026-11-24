@@ -511,9 +511,53 @@ function wireCalculations() {
 
 // ── Bootstrap ────────────────────────────────────────────────────────────────
 
+async function iniciarFichaMock() {
+    suppressSave = true;
+    document.body.classList.add('grimorio-mock');
+    document.title = 'Odisseia — ficha local';
+    await initAllModules();
+
+    const campos = {
+        'personagem-nome': 'Vésper',
+        'classe-nome': 'Certeiro',
+        'ramo-nome': 'Mão Ampla',
+        'alinhamento-nome': 'Nenhum',
+        'pt-total': '20',
+        'pt-atual': '4',
+        'la-total': '10',
+        'la-atual': '2',
+        'inv-total': '12',
+        'inv-atual': '3',
+        hierarquia: 'burgues',
+    };
+    Object.entries(campos).forEach(([campo, valor]) => {
+        const el = document.querySelector(`[data-field="${campo}"]`);
+        if (el) el.value = valor;
+    });
+    const nivel = document.querySelector('#secao-radar .level-input');
+    if (nivel) nivel.value = '8';
+    document.querySelectorAll('#secao-radar .attr-wrap').forEach(wrap => {
+        if (wrap.querySelector('.attr-label')?.textContent.trim() !== 'SAB') return;
+        const input = wrap.querySelector('.attr-input');
+        if (input) input.value = '2';
+    });
+    refreshHeader();
+    refreshCrest();
+
+    const nota = document.createElement('p');
+    nota.className = 'grimorio-mock-nota';
+    nota.textContent = 'Ficha local. Nada é gravado.';
+    document.querySelector('.sheet')?.prepend(nota);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // Aplica o tema salvo antes de qualquer carregamento para evitar flash
-    initThemePanel(new URLSearchParams(window.location.search).get('sheetId'));
+    const params = new URLSearchParams(window.location.search);
+    initThemePanel(params.get('sheetId'));
+
+    if (params.get('mock') === '1') {
+        await iniciarFichaMock();
+        return;
+    }
 
     initFirebase();
 

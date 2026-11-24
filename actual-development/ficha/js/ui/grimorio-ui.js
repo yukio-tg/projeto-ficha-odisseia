@@ -1,6 +1,6 @@
 // ui/grimorio-ui.js — Assistente da ficha. A regra de quem aparece fica em grimorio-acesso.js.
 
-import { escapeHtml, normalizar } from '../core/utils.js';
+import { normalizar } from '../core/utils.js';
 import { getNivel, getAtributoBase } from '../core/radar-service.js';
 import { getFontes } from '../core/item-effects.js';
 import {
@@ -37,8 +37,59 @@ let bestaId = '';
 let pendente = '';
 let aberta = false;
 
+const RARIDADE = ['banal', 'comum', 'incomum', 'raro', 'epico', 'lendario'];
+
+const RUNA = {
+    classe: 'runa-classe',
+    ramo: 'runa-ramo',
+    geral: 'runa-geral',
+    habito: 'runa-habito',
+    'magia-1': 'runa-magia-1',
+    'magia-2': 'runa-magia-2',
+    'magia-3': 'runa-magia-3',
+    'magia-4': 'runa-magia-4',
+    'magia-s': 'runa-magia-s',
+    item: 'runa-item',
+    bio: 'runa-bio',
+    treino: 'runa-treino',
+    monstro: 'runa-monstro',
+};
+
+const SPRITE = `
+<svg id="grimorio-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0">
+  <style>
+    path, circle { fill: none; stroke: currentColor; stroke-width: 1.7; }
+  </style>
+  <symbol id="runa-classe" viewBox="0 0 32 32"><path d="M16 3 V29 M8 9 H24 M10 23 H22"/></symbol>
+  <symbol id="runa-ramo" viewBox="0 0 32 32"><path d="M16 4 V15 L7 28 M16 15 L25 28"/></symbol>
+  <symbol id="runa-geral" viewBox="0 0 32 32"><path d="M4 16 H28 M20 16 L28 8"/></symbol>
+  <symbol id="runa-habito" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/></symbol>
+  <symbol id="runa-magia-1" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M16 8 V15"/></symbol>
+  <symbol id="runa-magia-2" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M12 12 V18 M20 12 V18"/></symbol>
+  <symbol id="runa-magia-3" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M10 11 V17 M16 8 V16 M22 11 V17"/></symbol>
+  <symbol id="runa-magia-4" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M9 13 V18 M13 10 V17 M19 10 V17 M23 13 V18"/></symbol>
+  <symbol id="runa-magia-s" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><path d="M16 8 L22 16 L16 24 L10 16 Z"/></symbol>
+  <symbol id="runa-item" viewBox="0 0 32 32"><path d="M8 13 H24 V26 H8 Z M8 13 L16 7 L24 13"/></symbol>
+  <symbol id="runa-bio" viewBox="0 0 32 32"><path d="M7 24 L16 7 L25 24"/></symbol>
+  <symbol id="runa-treino" viewBox="0 0 32 32"><path d="M7 24 L16 7 L25 24 M16 13 V24 M11 18 H21"/></symbol>
+  <symbol id="runa-monstro" viewBox="0 0 32 32"><path d="M16 4 L28 16 L16 28 L4 16 Z"/></symbol>
+  <symbol id="glifo-pt" viewBox="0 0 32 32"><path d="M3 16 H29 M20 9 L29 16 L20 23"/></symbol>
+  <symbol id="glifo-habito" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/></symbol>
+  <symbol id="glifo-la" viewBox="0 0 32 32"><path d="M6 22 Q16 8 26 22"/></symbol>
+  <symbol id="glifo-peso" viewBox="0 0 32 32"><path d="M6 16 H22"/></symbol>
+  <symbol id="sigilo-aberto" viewBox="0 0 32 32"><path d="M16 5 A11 11 0 1 1 8 11"/></symbol>
+  <symbol id="sigilo-fechado" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/></symbol>
+  <symbol id="sigilo-partido" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><path d="M8 8 L24 24"/></symbol>
+  <symbol id="florao" viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 16 L20 20 L16 28 L12 20 L4 16 L12 12 Z"/></symbol>
+  <symbol id="canto" viewBox="0 0 32 32"><path d="M6 28 V8 H28 M10 28 V14 H28"/></symbol>
+</svg>`;
+
 function modoDock() {
     return window.matchMedia('(min-width: 960px)').matches;
+}
+
+function prefereParado() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function leitura() {
@@ -53,18 +104,8 @@ function num(seletor) {
 
 function aplicarModo() {
     if (!painel) return;
-    const dock = modoDock();
-    painel.classList.toggle('grimorio--dock', dock);
-    painel.classList.toggle('grimorio--overlay', !dock);
-    painel.style.left = '';
-    painel.style.top = '';
-    painel.style.right = '';
-    painel.style.bottom = '';
-    painel.style.width = '';
-    painel.style.height = '';
-    painel.style.maxHeight = '';
-    document.body.classList.toggle('grimorio-dock', aberta && dock);
-    document.body.classList.toggle('grimorio-overlay', aberta && !dock);
+    painel.classList.toggle('grimorio--overlay', !modoDock());
+    document.body.classList.toggle('grimorio-overlay', aberta && !modoDock());
 }
 
 function nomesDos(seletor, ler) {
@@ -321,7 +362,7 @@ function textoContexto(perfil) {
 }
 
 function pintar() {
-    if (!painel || painel.hidden) return;
+    if (!painel || !aberta) return;
     const perfil = perfilAtual();
     const visiveis = listaBruta(perfil).filter(e => e.visivel).map(travarLeitura);
     const finais = aplicarBusca(visiveis);
@@ -330,10 +371,7 @@ function pintar() {
     pintarBesta(perfil);
     listaEl.innerHTML = '';
     agrupar(finais, perfil).forEach(([nome, itens]) => {
-        const titulo = document.createElement('h3');
-        titulo.className = 'grimorio__secao';
-        titulo.textContent = `${nome} · ${itens.length}`;
-        listaEl.appendChild(titulo);
+        listaEl.appendChild(criarSecao(nome, itens.length));
         itens.forEach(entrada => listaEl.appendChild(criarCard(entrada)));
     });
     vazioEl.hidden = finais.length > 0;
@@ -403,13 +441,102 @@ function pintarBesta(perfil) {
     }
 }
 
+function etapaDe(entrada) {
+    if (entrada.kind === 'poder') {
+        const origem = entrada.raw?.origem;
+        if (origem === 'classe' || origem === 'ramo' || origem === 'geral' || origem === 'habito') return origem;
+    }
+    if (entrada.kind === 'magia') {
+        if (entrada.grau === 'S') return 'magia-s';
+        const grau = parseInt(entrada.grau, 10) || 1;
+        return 'magia-' + Math.min(4, Math.max(1, grau));
+    }
+    if (entrada.kind === 'item') return 'item';
+    if (entrada.grupo === 'monstro' || entrada.grupo === 'treino') return entrada.grupo;
+    return 'bio';
+}
+
+function glifosDe(entrada) {
+    if (entrada.kind === 'poder') {
+        return [{ simbolo: entrada.raw?.origem === 'habito' ? 'glifo-habito' : 'glifo-pt' }];
+    }
+    if (entrada.kind === 'magia') {
+        if (entrada.grau === 'S') return [{ simbolo: 'runa-magia-s' }, { simbolo: 'glifo-la' }];
+        return [{ pontos: parseInt(entrada.grau, 10) || 1 }, { simbolo: 'glifo-la' }];
+    }
+    if (entrada.kind === 'item') {
+        const chave = normalizar(entrada.filtros?.raridade || '').replace(/\s+/g, '');
+        const n = RARIDADE.indexOf(chave);
+        return [{ pontas: n < 0 ? 1 : n + 1 }, { simbolo: 'glifo-peso' }];
+    }
+    if (entrada.grupo === 'treino') return [{ simbolo: 'glifo-pt' }];
+    return [{ simbolo: 'glifo-peso' }];
+}
+
+function ico(id) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'grimorio__ico');
+    svg.setAttribute('viewBox', '0 0 32 32');
+    svg.setAttribute('aria-hidden', 'true');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', '#' + id);
+    svg.appendChild(use);
+    return svg;
+}
+
+function pontas(quantidade, raridade) {
+    const faixa = document.createElement('span');
+    faixa.className = 'grimorio__pontas' + (raridade ? ' grimorio__pontas--raridade' : '');
+    faixa.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < quantidade; i += 1) faixa.appendChild(document.createElement('i'));
+    return faixa;
+}
+
+function filete() {
+    const linha = document.createElement('span');
+    linha.className = 'grimorio__filete';
+    linha.setAttribute('aria-hidden', 'true');
+    return linha;
+}
+
+function canto(lado) {
+    const el = ico('canto');
+    el.classList.add('grimorio__canto', 'grimorio__canto--' + lado);
+    return el;
+}
+
+function criarSecao(nome, quantidade) {
+    const titulo = document.createElement('h3');
+    titulo.className = 'grimorio__secao';
+    const rotulo = document.createElement('span');
+    rotulo.className = 'grimorio__secao-nome';
+    rotulo.textContent = `${nome} · ${quantidade}`;
+    titulo.append(rotulo, filete(), ico('florao'), filete());
+    return titulo;
+}
+
 function criarCard(entrada) {
+    const etapa = etapaDe(entrada);
     const card = document.createElement('article');
-    card.className = 'grimorio__card' + (entrada.podeAdicionar ? '' : ' is-mudo');
+    card.className = 'grimorio__card grimorio__card--' + etapa + (entrada.podeAdicionar ? '' : ' is-mudo');
     const head = document.createElement('button');
     head.type = 'button';
     head.className = 'grimorio__card-head';
-    head.innerHTML = `<span class="grimorio__nome">${escapeHtml(entrada.nome)}</span><span class="grimorio__custo">${escapeHtml(entrada.custo)}</span>`;
+    const nome = document.createElement('span');
+    nome.className = 'grimorio__nome';
+    nome.textContent = entrada.nome;
+    const valor = document.createElement('span');
+    valor.className = 'grimorio__valor';
+    glifosDe(entrada).forEach(glifo => {
+        if (glifo.simbolo) valor.appendChild(ico(glifo.simbolo));
+        else if (glifo.pontos) valor.appendChild(pontas(glifo.pontos, false));
+        else if (glifo.pontas) valor.appendChild(pontas(glifo.pontas, true));
+    });
+    const custo = document.createElement('span');
+    custo.className = 'grimorio__custo';
+    custo.textContent = entrada.custo;
+    valor.appendChild(custo);
+    head.append(ico(RUNA[etapa] || 'runa-geral'), nome, valor);
     const body = document.createElement('div');
     body.className = 'grimorio__card-body';
     body.hidden = true;
@@ -429,13 +556,14 @@ function criarCard(entrada) {
     if (entrada.aviso) {
         const aviso = document.createElement('p');
         aviso.className = 'grimorio__aviso';
-        aviso.textContent = entrada.aviso;
+        aviso.append(ico('sigilo-aberto'), document.createTextNode(entrada.aviso));
         card.appendChild(aviso);
     }
 
     if (pendente === entrada.key && entrada.grupo === 'monstro' && entrada.podeAdicionar) {
         const mals = document.createElement('div');
         mals.className = 'grimorio__mals';
+        mals.appendChild(ico('sigilo-partido'));
         const perfil = perfilAtual();
         const livres = MALS_MONSTRO.filter(m => !perfil.nomes.some(n => normalizar(n) === normalizar(`Mal: ${m.nome}`)));
         livres.forEach(mal => {
@@ -454,13 +582,13 @@ function criarCard(entrada) {
         const acao = document.createElement('button');
         acao.type = 'button';
         acao.className = 'grimorio__add';
-        acao.textContent = entrada.grupo === 'monstro' ? 'Colocar e escolher mal' : 'Colocar na ficha';
+        acao.append(ico('sigilo-aberto'), document.createTextNode(entrada.grupo === 'monstro' ? 'Colocar e escolher mal' : 'Colocar na ficha'));
         acao.addEventListener('click', () => adicionar(entrada));
         card.appendChild(acao);
     } else if (entrada.motivo) {
         const motivo = document.createElement('p');
         motivo.className = 'grimorio__motivo';
-        motivo.textContent = entrada.motivo;
+        motivo.append(ico('sigilo-fechado'), document.createTextNode(entrada.motivo));
         card.appendChild(motivo);
     }
     return card;
@@ -517,11 +645,31 @@ function marcarAbertura(aberto) {
 }
 
 function abrir(aberto) {
+    if (!painel) return;
     aberta = aberto;
-    painel.hidden = !aberto;
     marcarAbertura(aberto);
     aplicarModo();
     if (aberto) pintar();
+
+    if (prefereParado()) {
+        painel.hidden = !aberto;
+        painel.classList.toggle('is-aberto', aberto);
+        painel.classList.toggle('is-lombada', aberto);
+        return;
+    }
+
+    if (aberto) {
+        const estavaFora = painel.hidden;
+        painel.hidden = false;
+        if (estavaFora) {
+            painel.classList.remove('is-aberto', 'is-lombada');
+            void painel.offsetWidth;
+        }
+        painel.classList.add('is-aberto');
+        return;
+    }
+
+    painel.classList.remove('is-aberto', 'is-lombada');
 }
 
 function criarPainel() {
@@ -530,6 +678,12 @@ function criarPainel() {
     painel.className = 'grimorio';
     painel.setAttribute('aria-label', 'Assistente da ficha');
     painel.hidden = true;
+    painel.insertAdjacentHTML('afterbegin', SPRITE);
+    painel.addEventListener('transitionend', (e) => {
+        if (e.target !== painel || e.propertyName !== 'transform') return;
+        if (painel.classList.contains('is-aberto')) painel.classList.add('is-lombada');
+        else painel.hidden = true;
+    });
 
     const head = document.createElement('div');
     head.className = 'grimorio__head';
@@ -562,13 +716,18 @@ function criarPainel() {
     bestaEl = document.createElement('div');
     bestaEl.className = 'grimorio__besta-bar';
 
+    const folha = document.createElement('div');
+    folha.className = 'grimorio__folha';
+    ['tl', 'tr', 'bl', 'br'].forEach(lado => folha.appendChild(canto(lado)));
+
     listaEl = document.createElement('div');
     listaEl.className = 'grimorio__lista';
     vazioEl = document.createElement('p');
     vazioEl.className = 'grimorio__vazio';
     vazioEl.hidden = true;
 
-    painel.append(head, contextoEl, buscaEl, chipsEl, bestaEl, listaEl, vazioEl);
+    folha.append(contextoEl, buscaEl, chipsEl, bestaEl, listaEl, vazioEl);
+    painel.append(head, folha);
     ['input', 'change'].forEach(tipo => painel.addEventListener(tipo, e => e.stopPropagation()));
     document.body.appendChild(painel);
 
@@ -580,7 +739,7 @@ function criarPainel() {
     fab.setAttribute('aria-expanded', 'false');
     fab.setAttribute('aria-controls', 'grimorio-panel');
     fab.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span class="grimorio-fab__rotulo">Grimório</span>';
-    fab.addEventListener('click', () => abrir(painel.hidden));
+    fab.addEventListener('click', () => abrir(!aberta));
     document.body.appendChild(fab);
 }
 
@@ -588,7 +747,7 @@ export function initGrimorio() {
     const btn = document.getElementById('grimorio-btn');
     if (!btn || painel) return;
     criarPainel();
-    btn.addEventListener('click', () => abrir(painel.hidden));
+    btn.addEventListener('click', () => abrir(!aberta));
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && aberta) abrir(false);
     });
