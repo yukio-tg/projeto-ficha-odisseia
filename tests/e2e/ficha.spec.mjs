@@ -29,7 +29,11 @@ test('abrir a ficha, editar um campo e ver o valor salvo depois de recarregar', 
 
   const campo = page.locator('input[data-field="personagem-nome"]');
   await expect(campo).toHaveValue('Gandalf');
-  await campo.fill('Gandalf o Cinzento');
+  // Enquanto a ficha ainda carrega, ela ignora a digitação. Repete até ela marcar "não salvo".
+  await expect(async () => {
+    await campo.fill('Gandalf o Cinzento');
+    await expect(page.locator('#non-saved')).toBeVisible({ timeout: 800 });
+  }).toPass({ timeout: 15_000 });
   // O salvamento automático espera 30 s sozinho. Aqui usamos o botão de salvar.
   await page.click('#manual-save');
   await expect(page.locator('#saved')).toBeVisible();

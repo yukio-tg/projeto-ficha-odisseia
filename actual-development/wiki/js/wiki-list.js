@@ -13,10 +13,16 @@ import {
 } from './wiki-consts.js';
 import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 
+const TYPE_PLURALS_LOWER = {
+    creature: 'monstros', place: 'lugares', person: 'pessoas',
+    concept: 'conceitos', item: 'itens', group: 'grupos',
+};
+
 // ─── Page state ────────────────────────────────────────────────────────────────
 let allDocs       = [];
 let currentType   = '';
 let currentSearch = '';
+let currentSort   = 'recent';
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -26,9 +32,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { user, isAdmin } = await getAuthState();
 
-    if (user) {
-        const createBtn = document.getElementById('wiki-create-btn');
-        if (createBtn) createBtn.style.display = '';
+    const createBtn = document.getElementById('wiki-create-btn');
+    if (createBtn) {
+        createBtn.style.display = '';
+        if (!user) {
+            // Sem conta: o botão continua visível e leva ao login, em vez de sumir sem explicação.
+            createBtn.href = '/index.html';
+            createBtn.title = 'Entre na sua conta para criar artigos';
+            const label = createBtn.lastChild;
+            if (label && label.nodeType === Node.TEXT_NODE) label.textContent = ' Entrar para criar';
+        }
     }
 
     renderUserArea(user, isAdmin);
@@ -53,15 +66,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    if (searchInput) {
+        // Esc limpa a busca.
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && searchInput.value) clearSearch();
+        });
+    }
+
+    document.getElementById('wiki-sort')?.addEventListener('change', (e) => {
+        currentSort = e.target.value;
+        renderList();
+    });
+
     document.querySelectorAll('.wiki-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.wiki-tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            btn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
             currentType = btn.dataset.type || '';
             renderList();
         });
     });
+
+    wireTabsScrollHint();
 });
+
+/** Mostra a sombra na borda das abas enquanto ainda há abas fora da tela. */
+function wireTabsScrollHint() {
+    const nav = document.querySelector('.wiki-filter-nav');
+    if (!nav) return;
+    const update = () => {
+        const sobra = nav.scrollWidth - nav.clientWidth - nav.scrollLeft;
+        nav.classList.toggle('has-more', sobra > 4);
+    };
+    nav.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+}
+
+/** Limpa a busca (campo da lateral e filtro dos cards). */
+function clearSearch() {
+    const input = document.getElementById('wiki-search');
+    if (input) {
+        input.value = '';
+        input.dispatchEvent(new Event('input')); // atualiza a lista lateral e os cards
+        input.focus();
+    }
+    currentSearch = '';
+    renderList();
+}
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
 async function loadDocs() {
@@ -96,8 +149,34 @@ function renderList() {
         );
     }
 
+    if (currentSort === 'name') {
+        filtered.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR', { sensitivity: 'base' }));
+    }
+
     if (filtered.length === 0) {
-        main.innerHTML = '<div class="wiki-empty"><span class="material-symbols-outlined">search_off</span>Nenhum documento encontrado.</div>';
+        main.innerHTML = '';
+        const empty = document.createElement('div');
+        empty.className = 'wiki-empty';
+        const icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined';
+        icon.textContent = 'search_off';
+        empty.appendChild(icon);
+        const typeName = currentType ? TYPE_PLURALS_LOWER[currentType] : '';
+        let texto = 'Nenhum documento encontrado';
+        if (currentSearch) texto += ` para "${currentSearch}"`;
+        if (typeName) texto += ` em ${typeName}`;
+        empty.appendChild(document.createTextNode(texto + '.'));
+        if (currentSearch) {
+            const br = document.createElement('div');
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'wiki-btn wiki-btn-secondary wiki-empty-clear';
+            btn.textContent = 'Limpar busca';
+            btn.addEventListener('click', clearSearch);
+            br.appendChild(btn);
+            empty.appendChild(br);
+        }
+        main.appendChild(empty);
         return;
     }
 

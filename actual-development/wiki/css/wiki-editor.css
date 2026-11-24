@@ -577,7 +577,8 @@
     border-bottom: 1px solid color-mix(in srgb, var(--p3) 40%, transparent);
 }
 .wiki-autocomplete-item:last-child { border-bottom: none; }
-.wiki-autocomplete-item:hover {
+.wiki-autocomplete-item:hover,
+.wiki-autocomplete-item.active {
     background: color-mix(in srgb, var(--gold1) 12%, transparent);
     color: var(--ink0);
 }
