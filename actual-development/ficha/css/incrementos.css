@@ -1,0 +1,446 @@
+/* incrementos.css — painel "Incrementos" e seletor no campo (modo Livre). */
+
+/* ── Âncoras: só o modo Livre sinaliza o campo incrementável ── */
+body.modo-livre .incr-anchor--hover,
+body.modo-livre .incr-anchor--open {
+    border-radius: 4px;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold1) 70%, transparent);
+}
+
+/* ── Painel fixo ── */
+.incr-panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 800;
+    width: 290px;
+    max-height: min(60vh, 420px);
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, var(--leath1) 0%, var(--leath0) 100%);
+    border: 1px solid var(--leath3);
+    border-radius: 8px;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+    color: var(--p0);
+    overflow: hidden;
+}
+
+.incr-panel[hidden] {
+    display: none;
+}
+
+.incr-panel__head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 4px 4px 6px;
+    min-height: 44px;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
+    color: var(--gold2);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.incr-panel.is-dragging .incr-panel__head {
+    cursor: grabbing;
+}
+
+.incr-panel.is-dragging {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.incr-panel__grip {
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.incr-panel__title {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.incr-panel__count {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--gold1) 22%, transparent);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    text-align: center;
+}
+
+.incr-panel__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: var(--gold2);
+    cursor: pointer;
+}
+
+.incr-panel__toggle:hover,
+.incr-panel__toggle:focus-visible {
+    background: color-mix(in srgb, var(--gold1) 16%, transparent);
+}
+
+.incr-panel__chevron {
+    font-size: 22px;
+}
+
+.incr-panel.is-collapsed .incr-panel__body {
+    display: none;
+}
+
+.incr-panel.is-collapsed .incr-panel__head {
+    border-bottom: none;
+}
+
+.incr-panel__body {
+    overflow-y: auto;
+    padding: 6px 8px 8px;
+}
+
+.incr-panel__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.incr-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px 64px 30px;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 4px 4px 8px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--p0) 8%, transparent);
+    font-size: 13px;
+}
+
+.incr-row__campo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.incr-row__nome {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--gold3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.incr-row__tag {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: color-mix(in srgb, var(--p0) 70%, transparent);
+    font-style: italic;
+}
+
+.incr-row__tipo,
+.incr-row__valor {
+    width: 100%;
+    height: 30px;
+    padding: 0 4px;
+    border: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--p0) 10%, transparent);
+    color: var(--p0);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+}
+
+.incr-row__tipo option {
+    color: var(--ink1);
+}
+
+.incr-row__valor {
+    text-align: right;
+    -moz-appearance: textfield;
+}
+
+.incr-row__valor::-webkit-inner-spin-button,
+.incr-row__valor::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.incr-row__tipo:focus,
+.incr-row__valor:focus {
+    outline: none;
+    border-color: var(--gold2);
+}
+
+.incr-row__del {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    color: color-mix(in srgb, var(--p0) 70%, transparent);
+    cursor: pointer;
+}
+
+.incr-row__del:hover,
+.incr-row__del:focus-visible {
+    color: var(--blood2);
+    background: color-mix(in srgb, var(--blood2) 14%, transparent);
+}
+
+.incr-row__del .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.incr-panel__empty {
+    margin: 4px 2px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: color-mix(in srgb, var(--p0) 70%, transparent);
+}
+
+.incr-panel__empty[hidden] {
+    display: none;
+}
+
+/* ── Seletor no campo ── */
+.incr-picker {
+    position: fixed;
+    z-index: 850;
+    width: 232px;
+    padding: 8px 10px 10px;
+    background: var(--p0);
+    border: 1px solid var(--gold1);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    color: var(--ink1);
+}
+
+.incr-picker[hidden] {
+    display: none;
+}
+
+.incr-picker__head {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.incr-picker__campo {
+    font-family: 'Cinzel', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--blood1);
+}
+
+.incr-picker__nome {
+    flex: 1;
+    font-size: 12px;
+    color: var(--ink3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.incr-picker__close {
+    align-self: center;
+    display: inline-flex;
+    padding: 2px;
+    background: none;
+    border: none;
+    color: var(--ink3);
+    cursor: pointer;
+}
+
+.incr-picker__close .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.incr-picker__row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.incr-picker__valor {
+    flex: 1;
+    min-width: 0;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    background: var(--p1);
+    color: var(--ink1);
+    font-family: 'Cinzel', serif;
+    font-size: 15px;
+}
+
+.incr-picker__valor[aria-invalid="true"] {
+    border-color: var(--blood2);
+}
+
+.incr-picker__tipo {
+    display: inline-flex;
+    border: 1px solid var(--p3);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.incr-picker__tipo button {
+    min-width: 42px;
+    height: 34px;
+    padding: 0 8px;
+    background: var(--p1);
+    border: none;
+    color: var(--ink3);
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.incr-picker__tipo button + button {
+    border-left: 1px solid var(--p3);
+}
+
+.incr-picker__tipo button[aria-pressed="true"] {
+    background: var(--gold1);
+    color: var(--p0);
+    font-weight: 700;
+}
+
+.incr-picker__actions {
+    display: flex;
+    gap: 6px;
+}
+
+.incr-picker__add,
+.incr-picker__remove {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 34px;
+    border-radius: 5px;
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.incr-picker__add {
+    background: var(--gold1);
+    border: 1px solid var(--gold0);
+    color: var(--p0);
+    font-weight: 700;
+}
+
+.incr-picker__remove {
+    background: none;
+    border: 1px solid var(--p3);
+    color: var(--blood1);
+}
+
+.incr-picker__remove:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.incr-picker__add .material-symbols-outlined,
+.incr-picker__remove .material-symbols-outlined {
+    font-size: 18px;
+}
+
+.incr-picker__resumo {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--ink3);
+}
+
+/* Leitura: sem painel e sem seletor. */
+body.mode-readonly .incr-panel,
+body.mode-readonly .incr-picker {
+    display: none !important;
+}
+
+@media print {
+    .incr-panel,
+    .incr-picker {
+        display: none !important;
+    }
+}
+
+/* ── Celular: painel acima da barra; seletor vira folha acima dela ── */
+@media (max-width: 600px) {
+    .incr-panel {
+        right: 8px;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+        width: min(300px, calc(100vw - 16px));
+        max-height: 45vh;
+        /* Abaixo da barra inferior (z 100), para o menu Mais abrir por cima. */
+        z-index: 90;
+    }
+
+    .incr-row {
+        grid-template-columns: minmax(0, 1fr) 66px 56px 44px;
+        gap: 4px;
+    }
+
+    .incr-row__tipo,
+    .incr-row__valor {
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .incr-row__tipo {
+        font-size: 14px;
+    }
+
+    .incr-row__del {
+        width: 44px;
+        height: 44px;
+    }
+
+    .incr-panel__toggle {
+        width: 44px;
+        height: 44px;
+    }
+
+    .incr-picker {
+        left: 8px !important;
+        right: 8px;
+        top: auto !important;
+        bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+        width: auto;
+        padding: 10px 12px 12px;
+    }
+
+    .incr-picker__valor,
+    .incr-picker__tipo button,
+    .incr-picker__add,
+    .incr-picker__remove {
+        height: 44px;
+    }
+
+    .incr-picker__valor {
+        font-size: 16px;
+    }
+}

@@ -4,7 +4,7 @@
 import { normalizar, escapeHtml, capitalize } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
-import { verificarOverflow, syncFieldToDisplay } from '../core/dom-helpers.js';
+import { verificarOverflow, syncFieldToDisplay, setupCardMinimize, notifyFichaChanged } from '../core/dom-helpers.js';
 import { isHydrating } from '../core/state.js';
 import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged, onFonteNomeChanged } from '../core/item-effects.js';
 import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
@@ -193,7 +193,8 @@ export function getInventarioState() {
         const valor1 = card.querySelector('.item-valor1')?.value || '';
         const valor2 = card.querySelector('.item-valor2')?.value || '';
         const itemSource = card.dataset.itemSource || '';
-        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource });
+        const collapsed = card.dataset.collapsed === 'true';
+        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource, collapsed });
     });
     return cardsData;
 }
@@ -372,13 +373,19 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
     `;
 
     // === Event bindings ===
-    let minimizado = false;
-    const btnMin = card.querySelector('.btn-item-minimize');
-    const body = card.querySelector('.item-card-body');
-    btnMin.addEventListener('click', () => {
-        minimizado = !minimizado;
-        body.style.display = minimizado ? 'none' : '';
-        btnMin.querySelector('.material-symbols-outlined').textContent = minimizado ? 'expand_more' : 'expand_less';
+    const descTextarea = card.querySelector('.item-desc-textarea');
+    const autoResizeItem = () => {
+        descTextarea.style.height = 'auto';
+        descTextarea.style.height = descTextarea.scrollHeight + 'px';
+    };
+
+    // Saved cards without `collapsed` (older sheets) open; brand-new items start closed.
+    const startCollapsed = savedData ? savedData.collapsed === true : true;
+    setupCardMinimize(card, '.btn-item-minimize', '.item-card-body', startCollapsed, {
+        onUserToggle: (minimizado) => {
+            if (!minimizado) autoResizeItem();
+            notifyFichaChanged();
+        },
     });
 
     const qtdInput = card.querySelector('.item-quantidade');
@@ -434,15 +441,8 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
         salvarInventarioLocal();
     });
 
-    const descTextarea = card.querySelector('.item-desc-textarea');
-    if (descTextarea) {
-        const autoResizeItem = () => {
-            descTextarea.style.height = 'auto';
-            descTextarea.style.height = descTextarea.scrollHeight + 'px';
-        };
-        descTextarea.addEventListener('input', autoResizeItem);
-        requestAnimationFrame(autoResizeItem);
-    }
+    descTextarea.addEventListener('input', autoResizeItem);
+    requestAnimationFrame(autoResizeItem);
     descTextarea.addEventListener('input', salvarInventarioLocal);
     const nomeInput = card.querySelector('.item-nome-input');
     let reorderTimeout = null;
@@ -488,6 +488,7 @@ function snapshotItem(card) {
         valor1: card.querySelector('.item-valor1')?.value || '',
         valor2: card.querySelector('.item-valor2')?.value || '',
         itemSource: card.dataset.itemSource || '',
+        collapsed: card.dataset.collapsed === 'true',
     };
 }
 
@@ -545,6 +546,17 @@ function getCardItemData(card) {
 let autocompleteInstance = null;
 
 // Função principal de adicionar item (com suporte a vazio)
+export function getItensCatalogo() {
+    return itensLoader.getData();
+}
+
+export function adicionarItemCatalogo(itemData) {
+    if (!itemData) return null;
+    const card = colocarItem(itemData, itemData.nome || '');
+    notifyFichaChanged();
+    return card;
+}
+
 function adicionarItemDoBusca() {
     const nomeDigitado = inputBusca.value.trim();
 
@@ -559,7 +571,8 @@ function adicionarItemDoBusca() {
         const nomeNorm = normalizar(nomeDigitado);
         itemEncontrado = itensLoader.getData().find(i => normalizar(i.nome) === nomeNorm);
     }
-    colocarItem(itemEncontrado, nomeDigitado);
+    if (itemEncontrado) adicionarItemCatalogo(itemEncontrado);
+    else colocarItem(null, nomeDigitado);
     inputBusca.value = '';
     if (autocompleteInstance) autocompleteInstance.close();
     inputBusca.focus();
@@ -593,7 +606,7 @@ export async function initInventory() {
         },
         onSelect: (item) => {
             inputBusca.value = '';
-            colocarItem(item, item.nome || '');
+            adicionarItemCatalogo(item);
         },
         onEnter: adicionarItemDoBusca
     });

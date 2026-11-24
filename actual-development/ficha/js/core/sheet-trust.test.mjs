@@ -18,6 +18,9 @@ import {
     aplicarBonusSobreBase,
 } from './bonus-guard.js';
 
+// Log de incrementos do modo Livre (fórmula, exclusão por linha, migração).
+import './incrementos.test.mjs';
+
 function roundTrip(data) {
     return JSON.parse(fingerprintSheet(JSON.parse(fingerprintSheet(data))));
 }

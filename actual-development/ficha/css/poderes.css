@@ -665,23 +665,6 @@
 }
 
 
-/* ── Animação de entrada ─────────────────────────────────────── */
-
-@keyframes power-card-in {
-    from {
-        opacity: 0;
-        transform: translateY(-6px) scale(0.98);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.card-power {
-    animation: power-card-in 0.18s ease both;
-}
-
 /* Início explícito no celular; no desktop a sidebar já tem o link. */
 .header-home-link {
     display: none;
@@ -952,8 +935,8 @@
     /* ── Header mobile layout: switch to CSS Grid for predictable two-row layout ── */
     .header-body {
         display: grid;
-        grid-template-columns: 44px 1fr;
-        grid-template-rows: auto auto;
+        grid-template-columns: 44px minmax(0, 1fr) auto;
+        grid-template-rows: auto auto auto;
         gap: 4px 10px;
         padding: 8px 12px 8px;
         /* Override desktop flex styles */
@@ -990,17 +973,17 @@
         gap: 4px;
         min-height: 44px;
         min-width: 44px;
-        padding: 0 10px;
-        align-self: flex-start;
+        padding: 0;
+        grid-row: 1;
+        grid-column: 3;
+        align-self: center;
         text-decoration: none;
+        position: relative;
+        z-index: 3;
         color: var(--gold2);
-        font-family: 'Cinzel', serif;
-        font-size: 13px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        border: 1px solid color-mix(in srgb, var(--gold1) 55%, transparent);
-        border-radius: 6px;
-        background: color-mix(in srgb, var(--gold1) 8%, transparent);
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
     }
 
     .header-home-link .material-symbols-outlined {
@@ -1031,44 +1014,76 @@
         text-overflow: ellipsis;
     }
 
-    /* Row 2, full width: login info + action buttons */
-    .header-info {
+    /* Vista de jogo: uma faixa com nome e ícones, sem a linha vazia de login. */
+    body.is-play .header-body {
+        grid-template-rows: auto auto;
+        gap: 0 8px;
+        padding: 6px 10px 4px;
+    }
+
+    body.is-play .header-login {
+        display: none !important;
+    }
+
+    body.is-play .header-crest {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    body.is-play .header-title {
+        font-size: 16px;
+    }
+
+    body.is-play .header-buttons {
         grid-row: 2;
-        grid-column: 1 / -1;
-        flex-direction: column;
-        align-items: stretch;
-        justify-content: flex-start;
-        width: 100%;
-        gap: 6px;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    body.is-play .header-buttons::after {
+        content: none;
+    }
+
+    .play-vital {
+        min-width: 0;
+        overflow: hidden;
+        padding: 10px 6px 12px;
+    }
+
+    .play-vital-now {
+        font-size: clamp(36px, 12vw, 56px);
+    }
+
+    .play-vital-max {
+        font-size: 16px;
+    }
+
+    /* Row 2, full width: login info + action buttons */
+    /* Os filhos (Início, presença, botões) entram direto na grade do header */
+    .header-info {
+        display: contents;
     }
 
     .header-login {
+        grid-row: 2;
+        grid-column: 1 / -1;
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
         gap: 6px 10px;
-        flex: 1;
         min-width: 0;
         overflow: visible;
     }
 
-    .owner-sheet {
-        font-size: 12px;
-        flex-shrink: 1;
-        min-width: 0;
-        overflow: hidden;
+    /* E-mails de dono e de quem está logado saem do celular; a presença fica. */
+    .header-login .owner-sheet,
+    .header-login .logged {
+        display: none !important;
     }
 
-    .owner-account-name {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 90px;
-        display: inline-block;
-    }
-
-    .logged,
     .not-logged {
         font-size: 12px;
         line-height: 1.35;
@@ -1088,23 +1103,60 @@
         margin: 8px 12px 0;
     }
 
+    /* Linha 1: modo + Recalcular e aviso de save. Linha 2: ícones de 44px. */
     .header-buttons {
-        flex-wrap: nowrap;
+        grid-row: 3;
+        grid-column: 1 / -1;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: flex-end;
         gap: 0;
-        flex-shrink: 0;
+        min-width: 0;
+    }
+
+    .header-buttons > * {
+        order: 3;
+    }
+
+    .header-buttons > .header-autocalc {
+        order: 1;
+    }
+
+    .header-buttons > .header-feedback-save {
+        order: 2;
+        flex: 1 1 0;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
+    .header-buttons::after {
+        content: '';
+        order: 2;
+        flex-basis: 100%;
+        height: 0;
     }
 
     .header-feedback-save {
-        font-size: 9px;
+        font-size: 11px;
         white-space: nowrap;
+        overflow: hidden;
     }
 
     #autocalc-switch,
+    #recalc-btn,
     #autosave-switch,
-    #manual-save {
-        margin: 0 0 0 8px;
+    #manual-save,
+    #export-json-btn,
+    #grimorio-btn,
+    #share-btn,
+    #theme-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        margin: 0;
+        translate: none;
     }
 
     #share-btn-wrapper,
@@ -1114,7 +1166,7 @@
 
     #share-btn-wrapper button,
     #theme-btn-wrapper button {
-        margin: 0 0 0 8px;
+        margin: 0;
     }
 
     .page {
@@ -1135,6 +1187,12 @@
 
     .vitals-attrs-grid {
         grid-template-columns: 1fr;
+    }
+
+    .vitals-attrs-grid > *,
+    .combat-stats-row,
+    .cstat-block {
+        min-width: 0;
     }
 
     .combat-stats-row {
@@ -1206,5 +1264,25 @@
 
     .color-dot-dropdown {
         width: min(280px, calc(100vw - 24px));
+    }
+}
+
+/* Alvos de toque de 44px sem mudar o desenho dos cards. */
+@media (max-width: 600px) {
+    .vital-temp-toggle,
+    #heranca-options-btn {
+        position: relative;
+    }
+
+    .vital-temp-toggle::after,
+    #heranca-options-btn::after,
+    .cstat-add-btn::after {
+        content: '';
+        position: absolute;
+        inset: -13px -6px;
+    }
+
+    .cstat-add-btn {
+        position: relative;
     }
 }

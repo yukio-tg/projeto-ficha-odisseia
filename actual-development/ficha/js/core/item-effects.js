@@ -6,7 +6,7 @@ import { getAtributoBase } from './radar-service.js';
 import { criarCardAtaque } from '../ui/combat.js';
 import { isHydrating, isExplicitRecalc, isModoLivre, podeSobrescrever } from './state.js';
 import { devePularRecalcProtecao, temBaseRestaurada, aplicarBonusSobreBase } from './bonus-guard.js';
-import { getIncrFlat, applyIncrement, getIncrPct } from '../ui/configuracoes.js';
+import { incrementar } from './incrementos.js';
 
 // ════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -181,7 +181,28 @@ function getBaseDeslocamento() {
     return stored;
 }
 
-function storeBaseDeslocamento() {
+function totaisProtecao() {
+    let defesa = 0;
+    let rd = 0;
+    let desloc = 0;
+    for (const [, data] of activeProtections) {
+        defesa += data.defesa;
+        rd += data.rd;
+        desloc += data.deslocPct;
+    }
+    return { defesa, rd, desloc };
+}
+
+/** Defesa e deslocamento antes da camada de incrementos (livro + proteção equipada). */
+export function getBasesProtecaoLivro() {
+    const t = totaisProtecao();
+    return {
+        def: (getAtributoBase('DES') || 0) + 10 + t.defesa,
+        desl: getBaseDeslocamento() * (1 - t.desloc),
+    };
+}
+
+export function storeBaseDeslocamento() {
     const input = document.querySelector('[data-field="deslocamento"]');
     if (!input) return;
     if (!temBaseRestaurada(input.dataset.baseValue)) {
@@ -224,23 +245,16 @@ function recalcProtectionBonuses() {
 
     storeBaseDeslocamento();
 
-    let totalDefBonus = 0;
-    let totalRdBonus = 0;
-    let totalDeslocReduction = 0;
-
-    for (const [, data] of activeProtections) {
-        totalDefBonus += data.defesa;
-        totalRdBonus += data.rd;
-        totalDeslocReduction += data.deslocPct;
-    }
+    const totais = totaisProtecao();
+    const totalDefBonus = totais.defesa;
+    const totalRdBonus = totais.rd;
+    const totalDeslocReduction = totais.desloc;
 
     // Apply to Defesa — skip if user has manually overridden it
     const defesaInput = document.querySelector('[data-field="defesa"]');
     if (defesaInput && podeSobrescrever('defesa')) {
         const baseDefesa = (getAtributoBase('DES') || 0) + 10;
-        // Aplica incremento de Configurações (DEF flat)
-        const defFlat = getIncrFlat('def');
-        defesaInput.value = baseDefesa + totalDefBonus + defFlat;
+        defesaInput.value = incrementar('def', baseDefesa + totalDefBonus);
         defesaInput.dataset.protBonus = totalDefBonus;
         defesaInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
@@ -254,15 +268,12 @@ function recalcProtectionBonuses() {
         rdInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
-    // Apply to Deslocamento (percentage reduction + Configurações increment)
+    // Apply to Deslocamento (percentage reduction + incrementos do modo Livre)
     const deslInput = document.querySelector('[data-field="deslocamento"]');
     if (deslInput && podeSobrescrever('deslocamento')) {
         const baseDesl = getBaseDeslocamento();
         const reducedDesl = baseDesl * (1 - totalDeslocReduction);
-        // Aplica incrementos de Configurações (flat + porcentagem)
-        const deslFlat = getIncrFlat('desl');
-        const deslPct  = getIncrPct('desl');
-        const finalDesl = applyIncrement(reducedDesl, deslFlat, deslPct);
+        const finalDesl = incrementar('desl', reducedDesl);
         deslInput.value = Math.round(finalDesl * 10) / 10;
         deslInput.dataset.protReduction = totalDeslocReduction;
         deslInput.dispatchEvent(new Event('input', { bubbles: true }));

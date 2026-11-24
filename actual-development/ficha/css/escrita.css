@@ -1,9 +1,4 @@
-/* Superfície de escrita: prévia de notas, listas vazias, desfazer e impressão. */
-
-.notes-textarea--mirror {
-    cursor: pointer;
-    resize: none;
-}
+/* Superfície de escrita: listas vazias, desfazer e impressão. */
 
 .sheet-empty-hint {
     margin: 8px 2px 12px;
@@ -41,11 +36,12 @@
     border: none;
     color: var(--gold1);
     cursor: pointer;
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    letter-spacing: 0.08em;
-    margin-left: 12px;
-    padding: 4px 2px;
+    margin: 0;
+    padding: 0;
+}
+
+#export-json-btn .material-symbols-outlined {
+    font-size: 20px;
 }
 
 #export-json-btn:hover {
@@ -162,8 +158,7 @@
         display: none !important;
     }
 
-    .anot-editor,
-    .notes-textarea--mirror {
+    .anot-editor {
         max-height: none !important;
         overflow: visible !important;
         height: auto !important;

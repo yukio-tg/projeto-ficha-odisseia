@@ -73,6 +73,13 @@ export function adjustRadarMaxPoints(delta) {
     radarInstance.updateTotal();
 }
 
+/** Teto absoluto de pontos de atributo (livro + herança + incrementos). */
+export function setRadarMaxPoints(total) {
+    if (!radarInstance) return;
+    radarInstance.maxPoints = Math.max(0, Math.floor(Number(total) || 0));
+    radarInstance.updateTotal();
+}
+
 /**
  * Copia nível e atributos já escritos nos inputs para o modelo do radar
  * e redesenha, sem disparar input/change (isso recalcularia a ficha).

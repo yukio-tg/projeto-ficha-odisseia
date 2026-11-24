@@ -15,12 +15,17 @@ import { getInventarioState, setInventarioState, syncMirroredFields } from '../u
 import { getItemEffectsState, setItemEffectsState } from './item-effects.js';
 import { getAnotacoesState, setAnotacoesState, adoptLegacyNotes } from '../ui/anotacoes.js';
 import { getBestasState, setBestasState } from '../ui/besta.js';
-import { getRadarAttrWrap, adoptRadarInputs } from './radar-service.js';
+import { getRadarAttrWrap, adoptRadarInputs, setRadarMaxPoints, getNivel } from './radar-service.js';
+import { getIncrementos, setIncrementos, migrarIncrementosLegados, incrementar } from './incrementos.js';
+import { refreshAllBars } from '../ui/vitals.js';
 import {
     manualOverrides,
     autoCalcEnabled,
     sheetMode,
     restoreSheetMode,
+    setSheetMode,
+    isModoLivre,
+    MODO_LIVRE,
     beginHydration,
     endHydration,
     isHydrating,
@@ -98,6 +103,7 @@ function deserializeRadar(radar) {
     const bonusTeto = Object.values(herancaAttrBonusAplicado).reduce((a, b) => a + (Number(b) || 0), 0);
     try {
         adoptRadarInputs({ maxPointsBonus: bonusTeto });
+        setRadarMaxPoints(Math.max(0, incrementar('attr', 10 + getNivel() + bonusTeto)));
     } catch (e) {
         console.warn('[Serializer] Não foi possível alinhar o radar sem recalcular:', e);
     }
@@ -169,6 +175,7 @@ export function serializeSheet() {
         herancaAttrBonus: { ...herancaAttrBonusAplicado },
         autoCalcEnabled,
         sheetMode,
+        incrementos: getIncrementos(),
     };
     setStableSnapshot(clonePlain(snap));
     return snap;
@@ -179,7 +186,22 @@ export function deserializeSheet(data) {
     beginHydration();
     try {
         noteSheetRestored();
-        setStableSnapshot(clonePlain(data));
+
+        // Incrementos: saves antigos trazem incr-* em fields. Viram linhas do log
+        // uma vez e saem de fields, para o bônus (já somado no total salvo) não
+        // entrar duas vezes. Esses saves aplicavam o bônus no modo Regras; a ficha
+        // abre em Livre para a camada continuar valendo.
+        const migracao = migrarIncrementosLegados(data);
+        restoreSheetMode(data);
+        setIncrementos(migracao.incrementos);
+        if (migracao.migrou && !isModoLivre()) setSheetMode(MODO_LIVRE);
+        const fields = data.fields ? migracao.fields : data.fields;
+        setStableSnapshot(clonePlain({
+            ...data,
+            fields,
+            sheetMode,
+            incrementos: getIncrementos(),
+        }));
 
         // ── RESTAURA A FLAG DE BÔNUS ──────────────────────────────────────────────
         // Deve ocorrer ANTES de qualquer evento que dispare atualizarHeranca().
@@ -191,14 +213,12 @@ export function deserializeSheet(data) {
         // após o reload possam remover o bônus antigo corretamente.
         setBonusAprendizadoRestaurado(data.bonusAprendizadoFlag, data.fields);
 
-        restoreSheetMode(data);
-
         // Restore manual overrides FIRST so calc functions respect them during deserialization
         manualOverrides.clear();
         if (Array.isArray(data.manualOverrides)) {
             data.manualOverrides.forEach(f => manualOverrides.add(f));
         }
-        deserializeFields(data.fields);
+        deserializeFields(fields);
         notarHerancaDinheiroRestaurada();
         deserializeRadar(data.radar);
         if (data.pericias) setSkillsState(data.pericias);
@@ -214,6 +234,8 @@ export function deserializeSheet(data) {
         adoptLegacyNotes(data.fields?.['anotacoes-geral']);
         if (data.bestas) setBestasState(data.bestas);
         syncModoUi();
+        // Nenhum input dispara na restauração; as barras leem o atual e o total salvos.
+        refreshAllBars();
     } finally {
         endHydration();
     }

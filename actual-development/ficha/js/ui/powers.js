@@ -243,15 +243,13 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
 
     // Auto-resize textarea to content
     const textarea = card.querySelector('.power-desc-textarea');
-    if (textarea) {
-        const autoResize = () => {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-        };
-        textarea.addEventListener('input', autoResize);
-        // Run after content is set
-        requestAnimationFrame(autoResize);
-    }
+    const autoResize = () => {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    };
+    textarea.addEventListener('input', autoResize);
+    // Run after content is set
+    requestAnimationFrame(autoResize);
 
     card.querySelector('.pt-cost-input').addEventListener('input', atualizarTotalPt);
 
@@ -281,31 +279,53 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
     card.querySelector('.btn-summarize').addEventListener('click', () => {
         const isCollapsed = card.dataset.collapsed === 'true';
         toggleCard(card, !isCollapsed);
+        if (isCollapsed) autoResize();
+        document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
     });
 
+    return card;
+}
+
+export function getPoderesCatalogo() {
+    return poderesLoader.getData();
+}
+
+export function adicionarPoderCatalogo(powerData, cor) {
+    if (!containerCards || !powerData) return null;
+    const card = criarCardPower(powerData, '', cor || powerData.cor || 'Vermelho');
+    containerCards.appendChild(card);
+    atualizarTotalPt();
+    reordenarCards();
+    document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
     return card;
 }
 
 function adicionarPoderDoBusca() {
     if (!inputBusca) return;
     const nomeDigitado = inputBusca.value.trim();
-    const corParaCard = currentSelectedColor !== null ? currentSelectedColor : "Vermelho";
+    const corParaCard = currentSelectedColor !== null ? currentSelectedColor : 'Vermelho';
 
     if (nomeDigitado === '') {
         const novoCard = criarCardPower(null, '', corParaCard);
         containerCards.appendChild(novoCard);
+        atualizarTotalPt();
+        reordenarCards();
     } else {
         let poderEncontrado = null;
         if (!poderesLoader.hasError() && !poderesLoader.isLoading()) {
             const nomeNorm = normalizar(nomeDigitado);
             poderEncontrado = poderesLoader.getData().find(p => normalizar(p.nome) === nomeNorm);
         }
-        const novoCard = criarCardPower(poderEncontrado || null, nomeDigitado, corParaCard);
-        containerCards.appendChild(novoCard);
+        if (poderEncontrado) {
+            const cor = currentSelectedColor || poderEncontrado.cor || 'Vermelho';
+            adicionarPoderCatalogo(poderEncontrado, cor);
+        } else {
+            const novoCard = criarCardPower(null, nomeDigitado, corParaCard);
+            containerCards.appendChild(novoCard);
+            atualizarTotalPt();
+            reordenarCards();
+        }
     }
-
-    atualizarTotalPt();
-    reordenarCards();
     currentSelectedColor = null;
     atualizarCategoryDot();
     inputBusca.value = '';
@@ -359,10 +379,7 @@ function mostrarAutocomplete(query) {
         // mousedown prevents blur; click fills the input (user presses Enter to add)
         item.addEventListener('mousedown', e => e.preventDefault());
         item.addEventListener('click', () => {
-            const novoCard = criarCardPower(p, '', p.cor || 'Vermelho');
-            containerCards.appendChild(novoCard);
-            atualizarTotalPt();
-            reordenarCards();
+            adicionarPoderCatalogo(p, p.cor || 'Vermelho');
             currentSelectedColor = null;
             atualizarCategoryDot();
             inputBusca.value = '';

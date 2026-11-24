@@ -2,7 +2,7 @@
 'use strict';
 
 import { normalizar, escapeHtml, uid } from '../core/utils.js';
-import { setupAccordion } from '../core/dom-helpers.js';
+import { setupAccordion, notifyFichaChanged } from '../core/dom-helpers.js';
 import { INERTIDAO_TAMANHO } from '../core/calculation.js';
 import { periciasData, buildD20Html } from './skills.js';
 import { createDataLoader } from '../core/data-loader.js';
@@ -13,6 +13,9 @@ import { ONUS_LISTA } from '../config/onus.js';
 import { REACOES_PRESET, normalizarDescricaoReacao, popularReacoesPreset } from './combat.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { ASPECTOS_BIO, ASPECTOS_TREINO } from '../config/aspectos-besta.js';
+import { calcPmMax, basesBesta, derivadosBesta } from '../core/besta-regras.js';
+import { normalizarLog, calcularFlatManual, aplicarAjusteManual } from '../core/incrementos.js';
+import { isModoLivre } from '../core/state.js';
 
 // ── Shared constants ───────────────────────────────────────────────────────
 
@@ -72,29 +75,12 @@ function getTitulo(n) {
 
 function attrBase(nivel) { return 13 + parseInt(nivel,10); }
 
-function calcPmMax(nivel, conMod, sabMod) {
-    // Vida da Besta: baseada em Constituição e Sabedoria (não Carisma)
-    const base = 25 + conMod + sabMod;
-    return Math.floor(base + nivel * (3 + (conMod + sabMod) / 2));
-}
-
-function calcDefesa(desMod) { return 12 + desMod; }
-
 function calcInertia(nivel, tamanhoLabel) {
     const entry = TAMANHO_OPTIONS.find(t => t.label === tamanhoLabel);
     const key   = entry ? entry.key : 'tam-medio';
     return parseInt(nivel,10) + (INERTIDAO_TAMANHO[key] ?? 7);
 }
 
-function calcProfLimit(nivel) { return 3 + Math.floor(parseInt(nivel,10) / 2); }
-
-const BIO_BONUS_LEVELS = new Set([3,6,7,9,11,13,14,17,19]);
-function calcBioLimit(nivel) {
-    const n = parseInt(nivel,10) || 1;
-    let extra = 0;
-    for (const lvl of BIO_BONUS_LEVELS) { if (n >= lvl) extra++; }
-    return 6 + extra;
-}
 
 function getOwnerName() {
     return document.querySelector('[data-field="personagem-nome"]')?.value?.trim() || '—';
@@ -119,6 +105,7 @@ function newBesta() {
         expandMagias:false, expandInv:false, expandSkills:false,
         defesaManual: null,   // null = auto-calc; number = user override
         pmMaxManual:  null,   // null = auto-calc; number = user override
+        incrementos: [],
     };
 }
 
@@ -143,16 +130,10 @@ export function checkBestaTabVisibility() {
 function derivedFor(b) {
     const n  = parseInt(b.nivel,10) || 1;
     const ba = attrBase(n);
-    const conMod = b.attrs.CON || 0;
-    const sabMod = b.attrs.SAB || 0; // Vida baseada em CON + SAB
-    const desMod = b.attrs.DES || 0;
-    // Respect manual overrides when set
-    const pmMax   = (b.pmMaxManual  != null) ? b.pmMaxManual  : calcPmMax(n, conMod, sabMod);
-    const defesa  = (b.defesaManual != null) ? b.defesaManual : calcDefesa(desMod);
+    const { pmMax, defesa, tetoAttr, profLim, bioLim } = derivadosBesta(b);
     const inertia = calcInertia(n, b.tamanho);
-    const profLim = calcProfLimit(n);
     const titulo  = getTitulo(n);
-    return { n, ba, pmMax, defesa, inertia, profLim, titulo };
+    return { n, ba, pmMax, defesa, inertia, profLim, bioLim, tetoAttr, titulo };
 }
 
 // ── HTML builders ──────────────────────────────────────────────────────────
@@ -388,7 +369,7 @@ function buildSkillsSection(b, d, container) {
 
     function refreshCounter() {
         const totalGasto = periciasData.reduce((s, p) => s + (b.pericias[p.nome] || 0), 0);
-        const maxPts = calcProfLimit(b.nivel);
+        const maxPts = derivedFor(b).profLim;
         cUsed.textContent = totalGasto;
         cMax.textContent = maxPts;
         cUsed.style.color = totalGasto > maxPts ? 'var(--blood2)' : 'var(--gold3)';
@@ -462,6 +443,7 @@ function buildSkillsSection(b, d, container) {
             }));
         }
         saveBestas();
+        notifyFichaChanged();
     });
 
     // Table
@@ -642,6 +624,18 @@ function buildConditionsHTML(b) {
 
 // ── DOM-based attack card (combat.js style) ─────────────────────────────────
 
+/** Accordion whose open state lives on the data object as `collapsed` (missing = closed). */
+function bindBestaAccordion(card, data) {
+    setupAccordion(card, {
+        open: data.collapsed === false,
+        onUserToggle: (isOpen) => {
+            data.collapsed = !isOpen;
+            saveBestas();
+            notifyFichaChanged();
+        },
+    });
+}
+
 function criarBestaCardAtaque(b, atk, instEl) {
     if (!atk.id) atk.id = uid();
     const card = document.createElement('div');
@@ -699,7 +693,7 @@ function criarBestaCardAtaque(b, atk, instEl) {
             </div>
         </div>`;
 
-    setupAccordion(card);
+    bindBestaAccordion(card, atk);
 
     const summaryAcerto = card.querySelector('[data-summary="acerto"]');
     const summaryDano   = card.querySelector('[data-summary="dano"]');
@@ -839,7 +833,7 @@ function criarBestaCardBonus(b, bo) {
     tipoSel.addEventListener('change', () => { bo.tipo = tipoSel.value; card.dataset.bonusTipo = bo.tipo; saveBestas(); });
     descTA.addEventListener('input', e => { bo.desc = e.target.value; saveBestas(); });
 
-    setupAccordion(card);
+    bindBestaAccordion(card, bo);
 
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
         const idx = b.bonusOnus.indexOf(bo);
@@ -952,7 +946,7 @@ function criarBestaCardReacao(b, r, idx) {
                 placeholder="Descrição da reação…">${escapeHtml(r.desc||'')}</textarea>
         </div>`;
 
-    setupAccordion(card);
+    bindBestaAccordion(card, r);
 
     const reacaoNomeInp = card.querySelector('.besta-reacao-nome');
     const reacaoDescTA  = card.querySelector('.besta-reacao-desc');
@@ -1024,7 +1018,7 @@ function refreshBioCounter(el, b) {
     const span = el.querySelector(`[data-bio-counter="${b.id}"]`);
     if (!span) return;
     const used = sumBioNiveis(b);
-    const max  = calcBioLimit(b.nivel);
+    const max  = derivedFor(b).bioLim;
     const usedEl = span.querySelector('.besta-bio-used');
     const maxEl  = span.querySelector('.besta-bio-max');
     // warnEl might not exist in new design - just use the counter container
@@ -1050,7 +1044,7 @@ function refreshTreinoCounter(el, b) {
 
 function buildBioCounter(b) {
     const used = sumBioNiveis(b);
-    const max  = calcBioLimit(b.nivel);
+    const max  = derivedFor(b).bioLim;
     const over = used > max;
     return `<span class="besta-bio-inline" data-bio-counter="${b.id}"> (<span class="besta-bio-used" style="color:${over?'var(--blood2)':'inherit'}">${used}</span>/<span class="besta-bio-max">${max}</span>${over ? ' <span class="besta-bio-warn material-symbols-outlined" style="font-size:11px;vertical-align:middle">warning</span>' : '<span class="besta-bio-warn" style="display:none"></span>'})</span>`;
 }
@@ -1063,7 +1057,7 @@ function buildAbilitiesHTML(b) {
     const indivCards = (b.hab.indiv || []).map((h, i) => buildIndivCard(h, i)).join('');
 
     const bioUsed = sumBioNiveis(b);
-    const bioMax  = calcBioLimit(b.nivel);
+    const bioMax  = derivedFor(b).bioLim;
     const bioOver = bioUsed > bioMax;
     const ptUsado = sumTreinoPt(b);
 
@@ -1404,7 +1398,7 @@ function initBestaRadar(el, b) {
         inputOffset: 46,
     });
     // Besta formula: 13 + nivel (vendor defaults to 10 + nivel)
-    instance.maxPoints = 13 + b.nivel;
+    instance.maxPoints = d.tetoAttr;
     instance.updateTotal();
     bestaRadars.set(b.id, instance);
 
@@ -1415,9 +1409,9 @@ function initBestaRadar(el, b) {
             const oldPmMax = derivedFor(b).pmMax;
             const wasFullPm = b.pmAtual !== 0 && b.pmAtual === oldPmMax;
             b.nivel = Math.max(1, Math.min(20, parseInt(levelInp.value,10)||1));
-            instance.maxPoints = 13 + b.nivel;
-            instance.updateTotal();
             const d2 = derivedFor(b);
+            instance.maxPoints = d2.tetoAttr;
+            instance.updateTotal();
             if (wasFullPm) { b.pmAtual = d2.pmMax; const pi = el.querySelector('[data-besta-field="pmAtual"]'); if (pi) pi.value = d2.pmMax; }
             const inertDisp = el.querySelector('.besta-inertia-display');
             if (inertDisp) inertDisp.value = d2.inertia;
@@ -1434,7 +1428,7 @@ function initBestaRadar(el, b) {
             const bioMaxEl  = el.querySelector(`[data-bio-counter="${b.id}"] .besta-bio-max`);
             const bioWarnEl = el.querySelector(`[data-bio-counter="${b.id}"] .besta-bio-warn`);
             if (bioMaxEl) {
-                const newMax = calcBioLimit(b.nivel);
+                const newMax = d2.bioLim;
                 const used = (b.hab.bio || []).length;
                 bioMaxEl.textContent = newMax;
                 if (bioUsedEl) bioUsedEl.style.color = used > newMax ? 'var(--blood2)' : 'inherit';
@@ -1595,9 +1589,85 @@ function refreshBestaDisplay(el, b) {
     refreshBestaRadar(el, b);
 }
 
+/** Reaplica os derivados que dependem do modo e do log de incrementos. */
+function refreshBestaDerivados(el, b) {
+    refreshBestaDisplay(el, b);
+    const d = derivedFor(b);
+    const inst = bestaRadars.get(b.id);
+    if (inst) { inst.maxPoints = d.tetoAttr; inst.updateTotal(); }
+    el.querySelector(`#besta-skills-mount-${b.id}`)?.refreshProfCounter?.();
+    refreshBioCounter(el, b);
+}
+
+const OVERRIDE_BESTA = { pm: 'pmMaxManual', def: 'defesaManual' };
+
+function bestaEl(id) {
+    return document.querySelector(`#tab-besta .besta-instance[data-besta-id="${id}"]`);
+}
+
+/**
+ * Troca o log da besta e recalcula os campos tocados. O override antigo do campo
+ * sai, para a camada valer; o PM atual cheio acompanha o novo máximo.
+ */
+function aplicarLogBesta(b, log, campos = []) {
+    const pmAntes = derivedFor(b).pmMax;
+    b.incrementos = normalizarLog(log);
+    campos.forEach(c => { if (OVERRIDE_BESTA[c]) b[OVERRIDE_BESTA[c]] = null; });
+    const pmDepois = derivedFor(b).pmMax;
+    const el = bestaEl(b.id);
+    if (b.pmAtual === pmAntes && pmAntes !== pmDepois) {
+        b.pmAtual = pmDepois;
+        const pi = el?.querySelector('[data-besta-field="pmAtual"]');
+        if (pi) pi.value = pmDepois;
+    }
+    if (el) refreshBestaDerivados(el, b);
+}
+
+function registrarAjusteManualBesta(b, campo, raw) {
+    const log = normalizarLog(b.incrementos);
+    const texto = String(raw ?? '').trim();
+    const flat = texto === ''
+        ? 0
+        : calcularFlatManual(parseFloat(texto), basesBesta(b)[campo], log, campo);
+    if (flat === null) return false;
+    aplicarLogBesta(b, aplicarAjusteManual(log, campo, flat), [campo]);
+    document.dispatchEvent(new CustomEvent('incrementos:mudou'));
+    return true;
+}
+
+export function listarBestasIncrementos() {
+    return bestas.map(b => ({
+        id: b.id,
+        nome: b.nome || 'Besta',
+        incrementos: normalizarLog(b.incrementos),
+    }));
+}
+
+export function atualizarIncrementosBesta(id, log, campos) {
+    const b = bestas.find(x => x.id === id);
+    if (!b) return false;
+    aplicarLogBesta(b, log, campos);
+    return true;
+}
+
 // ── Event binding ──────────────────────────────────────────────────────────
 
 function bindBestaEvents(el, b) {
+    // Livre: o número digitado no PM máximo ou na defesa vira o ajuste manual do log.
+    el.addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        const campo = { pmMaxManual: 'pm', defesa: 'def' }[e.target.dataset.bestaField];
+        if (!campo || !isModoLivre()) return;
+        e.preventDefault();
+        e.target.blur();
+    });
+
+    el.addEventListener('change', e => {
+        const campo = { pmMaxManual: 'pm', defesa: 'def' }[e.target.dataset.bestaField];
+        if (!campo || !isModoLivre()) return;
+        if (registrarAjusteManualBesta(b, campo, e.target.value)) notifyFichaChanged();
+    });
+
     el.addEventListener('input', e => {
         const t = e.target;
         const field = t.dataset.bestaField;
@@ -1787,6 +1857,7 @@ function bindBestaEvents(el, b) {
             if (target === 'inventario') { b.expandInv        = !b.expandInv; }
             if (target === 'skills')     { b.expandSkills     = !b.expandSkills; }
             saveBestas();
+            notifyFichaChanged();
             renderBestaInstance(b, container);
             return;
         }
@@ -2041,6 +2112,13 @@ export async function initBesta() {
     renderAllBestas(root);
     checkBestaTabVisibility();
 
+    document.addEventListener('ficha:modo-sync', () => {
+        bestas.forEach(b => {
+            const el = bestaEl(b.id);
+            if (el) refreshBestaDerivados(el, b);
+        });
+    });
+
     document.querySelector('[data-field="classe-nome"]')?.addEventListener('input', checkBestaTabVisibility);
     document.querySelector('[data-field="besta-nome"]')?.addEventListener('input', checkBestaTabVisibility);
 
@@ -2053,6 +2131,32 @@ export async function initBesta() {
     });
 
     console.log('[Besta] Inicializado —', bestas.length, 'besta(s) carregada(s)');
+}
+
+export function listarBestasConsulta() {
+    return bestas.map(b => {
+        const d = derivedFor(b);
+        const nomes = [...(b.hab?.bio || []), ...(b.hab?.treino || [])]
+            .map(h => h.nome)
+            .filter(Boolean);
+        return {
+            id: b.id,
+            nome: b.nome || 'Besta',
+            nivel: parseInt(b.nivel, 10) || 1,
+            bioUsado: sumBioNiveis(b),
+            bioLim: d.bioLim,
+            nomes,
+        };
+    });
+}
+
+export function adicionarAspectoNaBesta(bestaId, item) {
+    const b = bestas.find(x => x.id === bestaId);
+    const el = bestaEl(bestaId);
+    if (!b || !el || !item) return null;
+    selectAspecto(item, b, el);
+    document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+    return true;
 }
 
 export function getBestasState() {

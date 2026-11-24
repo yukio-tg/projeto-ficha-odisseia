@@ -3,7 +3,7 @@ import { periciasEstado, getTotalPericia } from './skills.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
 import { uid, normalizar, escapeHtml } from '../core/utils.js';
-import { setupAccordion } from '../core/dom-helpers.js';
+import { setupAccordion, isAccordionOpen, setAccordionOpen, notifyFichaChanged } from '../core/dom-helpers.js';
 import { ONUS_LISTA } from '../config/onus.js';
 import { isHydrating, shouldWriteLevelAction } from '../core/state.js';
 import { bindEmptyHint } from './escrita-ui.js';
@@ -202,7 +202,7 @@ function renderizarStatsChips(container, chips) {
 }
 
 // Cria um card de reação especial (preset)
-function criarCardReacaoPreset(nome, id) {
+function criarCardReacaoPreset(nome, id, { open = false } = {}) {
     const preset = REACOES_PRESET[nome];
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--reacao';
@@ -271,27 +271,7 @@ function criarCardReacaoPreset(nome, id) {
     }
     atualizarStats();
 
-    // Configurar accordion
-    const header = card.querySelector('.combat-card__header');
-    const body = card.querySelector('.combat-card__body');
-    const chevron = card.querySelector('.combat-card__chevron');
-    function toggleAccordion() {
-        const isOpen = body.hidden;
-        body.hidden = !isOpen;
-        header.setAttribute('aria-expanded', String(isOpen));
-        chevron.textContent = isOpen ? 'expand_less' : 'expand_more';
-        card.classList.toggle('combat-card--open', isOpen);
-    }
-    header.addEventListener('click', (e) => {
-        if (e.target.closest('.combat-card__delete-btn') ||
-            e.target.closest('.combat-card__name-input')) return;
-        toggleAccordion();
-    });
-    header.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
-    });
-    card.querySelector('.combat-card__name-input').addEventListener('click', e => e.stopPropagation());
+    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
         card.remove();
         document.dispatchEvent(new Event('ficha:changed'));
@@ -352,7 +332,7 @@ function criarCardReacaoPreset(nome, id) {
 // Sobrescreve o card existente com a versão preset
 function upgradeCardToPreset(card, nome) {
     const id = card.dataset.reacaoId;
-    const novoCard = criarCardReacaoPreset(nome, id);
+    const novoCard = criarCardReacaoPreset(nome, id, { open: isAccordionOpen(card) });
     card.parentNode.replaceChild(novoCard, card);
     // Reatachar eventos de remoção e arrasto se necessário
     atualizarAvisoReacoes();
@@ -480,7 +460,7 @@ export function atualizarAvisoReacoes() {
 // ATTACK CARDS — accordion, UUID-keyed, no inline styles
 // ============================================================
 
-export function criarCardAtaque(id) {
+export function criarCardAtaque(id, { open = false } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--ataque';
     card.dataset.ataqueId = id;
@@ -615,31 +595,7 @@ export function criarCardAtaque(id) {
             </div>
         </div>`;
 
-    // — Accordion toggle
-    const header = card.querySelector('.combat-card__header');
-    const body = card.querySelector('.combat-card__body');
-    const chevron = card.querySelector('.combat-card__chevron');
-
-    function toggleAccordion(open) {
-        const isOpen = open !== undefined ? open : body.hidden;
-        body.hidden = !isOpen;
-        header.setAttribute('aria-expanded', String(isOpen));
-        chevron.textContent = isOpen ? 'expand_less' : 'expand_more';
-        card.classList.toggle('combat-card--open', isOpen);
-    }
-
-    header.addEventListener('click', (e) => {
-        if (e.target.closest('.combat-card__delete-btn') ||
-            e.target.closest('.combat-card__name-input')) return;
-        toggleAccordion();
-    });
-    header.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleAccordion(); }
-    });
-
-    // Stop name-input click from toggling
-    card.querySelector('.combat-card__name-input').addEventListener('click', e => e.stopPropagation());
+    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
 
     // --- Live summary update ---
     const acertoInput = card.querySelector('.ataque-acerto');
@@ -770,8 +726,8 @@ function adicionarAtaque() {
 // ============================================================
 
 /** Cria um card de ataque "Porrada" com cálculos dinâmicos de Lutar + max(FOR,DES). */
-export function criarCardPorrada(id) {
-    const card = criarCardAtaque(id);
+export function criarCardPorrada(id, opts = {}) {
+    const card = criarCardAtaque(id, opts);
     card.dataset.isPorrada = 'true';
 
     // Campos estáticos
@@ -860,7 +816,7 @@ function adicionarPorrada() {
 // REACTION CARDS
 // ============================================================
 
-function criarCardReacao(id, nome = '', desc = '', isOportunidade = false) {
+function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { open = false } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--reacao';
     card.dataset.reacaoId = id;
@@ -899,39 +855,9 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false) {
                 aria-label="Descrição da reação">${desc.replace(/</g, '&lt;')}</textarea>
         </div>`;
 
-    // Elementos
-    // Configurar accordion (versão corrigida)
-    const header = card.querySelector('.combat-card__header');
-    const body = card.querySelector('.combat-card__body');
-    const chevron = card.querySelector('.combat-card__chevron');
-
-    function toggleAccordion() {
-        const isOpen = body.hidden;
-        body.hidden = !isOpen;
-        header.setAttribute('aria-expanded', String(!isOpen));
-        chevron.textContent = !isOpen ? 'expand_less' : 'expand_more';
-        card.classList.toggle('combat-card--open', !isOpen);
-    }
-
-    header.addEventListener('click', (e) => {
-        // Ignora clique se for no botão de deletar ou no input de nome
-        if (e.target.closest('.combat-card__delete-btn') ||
-            e.target.closest('.combat-card__name-input')) return;
-        toggleAccordion();
-    });
-
-    header.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            toggleAccordion();
-        }
-    });
+    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
 
     const nomeInput = card.querySelector('.combat-card__name-input');
-    if (nomeInput) {
-        nomeInput.addEventListener('click', (e) => e.stopPropagation());
-    }
 
     if (!isOportunidade) {
         const deleteBtn = card.querySelector('.combat-card__delete-btn');
@@ -1411,7 +1337,7 @@ function atualizarPopupCondicao() {
 // BONUS / ÔNUS CARDS — dedicated class, not .ac
 // ============================================================
 
-function criarCardBonus(id) {
+function criarCardBonus(id, { open = false } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--bonus';
     card.dataset.bonusId = id;
@@ -1464,7 +1390,7 @@ function criarCardBonus(id) {
     tipoSel.addEventListener('change', () => { card.dataset.bonusTipo = tipoSel.value; });
     card.dataset.bonusTipo = tipoSel.value;
 
-    setupAccordion(card);
+    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
 
     card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
         card.remove();
@@ -1622,11 +1548,13 @@ export function getCombatState() {
         linkedItemId: card.dataset.linkedItemId || null, // persist weapon→attack link
         isPorrada: card.dataset.isPorrada === 'true' || false,
         fields: serializeCardFields(card),
+        collapsed: !isAccordionOpen(card),
     }));
     const reacoes = Array.from(document.querySelectorAll('#reacoes-container .combat-card--reacao:not([data-oportunidade])')).map(card => ({
         id: card.dataset.reacaoId,
         preset: card.dataset.preset || null,
         fields: serializeCardFields(card),
+        collapsed: !isAccordionOpen(card),
     }));
     const condicoes = Array.from(document.querySelectorAll('#condicoes-container .combat-card--condicao')).map(card => ({
         id: card.dataset.condicaoId,
@@ -1635,8 +1563,16 @@ export function getCombatState() {
     const bonus = Array.from(document.querySelectorAll('#bonus-onus-container .combat-card--bonus')).map(card => ({
         id: card.dataset.bonusId,
         fields: serializeCardFields(card),
+        collapsed: !isAccordionOpen(card),
     }));
-    return { ataques, reacoes, condicoes, bonus, conditionEffectsEnabled: _conditionEffectsEnabled };
+    const oportunidadeCard = document.querySelector('#reacoes-container .combat-card--reacao[data-oportunidade]');
+    const reacaoOportunidade = oportunidadeCard ? { collapsed: !isAccordionOpen(oportunidadeCard) } : null;
+    return { ataques, reacoes, condicoes, bonus, reacaoOportunidade, conditionEffectsEnabled: _conditionEffectsEnabled };
+}
+
+/** Saved cards without `collapsed` keep the historical default: closed. */
+function openFromSaved(entry) {
+    return entry?.collapsed === false;
 }
 
 function restoreFields(card, fields) {
@@ -1659,7 +1595,8 @@ export function setCombatState(data) {
             c.innerHTML = '';
             data.ataques.forEach(a => {
                 // Restaura Porrada com seu comportamento dinâmico especial
-                const card = a.isPorrada ? criarCardPorrada(a.id) : criarCardAtaque(a.id);
+                const opts = { open: openFromSaved(a) };
+                const card = a.isPorrada ? criarCardPorrada(a.id, opts) : criarCardAtaque(a.id, opts);
                 // Restore the weapon→attack link so DOM-based guards can detect it
                 if (a.linkedItemId) card.dataset.linkedItemId = a.linkedItemId;
                 restoreFields(card, a.fields);
@@ -1676,9 +1613,10 @@ export function setCombatState(data) {
                 const nome = (r.fields && r.fields[`reacao-nome-${r.id}`]) || '';
                 const desc = (r.fields && r.fields[`reacao-desc-${r.id}`]) || '';
                 // Se a reação foi criada como preset, restaura como preset para preservar as stats chips
+                const opts = { open: openFromSaved(r) };
                 const card = (r.preset && REACOES_PRESET[r.preset])
-                    ? criarCardReacaoPreset(r.preset, r.id)
-                    : criarCardReacao(r.id, nome, desc);
+                    ? criarCardReacaoPreset(r.preset, r.id, opts)
+                    : criarCardReacao(r.id, nome, desc, false, opts);
                 restoreFields(card, r.fields);
                 const nomePreset = r.preset || nome;
                 const descEl = card.querySelector('textarea[data-field^="reacao-desc-"]');
@@ -1688,6 +1626,8 @@ export function setCombatState(data) {
                 }
                 c.appendChild(card);
             });
+            const oportunidadeCard = c.querySelector('.combat-card--reacao[data-oportunidade]');
+            if (oportunidadeCard) setAccordionOpen(oportunidadeCard, openFromSaved(data.reacaoOportunidade));
         }
     }
     if (data.condicoes) {
@@ -1706,7 +1646,7 @@ export function setCombatState(data) {
         if (c) {
             c.innerHTML = '';
             data.bonus.forEach(b => {
-                const card = criarCardBonus(b.id);
+                const card = criarCardBonus(b.id, { open: openFromSaved(b) });
                 restoreFields(card, b.fields);
                 c.appendChild(card);
             });
