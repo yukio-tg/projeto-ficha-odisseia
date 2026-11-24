@@ -3,8 +3,9 @@ export const MODO_LIVRE = 'livre';
 
 export let sheetMode = MODO_REGRAS;
 
-// Espelha o modo para os módulos que já consultam este flag.
-// Regras: o cálculo pode escrever. Livre: só escreve num recálculo pedido.
+// O livro calcula nos dois modos. Regras trava os derivados e ignora o log de
+// incrementos; Livre solta os derivados (o número digitado vira override) e
+// aplica o log por cima da base. O flag segue no blob para saves antigos.
 export let autoCalcEnabled = true;
 
 // Campos que a fórmula preenche. O modo Regras os trava; o Livre os solta.
@@ -34,7 +35,7 @@ export function isModoLivre() {
 
 export function setSheetMode(mode) {
     sheetMode = mode === MODO_LIVRE ? MODO_LIVRE : MODO_REGRAS;
-    autoCalcEnabled = sheetMode === MODO_REGRAS;
+    autoCalcEnabled = true;
 }
 
 /** @deprecated Use setSheetMode. Não apaga overrides. */
@@ -44,8 +45,7 @@ export function setAutoCalcEnabled(val) {
 
 /** Restaura o interruptor a partir do save sem apagar os overrides recém-carregados. */
 export function restoreAutoCalcEnabled(val) {
-    autoCalcEnabled = !!val;
-    sheetMode = autoCalcEnabled ? MODO_REGRAS : MODO_LIVRE;
+    setSheetMode(val ? MODO_REGRAS : MODO_LIVRE);
 }
 
 /**
@@ -83,8 +83,27 @@ export function endExplicitRecalc() {
     _recalcDepth = Math.max(0, _recalcDepth - 1);
 }
 
+// Recálculo de um campo só (incremento adicionado ou excluído, troca de modo).
+// Enquanto ativo, só os campos do alvo podem ser escritos; os outros ficam.
+let _alvoRecalc = null;
+
+export function beginScopedRecalc(fields) {
+    _alvoRecalc = new Set(fields || []);
+    beginExplicitRecalc();
+}
+
+export function endScopedRecalc() {
+    _alvoRecalc = null;
+    endExplicitRecalc();
+}
+
+export function isScopedRecalc() {
+    return _alvoRecalc !== null;
+}
+
 /** O recálculo pedido escreve por cima do número digitado. O automático, não. */
 export function podeSobrescrever(field) {
+    if (_alvoRecalc) return _alvoRecalc.has(field);
     if (isExplicitRecalc()) return true;
     return !manualOverrides.has(field);
 }
@@ -94,6 +113,7 @@ export function liberarDerivadosParaRecalculo() {
 }
 
 export function shouldWriteLevelAction(field) {
+    if (_alvoRecalc) return _alvoRecalc.has(field);
     if (isExplicitRecalc()) return true;
     return !manualOverrides.has(field);
 }

@@ -4,6 +4,7 @@
 import { normalizar as normalizarMagia, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { isHydrating } from '../core/state.js';
+import { setupCardMinimize, notifyFichaChanged } from '../core/dom-helpers.js';
 import { getFontes, addSpellToFonte, removeSpellFromFonte, validateSpellForFonte, setFonteDeusa, transferSpellBetweenFontes } from '../core/item-effects.js';
 import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
 
@@ -169,7 +170,7 @@ function aplicarCorDivindade(card, divindade) {
 }
 
 // ========== Construção do card ==========
-function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
+function criarCardMagia(magiaData, tipo, grau, nomeForcado = '', { collapsed = true } = {}) {
     const cardId = `magia_${Date.now()}_${cardMagiaCounter++}`;
     const card = document.createElement('div');
     card.className = `magic-card magic-card--${tipo}`;
@@ -268,13 +269,8 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '') {
         </div>`;
 
     // Minimizar
-    let minimizado = false;
-    const btnMin = card.querySelector('.btn-magic-minimize');
-    const body = card.querySelector('.magic-card-body');
-    btnMin.addEventListener('click', () => {
-        minimizado = !minimizado;
-        body.style.display = minimizado ? 'none' : '';
-        btnMin.querySelector('.material-symbols-outlined').textContent = minimizado ? 'expand_more' : 'expand_less';
+    setupCardMinimize(card, '.btn-magic-minimize', '.magic-card-body', collapsed, {
+        onUserToggle: notifyFichaChanged,
     });
 
     // LA input -> atualiza total
@@ -815,10 +811,64 @@ function promptFonteSelection(spellGrau, spellFe, spellDeusa) {
 }
 
 // ========== Adição de Magia ==========
+export function getMagiasCatalogo() {
+    return magiasLoader.getData();
+}
+
+export function adicionarMagiaCatalogo(magiaBD) {
+    if (!magiaBD) return null;
+    const magia = { ...magiaBD };
+    const tipo = (magia.tipo || '').toLowerCase();
+    if (!['arcanismo', 'feromancia', 'teurgia'].includes(tipo)) {
+        alert('Erro: magia má catalogada');
+        return null;
+    }
+
+    const grau = magia.grau || 1;
+    const grauKey = grauToKey(grau);
+
+    if (tipo === 'teurgia') {
+        const spellDeusa = magia.divindade || '';
+        const fonteId = promptFonteSelection(grau, magia.fe || magia.la || 1, spellDeusa);
+        if (fonteId === null) return null;
+        magia._selectedFonteId = fonteId;
+        if (spellDeusa) setFonteDeusa(fonteId, spellDeusa);
+    }
+
+    const sheet = document.querySelector(`[data-magic-sheet="${tipo}"]`);
+    if (!sheet) {
+        alert('Erro: sheet não encontrada para o tipo ' + tipo);
+        return null;
+    }
+
+    const grauDiv = sheet.querySelector(`.${grauKey}`);
+    if (!grauDiv) {
+        alert('Erro: grau não encontrado');
+        return null;
+    }
+
+    const card = criarCardMagia(magia, tipo, String(grau));
+
+    if (magia._selectedFonteId) {
+        card.dataset.fonteId = magia._selectedFonteId;
+        const fe = magia.fe || magia.la || 1;
+        card.dataset.fonteFe = fe;
+        addSpellToFonte(magia._selectedFonteId, fe, grau, magia.nome || '', card);
+        anexarFonteBadge(card, magia._selectedFonteId);
+    }
+
+    const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
+    innerContainer.appendChild(card);
+    atualizarVisibilidadeGraus(sheet);
+    atualizarLaAtual();
+    ativarTab(tipo);
+    notifyFichaChanged();
+    return card;
+}
+
 function adicionarMagia(inputEl, magiaPronta = null) {
     const nome = (magiaPronta?.nome || inputEl.value).trim();
 
-    // Busca no JSON — o clique na sugestão já traz o registro do catálogo
     const magiaNorm = normalizarMagia(nome);
     const magiaBD = magiaPronta
         || ((!magiasLoader.hasError() && !magiasLoader.isLoading() && nome !== '')
@@ -826,61 +876,8 @@ function adicionarMagia(inputEl, magiaPronta = null) {
             : null);
 
     if (magiaBD) {
-        // Magia encontrada no JSON
-        const tipo = (magiaBD.tipo || '').toLowerCase();
-        if (!['arcanismo', 'feromancia', 'teurgia'].includes(tipo)) {
-            alert('Erro: magia má catalogada');
-            return;
-        }
-
-        const grau = magiaBD.grau || 1;
-        const grauKey = grauToKey(grau);
-
-        // Teurgia: require Fonte selection
-        if (tipo === 'teurgia') {
-            const spellDeusa = magiaBD.divindade || '';
-            const fonteId = promptFonteSelection(grau, magiaBD.fe || magiaBD.la || 1, spellDeusa);
-            if (fonteId === null) return; // user cancelled
-            magiaBD._selectedFonteId = fonteId;
-            // Set deusa on the fonte if not yet assigned
-            if (spellDeusa) setFonteDeusa(fonteId, spellDeusa);
-        }
-
-        const sheet = document.querySelector(`[data-magic-sheet="${tipo}"]`);
-        if (!sheet) {
-            alert('Erro: sheet não encontrada para o tipo ' + tipo);
-            return;
-        }
-
-        const grauDiv = sheet.querySelector(`.${grauKey}`);
-        if (!grauDiv) {
-            alert('Erro: grau não encontrado');
-            return;
-        }
-
-        const card = criarCardMagia(magiaBD, tipo, String(grau));
-
-        // Track Fonte link on the card for removal
-        if (magiaBD._selectedFonteId) {
-            card.dataset.fonteId = magiaBD._selectedFonteId;
-            const fe = magiaBD.fe || magiaBD.la || 1;
-            card.dataset.fonteFe = fe;
-            const spellNome = magiaBD.nome || '';
-            addSpellToFonte(magiaBD._selectedFonteId, fe, grau, spellNome, card);
-            // Add Fonte badge to card header
-            anexarFonteBadge(card, magiaBD._selectedFonteId);
-        }
-
-        // Coloca no container interno se existir (grau1 tem card-tipo dentro)
-        const innerContainer = grauDiv.querySelector(`.card-${tipo}`) || grauDiv;
-        innerContainer.appendChild(card);
-
-        atualizarVisibilidadeGraus(sheet);
-        atualizarLaAtual();
-
-        // Ativa tab correspondente
-        ativarTab(tipo);
-
+        const card = adicionarMagiaCatalogo(magiaBD);
+        if (!card) return;
     } else {
         // Não encontrada no JSON: adiciona na tab ativa com dados vazios
         const tabAtiva = getTabAtiva();
@@ -1021,6 +1018,7 @@ export function getMagiasState() {
                 divindade: getInfo('divindade'),
                 fonteId: card.dataset.fonteId || null,
                 fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
+                collapsed: card.dataset.collapsed === 'true',
             });
         });
     });
@@ -1062,6 +1060,7 @@ function snapshotMagia(card) {
         divindade: getInfo('divindade'),
         fonteId: card.dataset.fonteId || null,
         fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
+        collapsed: card.dataset.collapsed === 'true',
     };
 }
 
@@ -1081,7 +1080,8 @@ function inserirMagiaSalva(m, tipo, { religarFonte = false } = {}) {
     const grauKey = grauToKey(m.grau);
     const grauDiv = sheet.querySelector(`.${grauKey}`);
     if (!grauDiv) return null;
-    const card = criarCardMagia(magiaData, tipo, String(m.grau));
+    // Saved spells without `collapsed` (older sheets) open, as they always did.
+    const card = criarCardMagia(magiaData, tipo, String(m.grau), '', { collapsed: m.collapsed === true });
     if (m.fonteId) {
         card.dataset.fonteId = m.fonteId;
         card.dataset.fonteFe = m.fonteFe || 1;

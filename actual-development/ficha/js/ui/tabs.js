@@ -1,7 +1,7 @@
 import { checkBestaTabVisibility } from './besta.js';
 import { initPlayView } from './play.js';
 
-const MORE_TABS = new Set(['pericias', 'habilidades', 'inventario', 'besta', 'configuracoes']);
+const MORE_TABS = new Set(['pericias', 'habilidades', 'inventario', 'besta']);
 
 export function initTabs() {
     const tabs = document.querySelectorAll('#tabs li');
@@ -54,6 +54,7 @@ export function initTabs() {
             activePage.classList.add('active');
             if (wrap) wrap.scrollTop = 0;
         }
+        document.body.classList.toggle('is-play', tabId === 'mesa');
         if (tabId === 'mesa') play.refresh();
     }
 
