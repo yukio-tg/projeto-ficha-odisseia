@@ -391,3 +391,25 @@ test('prints: abas em claro e escuro, 1440 e 390', async ({ page }) => {
     }
   }
 });
+
+test('itens: mostra quantos iguais já estão na ficha (x1, x2...)', async ({ page }) => {
+  await abrirFicha(page);
+  await darRecursos(page);
+  await abrirGrimorio(page);
+  await aba(page, 'Itens').click();
+  const colocar = painel(page).getByRole('button', { name: /^Colocar .* na ficha$/ }).first();
+  const nome = (await colocar.getAttribute('aria-label')).replace(/^Colocar (.*) na ficha$/, '$1');
+  const linha = () => painel(page).locator('.grimorio__item', { has: page.getByRole('button', { name: nome, exact: true }) }).first();
+  await expect(linha().locator('.grimorio__qtd')).toHaveCount(0);
+
+  await colocar.click();
+  await expect(linha().locator('.grimorio__qtd')).toHaveText('x1');
+  await painel(page).getByRole('button', { name: `Colocar ${nome} na ficha` }).click();
+  await expect(linha().locator('.grimorio__qtd')).toHaveText('x2');
+
+  // Mudar a quantidade no inventário atualiza o número do Grimório
+  await page.locator('.item-card .item-quantidade').first().evaluate((e) => {
+    e.value = '5'; e.dispatchEvent(new Event('input', { bubbles: true })); e.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(linha().locator('.grimorio__qtd')).toHaveText(/x(5|6)/);
+});

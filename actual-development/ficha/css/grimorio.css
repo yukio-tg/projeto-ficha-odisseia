@@ -750,3 +750,14 @@ body.grimorio-mock .grimorio-mock-nota {
         transition: none;
     }
 }
+
+/* quantos itens iguais já estão na ficha ("x2") */
+.grimorio__qtd {
+    flex: none;
+    font: 700 10px 'Cinzel', serif;
+    letter-spacing: 0.04em;
+    color: var(--gold0);
+}
+.grimorio--escuro .grimorio__qtd {
+    color: var(--gold2);
+}

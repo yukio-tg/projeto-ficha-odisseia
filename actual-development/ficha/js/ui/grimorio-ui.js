@@ -310,6 +310,23 @@ function comparar(a, b) {
     return a.nome.localeCompare(b.nome, 'pt');
 }
 
+/**
+ * Quantos itens iguais ou equivalentes a este já estão no inventário (soma as quantidades).
+ * Equivalente: mesmo nome, sem contar maiúsculas, acentos nem um sufixo de numeração
+ * ("Arco Curto 2", "Arco Curto (2)", "Arco Curto x2").
+ */
+function quantosNaFicha(nome) {
+    const alvo = normalizar(nome);
+    let total = 0;
+    document.querySelectorAll('.item-card').forEach(card => {
+        const escrito = normalizar(card.querySelector('.item-nome-input')?.value || '')
+            .replace(/\s*(\([^)]*\)|x?\s*\d+)\s*$/, '').trim();
+        if (escrito !== alvo) return;
+        total += Math.max(1, parseInt(card.querySelector('.item-quantidade')?.value, 10) || 1);
+    });
+    return total;
+}
+
 function criarLinha(e, comTipo) {
     const li = el('div', 'grimorio__item' + (e.falta ? ' is-falta' : '') + (e.ja ? ' is-ja' : ''));
     const cab = el('div', 'grimorio__item-cab');
@@ -318,6 +335,15 @@ function criarLinha(e, comTipo) {
     nome.setAttribute('aria-expanded', String(aberto));
     nome.dataset.fk = `${e.key}|nome`;
     cab.appendChild(nome);
+    if (e.kind === 'item') {
+        const qtd = quantosNaFicha(e.nome);
+        if (qtd > 0) {
+            const marca = el('span', 'grimorio__qtd', `x${qtd}`);
+            marca.setAttribute('aria-label', `${qtd} na ficha`);
+            marca.title = `${qtd} ${qtd === 1 ? 'igual já está' : 'iguais já estão'} na ficha`;
+            cab.appendChild(marca);
+        }
+    }
     const tag = e.kind === 'item'
         ? (comTipo ? `Item · ${e.tag}` : e.tag)
         : (comTipo ? TAG_TIPO[e.kind] : '');
