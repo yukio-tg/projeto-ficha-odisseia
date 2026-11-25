@@ -57,18 +57,6 @@
 }
 .besta-remove-btn:hover { opacity: 1; }
 
-/* ── Section header ─────────────────────────────────── */
-.besta-sh {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--gold0);
-    padding: 2px 0 4px;
-    border-bottom: 1px solid var(--gold0, #8a5e10);
-    margin-bottom: 8px;
-}
 
 .besta-section {
     margin-bottom: 16px;
@@ -218,9 +206,6 @@
     margin-bottom: 0;
 }
 
-.besta-skills-table-wrap {
-    transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
 .besta-skills-chevron {
     font-size: 14px;
@@ -1065,47 +1050,31 @@
     margin-top: 0;
 }
 
-/* ── New unified aspects card ─────────────────────────── */
-.besta-aspects-card {
-    border: 1px solid var(--gold0);
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 14px;
-}
-
-/* Aspect searcher at top of unified card */
+/* Busca de aspectos: mesmo estilo dos campos da ficha */
 .besta-aspects-searcher {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 12px;
-    background: linear-gradient(90deg, var(--leath1) 0%, var(--leath2) 60%, var(--leath1) 100%);
-    border-bottom: 1px solid var(--leath3);
+    margin-bottom: 12px;
     position: relative;
 }
-
-.besta-aspects-search-input {
-    flex: 1;
-    font-family: 'IM Fell English', serif;
-    font-size: 11px;
-    border: 1px solid var(--gold0);
-    border-radius: 3px;
-    background: var(--p0);
-    padding: 4px 8px;
+.besta-aspects-searcher .combat-input { flex: 1; width: auto; }
+/* No escuro o branco translúcido do .combat-input vira uma barra cinza; usa o papel do tema */
+body.theme-dark-paper .besta-aspects-searcher .combat-input {
+    background: color-mix(in srgb, var(--p1) 80%, transparent);
     color: var(--ink1);
 }
-
-.besta-aspects-search-input::placeholder { color: var(--ink3); }
+.besta-aspects-searcher .besta-add-btn { margin: 0; padding: 4px 10px; }
 
 .besta-aspects-dropdown {
     position: absolute;
-    top: 100%;
-    left: 12px;
-    right: 12px;
+    top: calc(100% - 2px);
+    left: 0;
+    right: 40px;
     background: var(--p0);
     border: 1px solid var(--gold1);
-    border-top: none;
     border-radius: 0 0 4px 4px;
+    box-shadow: 0 8px 20px rgba(26,13,2,.25);
     z-index: 300;
     max-height: 240px;
     overflow-y: auto;
@@ -1151,39 +1120,6 @@
     border-radius: 3px;
 }
 
-/* Sub-section dividers inside aspects card */
-.besta-aspect-subsection {
-    border-bottom: 1px solid color-mix(in srgb, var(--gold0) 25%, transparent);
-    padding: 8px 12px 10px;
-}
-
-.besta-aspect-subsection:last-child { border-bottom: none; }
-
-.besta-aspect-sub-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    padding-bottom: 4px;
-    border-bottom: 1px dashed color-mix(in srgb, var(--gold0) 35%, transparent);
-}
-
-.besta-aspect-sub-title {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    color: var(--aspect-color, var(--gold1));
-    text-transform: uppercase;
-    flex: 1;
-}
-
-.besta-aspect-sub-counter {
-    font-family: 'Cinzel', serif;
-    font-size: 10px;
-    color: var(--ink3);
-}
-
 /* Bio card type selector */
 .besta-bio-tipo-select {
     font-family: 'Cinzel', serif;
@@ -1219,3 +1155,180 @@
 .besta-atk-acerto-wrap .besta-atk-acerto {
     flex: 1;
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   PERÍCIAS em "janela" ao lado do radar
+   A janela tem altura fixa (a do radar no computador). Abrir ou fechar só muda
+   quais linhas aparecem; nada abaixo dela muda de lugar.
+   ═══════════════════════════════════════════════════════ */
+.besta-skills-header { flex-wrap: nowrap; margin-bottom: 8px; }
+.besta-skills-section { display: flex; flex-direction: column; min-height: 0; }
+.besta-skills-table-wrap {
+    border: 1px solid var(--p3);
+    border-radius: 6px;
+    background: linear-gradient(160deg, var(--p1) 0%, var(--p0) 100%);
+    overflow: auto;
+    min-height: 0;
+    flex: 1;
+}
+.besta-skills-table-wrap .besta-skill-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--p1);
+    padding: 4px 6px;
+}
+.besta-skills-table-wrap .besta-skill-table td { padding: 3px 6px; }
+.besta-skill-table .col-prof { width: auto; }
+.besta-skill-table .col-total { white-space: nowrap; }
+.besta-skill-table .pericia-row-grau0 { opacity: .72; }
+.besta-skill-table .prof-pip { width: 13px; height: 13px; }
+.besta-skill-table .prof-pips { gap: 2px; }
+.besta-skill-table .prof-label {
+    font-family: 'Cinzel', serif;
+    font-size: 8px;
+    color: var(--ink3);
+    min-width: 22px;
+    text-align: left;
+    margin-left: 2px;
+}
+.besta-skill-table .besta-pericia-bonus { width: 46px; font-size: 11px; border-color: var(--p3); padding: 1px 2px; }
+
+/* Fechada: só as treinadas ou com bônus */
+.besta-skills-section:not(.is-open) tr[data-untrained] { display: none; }
+.besta-skills-hint {
+    padding: 7px 10px;
+    font-family: 'IM Fell English', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink3);
+    text-align: center;
+}
+.besta-skills-section.is-open .besta-skills-hint { display: none; }
+/* Sem nada relevante e fechada: a tabela some; fica um aviso discreto */
+.besta-skills-section.is-vazio .besta-skill-table { display: none; }
+.besta-skills-section.is-vazio .besta-skills-table-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-style: dashed;
+    background: none;
+}
+
+@media (min-width: 701px) {
+    .besta-instance .vitals-attrs-grid { align-items: stretch; min-height: 440px; }
+    .besta-instance .vitals-column { contain: size; min-height: 0; overflow: hidden; }
+    .besta-skills-inner-mount,
+    .besta-skills-section { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+}
+
+@media (max-width: 700px) {
+    /* No celular a janela também tem altura fixa: abrir não empurra o resto */
+    .besta-skills-table-wrap { flex: none; height: 270px; }
+    .besta-skill-table .prof-label { display: none; }
+    .besta-skill-table .besta-pericia-bonus { width: 38px; }
+    .besta-skills-table-wrap .besta-skill-table th,
+    .besta-skills-table-wrap .besta-skill-table td { padding-left: 3px; padding-right: 3px; }
+    .besta-skill-table .col-total { font-size: 11px !important; }
+}
+@media (max-width: 600px) {
+    /* O CSS das perícias dá 44px de toque a cada círculo; aqui 26px (bolinha de 14px) para caber na janela */
+    .besta-skill-table .prof-pip,
+    .besta-skill-table .prof-pip.active,
+    .besta-skill-table .prof-pip[data-level].active {
+        width: 26px;
+        height: 26px;
+        min-width: 26px;
+        min-height: 26px;
+    }
+    .besta-skill-table .prof-pip::after { width: 14px; height: 14px; }
+    .besta-skill-table .col-nome span { font-size: 11.5px !important; }
+}
+
+/* Caixas "MOD" do radar: vazias, ficavam como caixas pretas; agora seguem o tema */
+.besta-instance .radar-rpg .mod-input {
+    background: color-mix(in srgb, var(--p1) 85%, transparent);
+    color: var(--ink1);
+    box-shadow: inset 0 0 3px color-mix(in srgb, var(--ink1) 25%, transparent);
+}
+.besta-instance .radar-rpg .mod-input::placeholder { color: var(--ink3); opacity: .7; }
+
+/* ═══════════════════════════════════════════════════════
+   ASPECTOS: cartões dobráveis com fita (cores suaves da paleta)
+   ═══════════════════════════════════════════════════════ */
+.besta-instance {
+    --asp-bio:    color-mix(in srgb, var(--blood1) 78%, var(--ink2));
+    --asp-treino: color-mix(in srgb, var(--green1) 78%, var(--ink2));
+    --asp-indiv:  color-mix(in srgb, var(--attr-des) 70%, var(--ink2));
+}
+.g-bio    { --c: var(--asp-bio, #8b4a3a); }
+.g-treino { --c: var(--asp-treino, #4a6a2a); }
+.g-indiv  { --c: var(--asp-indiv, #4a6a8a); }
+.g-bio, .g-treino, .g-indiv {
+    --c-ink:  color-mix(in srgb, var(--c) 82%, var(--ink0));
+    --c-tint: color-mix(in srgb, var(--c) 9%, var(--p0));
+    --c-line: color-mix(in srgb, var(--c) 36%, var(--p3));
+}
+.asp-cards { display: flex; flex-direction: column; gap: 10px; }
+.asp-card { border-color: var(--c-line); }
+.asp-card::before {
+    top: 0; bottom: 0; left: 0; right: auto;
+    width: 5px; height: auto;
+    background: var(--c);
+    opacity: .8;
+}
+.asp-card .combat-card__header { padding-left: 16px; }
+.asp-card-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--c-ink);
+}
+.asp-card .combat-card__header-summary { font-family: 'Cinzel', serif; font-size: 10px; color: var(--ink2); }
+.asp-card .combat-card__body { padding: 8px 12px 12px 16px; }
+.asp-card .besta-add-btn.asp-add {
+    margin-top: 8px;
+    border-color: var(--c-line);
+    color: var(--c-ink);
+}
+.asp-card .besta-add-btn.asp-add:hover { background: var(--c-tint); }
+/* Itens: linhas simples, sem caixa colorida */
+.asp-card .besta-hab-card,
+.asp-card .besta-indiv-card {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--c-line);
+    border-radius: 0;
+    padding: 6px 0 8px;
+}
+.asp-card .besta-hab-list,
+.asp-card .besta-indiv-list { gap: 0; margin-bottom: 0; }
+.asp-card .besta-nivel-btn { color: var(--c-ink); border-color: var(--c-line); }
+.asp-card .besta-nivel-btn.active { background: var(--c); color: var(--p0); border-color: var(--c); }
+.asp-card .besta-nivel-btn:hover:not(.active) { background: var(--c-tint); }
+.asp-dd-tipo {
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--c-ink);
+    background: var(--c-tint);
+    border: 1px solid var(--c-line);
+}
+.asp-dd-custo {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 34px;
+    text-align: center;
+    color: var(--c-ink);
+}
+
+/* Títulos .sh (padrão das outras abas): o primeiro de cada bloco perde a margem de cima;
+   devolve o respiro entre a grade do radar e "Ataques". */
+.besta-combat-section > .sh:first-child { margin-top: 22px; }

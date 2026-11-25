@@ -221,6 +221,7 @@ function applyReadOnlyMode(ownerEmail) {
     document.getElementById('autocalc-switch')?.closest('.header-autocalc')?.style.setProperty('display', 'none');
     document.getElementById('autosave-switch')?.closest('.header-autosave')?.style.setProperty('display', 'none');
     document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'none');
+    document.getElementById('recalc-btn')?.closest('.header-recalc')?.style.setProperty('display', 'none');
 
     // Exibe banner de leitura
     const banner = document.getElementById('readonly-banner');
@@ -254,6 +255,9 @@ function setupRealtimeSync(sheetId) {
 
             // Escrita local ainda não confirmada: o eco chega de novo com hasPendingWrites false.
             if (snap.metadata.hasPendingWrites && currentPermission !== 'read') return;
+
+            // Tema em tempo real: outra pessoa mudou (ou restaurou) as cores
+            applyRemoteTheme(extractSheetTheme(snap.data()), true);
 
             const remoteData = snap.data()?.data;
             if (!remoteData) return;

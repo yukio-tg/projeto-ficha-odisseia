@@ -5,6 +5,7 @@ import { normalizar, escapeHtml, capitalize } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { createAutocomplete } from '../core/autocomplete.js';
 import { verificarOverflow, syncFieldToDisplay, setupCardMinimize, notifyFichaChanged } from '../core/dom-helpers.js';
+import { cartaoAberto, lembrarCartao, esquecerCartao } from '../core/card-state.js';
 import { isHydrating } from '../core/state.js';
 import { onItemAdded, onItemRemoved, onItemCategoryChanged, onFonteRaridadeChanged, onFonteNomeChanged } from '../core/item-effects.js';
 import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
@@ -193,8 +194,7 @@ export function getInventarioState() {
         const valor1 = card.querySelector('.item-valor1')?.value || '';
         const valor2 = card.querySelector('.item-valor2')?.value || '';
         const itemSource = card.dataset.itemSource || '';
-        const collapsed = card.dataset.collapsed === 'true';
-        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource, collapsed });
+        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource });
     });
     return cardsData;
 }
@@ -379,12 +379,15 @@ function criarCardItem(itemData, nomeForcado = '', savedData = null) {
         descTextarea.style.height = descTextarea.scrollHeight + 'px';
     };
 
-    // Saved cards without `collapsed` (older sheets) open; brand-new items start closed.
-    const startCollapsed = savedData ? savedData.collapsed === true : true;
+    // Item novo começa fechado; depois vale o que esta pessoa deixou (guardado por pessoa, sem acender "não salvo").
+    // Fichas antigas gravavam o estado no item (`collapsed`).
+    const chaveCartao = 'item:' + cardId;
+    const abertoLegado = typeof savedData?.collapsed === 'boolean' ? !savedData.collapsed : undefined;
+    const startCollapsed = !cartaoAberto(chaveCartao, false, abertoLegado);
     setupCardMinimize(card, '.btn-item-minimize', '.item-card-body', startCollapsed, {
         onUserToggle: (minimizado) => {
             if (!minimizado) autoResizeItem();
-            notifyFichaChanged();
+            lembrarCartao(chaveCartao, !minimizado);
         },
     });
 
@@ -508,6 +511,7 @@ function descartarItem(card) {
     const cardId = card.dataset.cardId;
     const cat = card.querySelector('.item-categoria-select')?.value || 'básico';
     onItemRemoved(cardId, cat, getCardItemData(card));
+    esquecerCartao('item:' + cardId);
     card.remove();
     atualizarPesoTotal();
     atualizarContadoresRaridade();

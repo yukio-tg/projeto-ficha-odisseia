@@ -3,10 +3,11 @@ import { periciasEstado, getTotalPericia } from './skills.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
 import { uid, normalizar, escapeHtml } from '../core/utils.js';
-import { setupAccordion, isAccordionOpen, setAccordionOpen, notifyFichaChanged } from '../core/dom-helpers.js';
+import { setupAccordion, isAccordionOpen, setAccordionOpen } from '../core/dom-helpers.js';
+import { cartaoAberto, lembrarCartao, esquecerCartao } from '../core/card-state.js';
 import { ONUS_LISTA } from '../config/onus.js';
 import { isHydrating, shouldWriteLevelAction } from '../core/state.js';
-import { bindEmptyHint } from './escrita-ui.js';
+import { bindEmptyHint, offerUndo } from './escrita-ui.js';
 
 function normalizePresetClass(nome) {
     if (!nome) return '';
@@ -22,6 +23,52 @@ function getPericiaMaxDice(nomePericia) {
     const mapaDice = { 0: 0, 1: 4, 2: 6, 3: 8, 4: 10, 5: 12 };
     return mapaDice[pericia.proficiencia] || 0;
 }
+// ============================================================
+// CARTÕES: abrir/fechar lembrado por pessoa e botão "Excluir" com desfazer
+// ============================================================
+
+/** Abre/fecha sem acender "não salvo": só guarda o estado desta pessoa (core/card-state.js). */
+function aoAbrirFechar(chave) {
+    return (aberto) => lembrarCartao(chave, aberto);
+}
+
+/** Estado inicial do cartão. `legado`: fichas antigas gravavam `collapsed` no próprio cartão. */
+function abertoSalvo(chave, entrada) {
+    const legado = typeof entrada?.collapsed === 'boolean' ? !entrada.collapsed : undefined;
+    return cartaoAberto(chave, false, legado);
+}
+
+/**
+ * Põe o botão "Excluir" (lixeira + texto) no fim do corpo do cartão aberto.
+ * Excluir tira o cartão, avisa com "Desfazer" e, se desfeito, devolve o mesmo cartão (mesmos dados) à mesma posição.
+ */
+function ligarExcluir(card, { chave, rotulo, aviso, depois }) {
+    const linha = document.createElement('div');
+    linha.className = 'combat-card__acoes';
+    linha.innerHTML = `<button type="button" class="combat-card__excluir" aria-label="Excluir ${rotulo}" title="Excluir ${rotulo}">
+            <span class="material-symbols-outlined" aria-hidden="true">delete</span>Excluir
+        </button>`;
+    (card.querySelector('.combat-card__body') || card).appendChild(linha);
+
+    linha.querySelector('button').addEventListener('click', () => {
+        const pai = card.parentNode;
+        const proximo = card.nextSibling;
+        const estavaAberto = chave ? cartaoAberto(chave, true) : true;
+        if (chave) esquecerCartao(chave);
+        card.remove();
+        if (depois) depois();
+        document.dispatchEvent(new Event('ficha:changed'));
+        offerUndo(aviso, () => {
+            if (!pai?.isConnected) return;
+            if (proximo && proximo.parentNode === pai) pai.insertBefore(card, proximo);
+            else pai.appendChild(card);
+            if (chave) lembrarCartao(chave, estavaAberto);
+            if (depois) depois();
+            document.dispatchEvent(new Event('ficha:changed'));
+        });
+    });
+}
+
 // --- Presets de Reações Complexas ---
 const REACAO_PLACEHOLDER = /\{(inteligencia|sabedoria|carisma|gastoPM|rd|bonusDefesa|brecha)\}|\[(INT|SAB|CAR|PM gastos|RD calculado|bônus DEF|pontos de Brecha)\]|metade do dano da sua arma principal/;
 
@@ -202,7 +249,7 @@ function renderizarStatsChips(container, chips) {
 }
 
 // Cria um card de reação especial (preset)
-function criarCardReacaoPreset(nome, id, { open = false } = {}) {
+function criarCardReacaoPreset(nome, id, { open } = {}) {
     const preset = REACOES_PRESET[nome];
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--reacao';
@@ -217,9 +264,6 @@ function criarCardReacaoPreset(nome, id, { open = false } = {}) {
             <div class="combat-card__header-left">
                 <input type="text" class="combat-card__name-input" data-field="reacao-nome-${id}" value="${nome}" placeholder="Nome da Reação" list="reacoes-preset-list" style="background:var(--p0); color:var(--mana1);">
             </div>
-            <button type="button" class="combat-card__delete-btn" title="Remover reação">
-                <span class="material-symbols-outlined" style="font-size:16px;">remove</span>
-            </button>
             <span class="combat-card__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
         </div>`;
 
@@ -271,11 +315,9 @@ function criarCardReacaoPreset(nome, id, { open = false } = {}) {
     }
     atualizarStats();
 
-    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
-        card.remove();
-        document.dispatchEvent(new Event('ficha:changed'));
-    });
+    const chave = 'reacao:' + id;
+    setupAccordion(card, { open: open ?? cartaoAberto(chave, false), onUserToggle: aoAbrirFechar(chave) });
+    ligarExcluir(card, { chave, rotulo: 'reação', aviso: 'Reação excluída', depois: atualizarAvisoReacoes });
 
     // Para Proteção Mágica: atualiza stats e descrição ao mudar gasto de PM
     if (preset.allowsInput) {
@@ -460,7 +502,7 @@ export function atualizarAvisoReacoes() {
 // ATTACK CARDS — accordion, UUID-keyed, no inline styles
 // ============================================================
 
-export function criarCardAtaque(id, { open = false } = {}) {
+export function criarCardAtaque(id, { open } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--ataque';
     card.dataset.ataqueId = id;
@@ -483,9 +525,6 @@ export function criarCardAtaque(id, { open = false } = {}) {
                 <span class="combat-card__summary-sep">·</span>
                 <span class="combat-card__summary-dano"  data-summary="dano">—</span>
             </div>
-            <button type="button" class="combat-card__delete-btn" title="Remover ataque" aria-label="Remover ataque">
-                <span>x</span>
-            </button>
             <span class="combat-card__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
         </div>
 
@@ -595,7 +634,9 @@ export function criarCardAtaque(id, { open = false } = {}) {
             </div>
         </div>`;
 
-    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
+    const chave = 'ataque:' + id;
+    setupAccordion(card, { open: open ?? cartaoAberto(chave, false), onUserToggle: aoAbrirFechar(chave) });
+    ligarExcluir(card, { chave, rotulo: 'ataque', aviso: 'Ataque excluído', depois: atualizarAvisoReacoes });
 
     // --- Live summary update ---
     const acertoInput = card.querySelector('.ataque-acerto');
@@ -700,13 +741,6 @@ export function criarCardAtaque(id, { open = false } = {}) {
         sincronizarAcerto();
     });
     attrSelect.addEventListener('change', sincronizarAcerto);
-
-    // — Delete
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
-        card.remove();
-        atualizarAvisoReacoes();
-        document.dispatchEvent(new Event('ficha:changed'));
-    });
 
     // Expose sync for external calls
     card._sincronizarAcerto = sincronizarAcerto;
@@ -816,7 +850,7 @@ function adicionarPorrada() {
 // REACTION CARDS
 // ============================================================
 
-function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { open = false } = {}) {
+function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { open } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--reacao';
     card.dataset.reacaoId = id;
@@ -838,10 +872,6 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { ope
                     aria-label="Nome da reação"
                     ${isOportunidade ? 'readonly' : ''}>
             </div>
-            ${!isOportunidade ? `
-            <button type="button" class="combat-card__delete-btn" title="Remover reação" aria-label="Remover reação">
-                <span class="material-symbols-outlined" style="font-size:16px;">remove</span>
-            </button>` : ''}
             <span class="combat-card__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
         </div>
         <div class="reacao-stats-bar" data-stats-bar="reacao-${id}"></div>
@@ -855,17 +885,13 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { ope
                 aria-label="Descrição da reação">${desc.replace(/</g, '&lt;')}</textarea>
         </div>`;
 
-    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
+    const chave = isOportunidade ? 'reacao:oportunidade' : 'reacao:' + id;
+    setupAccordion(card, { open: open ?? cartaoAberto(chave, false), onUserToggle: aoAbrirFechar(chave) });
 
     const nomeInput = card.querySelector('.combat-card__name-input');
 
     if (!isOportunidade) {
-        const deleteBtn = card.querySelector('.combat-card__delete-btn');
-        deleteBtn.addEventListener('click', () => {
-            card.remove();
-            atualizarAvisoReacoes();
-            document.dispatchEvent(new Event('ficha:changed'));
-        });
+        ligarExcluir(card, { chave, rotulo: 'reação', aviso: 'Reação excluída', depois: atualizarAvisoReacoes });
     }
 
     // --- Autocomplete: preenche descrição limpa e atualiza stats bar ---
@@ -932,7 +958,7 @@ function criarCardReacao(id, nome = '', desc = '', isOportunidade = false, { ope
                   rows="2" 
                   placeholder="Registre aqui os pontos de Brecha recebidos e gastos, ou outras anotações..."></textarea>
     `;
-        bodyDiv.appendChild(extraDiv);
+        bodyDiv.insertBefore(extraDiv, bodyDiv.querySelector('.combat-card__acoes')); // antes do "Excluir"
         campoExtra = extraDiv;
     }
 
@@ -990,6 +1016,7 @@ export function setConditionEffectsEnabled(enabled) {
     const btn = document.getElementById('btn-toggle-condition-effects');
     if (btn) {
         btn.classList.toggle('active', _conditionEffectsEnabled);
+        btn.setAttribute('aria-pressed', String(_conditionEffectsEnabled));
         btn.title = _conditionEffectsEnabled ? 'Efeitos visuais de condição: ligado' : 'Efeitos visuais de condição: desligado';
     }
 }
@@ -1032,9 +1059,6 @@ function criarCardCondicao(id) {
                     <span class="material-symbols-outlined" style="font-size:14px;">remove</span>
                 </button>
             </div>
-            <button type="button" class="combat-card__delete-btn" title="Remover condição" aria-label="Remover condição">
-                <span class="material-symbols-outlined" style="font-size:16px;">close</span>
-            </button>
         </div>
         <textarea
             class="condicao-desc combat-textarea combat-textarea--sm"
@@ -1090,11 +1114,11 @@ function criarCardCondicao(id) {
             atualizarEfeitoGlobal();
         }
     });
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
-        card.remove();
-        atualizarEfeitoGlobal();
-        onCondicaoChange();
-        document.dispatchEvent(new Event('ficha:changed'));
+    // A condição não abre nem fecha (já mostra tudo): o "Excluir" fica no fim, longe do botão de duração.
+    ligarExcluir(card, {
+        rotulo: 'condição',
+        aviso: 'Condição excluída',
+        depois: () => { atualizarEfeitoGlobal(); onCondicaoChange(); },
     });
 
     return card;
@@ -1337,7 +1361,7 @@ function atualizarPopupCondicao() {
 // BONUS / ÔNUS CARDS — dedicated class, not .ac
 // ============================================================
 
-function criarCardBonus(id, { open = false } = {}) {
+function criarCardBonus(id, { open } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--bonus';
     card.dataset.bonusId = id;
@@ -1358,9 +1382,6 @@ function criarCardBonus(id, { open = false } = {}) {
                     placeholder="Nome do bônus / ônus"
                     aria-label="Nome do bônus ou ônus">
             </div>
-            <button type="button" class="combat-card__delete-btn" title="Remover" aria-label="Remover bônus/ônus">
-                <span class="material-symbols-outlined" style="font-size:16px;">remove</span>
-            </button>
             <span class="combat-card__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
         </div>
         <div class="combat-card__body" hidden>
@@ -1390,13 +1411,9 @@ function criarCardBonus(id, { open = false } = {}) {
     tipoSel.addEventListener('change', () => { card.dataset.bonusTipo = tipoSel.value; });
     card.dataset.bonusTipo = tipoSel.value;
 
-    setupAccordion(card, { open, onUserToggle: notifyFichaChanged });
-
-    card.querySelector('.combat-card__delete-btn').addEventListener('click', () => {
-        card.remove();
-        atualizarEfeitoGlobal();
-        document.dispatchEvent(new Event('ficha:changed'));
-    });
+    const chave = 'bonus:' + id;
+    setupAccordion(card, { open: open ?? cartaoAberto(chave, false), onUserToggle: aoAbrirFechar(chave) });
+    ligarExcluir(card, { chave, rotulo: 'bônus ou ônus', aviso: 'Bônus/Ônus excluído', depois: atualizarEfeitoGlobal });
 
     return card;
 }
@@ -1518,6 +1535,7 @@ export function initCombat() {
     const btnToggleEfeitos = document.getElementById('btn-toggle-condition-effects');
     if (btnToggleEfeitos) {
         btnToggleEfeitos.classList.toggle('active', _conditionEffectsEnabled);
+        btnToggleEfeitos.setAttribute('aria-pressed', String(_conditionEffectsEnabled));
         btnToggleEfeitos.title = _conditionEffectsEnabled ? 'Efeitos visuais de condição: ligado' : 'Efeitos visuais de condição: desligado';
         btnToggleEfeitos.addEventListener('click', () => {
             setConditionEffectsEnabled(!_conditionEffectsEnabled);
@@ -1548,13 +1566,11 @@ export function getCombatState() {
         linkedItemId: card.dataset.linkedItemId || null, // persist weapon→attack link
         isPorrada: card.dataset.isPorrada === 'true' || false,
         fields: serializeCardFields(card),
-        collapsed: !isAccordionOpen(card),
     }));
     const reacoes = Array.from(document.querySelectorAll('#reacoes-container .combat-card--reacao:not([data-oportunidade])')).map(card => ({
         id: card.dataset.reacaoId,
         preset: card.dataset.preset || null,
         fields: serializeCardFields(card),
-        collapsed: !isAccordionOpen(card),
     }));
     const condicoes = Array.from(document.querySelectorAll('#condicoes-container .combat-card--condicao')).map(card => ({
         id: card.dataset.condicaoId,
@@ -1563,16 +1579,9 @@ export function getCombatState() {
     const bonus = Array.from(document.querySelectorAll('#bonus-onus-container .combat-card--bonus')).map(card => ({
         id: card.dataset.bonusId,
         fields: serializeCardFields(card),
-        collapsed: !isAccordionOpen(card),
     }));
-    const oportunidadeCard = document.querySelector('#reacoes-container .combat-card--reacao[data-oportunidade]');
-    const reacaoOportunidade = oportunidadeCard ? { collapsed: !isAccordionOpen(oportunidadeCard) } : null;
-    return { ataques, reacoes, condicoes, bonus, reacaoOportunidade, conditionEffectsEnabled: _conditionEffectsEnabled };
-}
-
-/** Saved cards without `collapsed` keep the historical default: closed. */
-function openFromSaved(entry) {
-    return entry?.collapsed === false;
+    // Aberto/fechado não vai aqui: é guardado por pessoa em core/card-state.js.
+    return { ataques, reacoes, condicoes, bonus, conditionEffectsEnabled: _conditionEffectsEnabled };
 }
 
 function restoreFields(card, fields) {
@@ -1595,7 +1604,7 @@ export function setCombatState(data) {
             c.innerHTML = '';
             data.ataques.forEach(a => {
                 // Restaura Porrada com seu comportamento dinâmico especial
-                const opts = { open: openFromSaved(a) };
+                const opts = { open: abertoSalvo('ataque:' + a.id, a) };
                 const card = a.isPorrada ? criarCardPorrada(a.id, opts) : criarCardAtaque(a.id, opts);
                 // Restore the weapon→attack link so DOM-based guards can detect it
                 if (a.linkedItemId) card.dataset.linkedItemId = a.linkedItemId;
@@ -1613,7 +1622,7 @@ export function setCombatState(data) {
                 const nome = (r.fields && r.fields[`reacao-nome-${r.id}`]) || '';
                 const desc = (r.fields && r.fields[`reacao-desc-${r.id}`]) || '';
                 // Se a reação foi criada como preset, restaura como preset para preservar as stats chips
-                const opts = { open: openFromSaved(r) };
+                const opts = { open: abertoSalvo('reacao:' + r.id, r) };
                 const card = (r.preset && REACOES_PRESET[r.preset])
                     ? criarCardReacaoPreset(r.preset, r.id, opts)
                     : criarCardReacao(r.id, nome, desc, false, opts);
@@ -1627,7 +1636,7 @@ export function setCombatState(data) {
                 c.appendChild(card);
             });
             const oportunidadeCard = c.querySelector('.combat-card--reacao[data-oportunidade]');
-            if (oportunidadeCard) setAccordionOpen(oportunidadeCard, openFromSaved(data.reacaoOportunidade));
+            if (oportunidadeCard) setAccordionOpen(oportunidadeCard, abertoSalvo('reacao:oportunidade', data.reacaoOportunidade));
         }
     }
     if (data.condicoes) {
@@ -1646,7 +1655,7 @@ export function setCombatState(data) {
         if (c) {
             c.innerHTML = '';
             data.bonus.forEach(b => {
-                const card = criarCardBonus(b.id, { open: openFromSaved(b) });
+                const card = criarCardBonus(b.id, { open: abertoSalvo('bonus:' + b.id, b) });
                 restoreFields(card, b.fields);
                 c.appendChild(card);
             });

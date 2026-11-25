@@ -10,6 +10,7 @@
 // Uso nos módulos de UI:
 //   import { cartaoAberto, lembrarCartao } from '../core/card-state.js';
 //   const aberto = cartaoAberto('poder:' + id, false);   // 2º argumento = padrão se nunca foi tocado
+//                                                         // 3º (opcional) = estado antigo gravado no cartão
 //   lembrarCartao('poder:' + id, true);                  // chame ao abrir/fechar
 //
 // Chave: "<tipo>:<id estável>". O id precisa sobreviver a salvar, recarregar e reordenar
@@ -30,10 +31,18 @@ function meu() {
     return mapa[uid];
 }
 
-/** O cartão está aberto? `padrao` vale quando esta pessoa nunca mexeu nele. */
-export function cartaoAberto(chave, padrao = false) {
-    const v = meu()[chave];
-    return typeof v === 'boolean' ? v : !!padrao;
+/**
+ * O cartão está aberto? `padrao` vale quando esta pessoa nunca mexeu nele.
+ * `legado` (opcional) é o estado gravado por fichas antigas no próprio cartão:
+ * se vier e a pessoa ainda não tem registro, ele vale e passa a ser guardado em silêncio
+ * (sem evento), para não se perder quando o cartão deixar de gravá-lo.
+ */
+export function cartaoAberto(chave, padrao = false, legado) {
+    const m = meu();
+    const v = m[chave];
+    if (typeof v === 'boolean') return v;
+    if (typeof legado === 'boolean') { m[chave] = legado; return legado; }
+    return !!padrao;
 }
 
 /** Guarda o estado do cartão. Não marca a ficha como alterada. */

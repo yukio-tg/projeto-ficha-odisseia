@@ -1,0 +1,364 @@
+/* topo.css — cabeçalho agrupado, botão de modo, menu ⋯, vinheta do modo Livre,
+   dica/aviso dos campos calculados e tela cheia.
+
+   Camadas (z-index):
+   - vinheta do modo Livre: 15 (fixa, pointer-events:none). Fica abaixo do Grimório
+     (20 ou mais) e abaixo de menus/popovers soltos no <body> (100+).
+   - .sheet-header: 18, para o menu ⋯ e o painel de cores ficarem ACIMA da vinheta
+     e abaixo do Grimório. A barra lateral (10) e o conteúdo da ficha ficam sob a vinheta. */
+
+/* ── Nome e presença ─────────────────────────────────────────────────────── */
+.sheet-header {
+    z-index: 18;
+}
+
+.header-login {
+    overflow: visible;
+}
+
+.owner-account-name,
+.your-account-name {
+    max-width: 10em;
+}
+
+.presence-indicator {
+    opacity: 0.55;
+    font-size: 10px;
+    max-width: 9em;
+}
+
+.presence-indicator:hover {
+    opacity: 0.9;
+}
+
+/* ── Botões do topo ──────────────────────────────────────────────────────── */
+.header-buttons {
+    gap: 2px;
+}
+
+/* Ícone ocupa 1em: se a fonte de ícones não carregar, o nome do ícone não
+   invade o botão vizinho (nem rouba o clique dele). */
+.header-buttons .material-symbols-outlined,
+#more-menu .material-symbols-outlined {
+    width: 1em;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Ordem visual: salvo, Salvar, Grimório, Cores, Modo, ⋯ (o HTML segue a mesma ordem). */
+.header-buttons #saved,
+.header-buttons #non-saved,
+.header-buttons #problem-save {
+    justify-content: center;
+}
+
+#non-saved .material-symbols-outlined {
+    animation: topo-gira 1.2s linear infinite;
+}
+
+@keyframes topo-gira {
+    to { transform: rotate(360deg); }
+}
+
+#more-btn {
+    background: none;
+    border: 0;
+    color: var(--gold1);
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    transition: background .12s, color .12s;
+}
+
+#more-btn:hover,
+#more-btn[aria-expanded="true"] {
+    background: color-mix(in srgb, var(--gold1) 18%, transparent);
+    color: var(--gold2);
+}
+
+#more-btn .material-symbols-outlined {
+    font-size: 22px;
+}
+
+/* ── Botão de modo: texto + cadeado. Sem verde. ──────────────────────────── */
+#autocalc-switch.mode-btn,
+#autocalc-switch.mode-btn.active {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    min-width: 0;
+    height: 30px;
+    padding: 0 10px 0 7px;
+    margin: 0 4px;
+    border-radius: 15px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--gold3);
+    background: color-mix(in srgb, var(--gold1) 20%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold1) 55%, transparent);
+    transition: background .45s, color .45s, box-shadow .45s, border-color .45s;
+}
+
+#autocalc-switch.mode-btn .material-symbols-outlined {
+    font-size: 17px;
+    font-variation-settings: 'FILL' 1;
+}
+
+#autocalc-switch.mode-btn:hover {
+    background: color-mix(in srgb, var(--gold1) 32%, transparent);
+    color: var(--gold3);
+}
+
+#autocalc-switch.mode-btn.is-livre {
+    color: #3a2606;
+    background: linear-gradient(180deg, #fffaf0 0%, #fbe9b4 100%);
+    border-color: #fff3d0;
+    box-shadow: 0 0 10px rgba(255, 240, 200, 0.55), 0 0 2px #fff inset;
+}
+
+#autocalc-switch.mode-btn.is-livre:hover {
+    color: #3a2606;
+    background: linear-gradient(180deg, #fff 0%, #fff0c4 100%);
+}
+
+/* ── Vinheta clara do modo Livre ─────────────────────────────────────────── */
+.vinheta-livre {
+    --a: .34;
+    --s: 52%;
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .55s ease;
+    background: radial-gradient(ellipse 75% 70% at 50% 50%,
+        rgba(255, 248, 230, 0) var(--s), rgba(255, 246, 222, var(--a)) 100%);
+}
+
+body.modo-livre .vinheta-livre {
+    opacity: 1;
+}
+
+/* ── Menu ⋯ ──────────────────────────────────────────────────────────────── */
+.more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 10px;
+    z-index: 40;
+    min-width: 190px;
+    padding: 5px;
+    background: linear-gradient(180deg, var(--leath1), var(--leath0));
+    border: 1px solid var(--leath4);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    color: var(--gold2);
+    animation: topo-pop .14s ease-out;
+}
+
+.more-menu[hidden] {
+    display: none;
+}
+
+@keyframes topo-pop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+}
+
+#more-menu > div {
+    display: flex;
+}
+
+/* Os wrappers escondidos por JS (compartilhar, modo leitura) usam style inline. */
+#more-menu button.mi {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 9px;
+    width: 100%;
+    height: auto;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    opacity: 1;
+    color: var(--gold2);
+    font: 600 10.5px 'Cinzel', serif;
+    letter-spacing: 0.06em;
+    text-align: left;
+    cursor: pointer;
+}
+
+#more-menu button.mi:hover,
+#more-menu button.mi:focus-visible {
+    background: color-mix(in srgb, var(--gold1) 18%, transparent);
+    color: var(--gold3);
+    opacity: 1;
+    outline: none;
+}
+
+#more-menu button.mi:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--gold2);
+}
+
+#more-menu button.mi .material-symbols-outlined {
+    font-size: 18px;
+    color: var(--gold1);
+}
+
+#more-menu #autosave-switch:not(.active) .material-symbols-outlined {
+    opacity: 0.45;
+}
+
+.mi-sep {
+    height: 1px;
+    background: color-mix(in srgb, var(--gold1) 28%, transparent);
+    margin: 4px 6px;
+}
+
+/* ── Dica e aviso dos campos calculados (Regras) ─────────────────────────── */
+.calc-dica,
+.calc-aviso {
+    position: fixed;
+    background: #140a02;
+    color: var(--gold3);
+    border: 1px solid var(--gold1);
+    font: 11px 'IM Fell English', serif;
+}
+
+.calc-dica {
+    z-index: 120;
+    max-width: 230px;
+    padding: 6px 9px;
+    border-radius: 6px;
+    line-height: 1.3;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+}
+
+.calc-aviso {
+    z-index: 125;
+    padding: 9px 11px;
+    border-radius: 7px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: flex-start;
+}
+
+.calc-dica[hidden],
+.calc-aviso[hidden] {
+    display: none;
+}
+
+.calc-aviso button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(180deg, #fffaf0, #fbe9b4);
+    color: #3a2606;
+    border: 0;
+    border-radius: 12px;
+    padding: 4px 10px 4px 6px;
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+}
+
+.calc-aviso .material-symbols-outlined {
+    font-size: 15px;
+    font-variation-settings: 'FILL' 1;
+}
+
+/* Campo calculado em Regras: sem aparência de trava, só o cursor padrão. */
+[data-calculado] {
+    cursor: default;
+}
+
+/* ── Tela cheia (preferência do navegador, chave odisseia-largura-v1) ─────── */
+/* O Grimório define --grimorio-largura (0 quando fechado): a ficha usa só o resto. */
+body.largura-total .app {
+    max-width: none;
+    width: calc(100% - var(--grimorio-largura, 0px));
+    margin: 0;
+}
+
+/* Telas muito largas: tabelas (Perícias) e grades não esticam sem fim.
+   shortcut: um teto só para todas as abas; se alguma aba pedir mais, ajustar por aba. */
+body.largura-total .page {
+    max-width: 1400px;
+    margin-inline: auto;
+}
+
+/* ── Movimento reduzido ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .vinheta-livre,
+    #autocalc-switch.mode-btn {
+        transition: none;
+    }
+
+    #non-saved .material-symbols-outlined,
+    .more-menu {
+        animation: none;
+    }
+}
+
+/* ── Celular: topo em UMA linha de botões, sem quebrar a barra de abas ──── */
+@media (max-width: 600px) {
+    /* Celular já usa a largura toda: sem a opção de tela cheia. */
+    #more-menu #largura-btn,
+    #more-menu .mi-sep {
+        display: none;
+    }
+
+    .header-buttons,
+    body.is-play .header-buttons {
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+    }
+
+    .header-buttons::after,
+    body.is-play .header-buttons::after {
+        content: none;
+    }
+
+    .header-buttons > * {
+        order: 0;
+    }
+
+    .header-buttons > .header-autocalc,
+    .header-buttons > .header-feedback-save {
+        flex: 0 1 auto;
+        order: 0;
+    }
+
+    #more-btn,
+    #theme-btn,
+    #grimorio-btn,
+    #manual-save {
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    #autocalc-switch.mode-btn,
+    #autocalc-switch.mode-btn.active {
+        min-width: 0;
+        min-height: 30px;
+    }
+
+    .more-menu {
+        right: 6px;
+    }
+}
