@@ -4,6 +4,9 @@
 
 import {
     CAMPOS_INCREMENTO,
+    rotuloCampo,
+    ehCampoComposto,
+    partesCampo,
     TIPO_FLAT,
     TIPO_PCT,
     campoValido,
@@ -24,12 +27,13 @@ import {
     beginScopedRecalc,
     endScopedRecalc,
 } from '../core/state.js';
+import { ehLinhaDePoder, PREFIXO_ORIGEM_PODER } from '../core/efeitos-passivos.js';
 import { getNivel, setRadarMaxPoints } from '../core/radar-service.js';
 import { herancaAttrBonusAplicado } from '../core/heranca-logic.js';
 import { calcStats, calcularVitais } from '../core/calculation.js';
 import { reaplicarBonusProtecao, getBasesProtecaoLivro, storeBaseDeslocamento } from '../core/item-effects.js';
 import { CAMPOS_BESTA } from '../core/besta-regras.js';
-import { atualizarContadorProficiencia } from './skills.js';
+import { atualizarContadorProficiencia, atualizarPericias } from './skills.js';
 import { refreshAllBars } from './vitals.js';
 import { listarBestasIncrementos, atualizarIncrementosBesta } from './besta.js';
 
@@ -143,7 +147,26 @@ export function sincronizarTetoAtributos() {
  * Aplica a fórmula só nos campos pedidos. Os outros campos ficam como estão.
  * O total recalculado deixa de ser override manual: a camada passa a valer.
  */
-export function recalcularCampos(campos) {
+export function recalcularCampos(camposPedidos) {
+    if (isHydrating()) return;
+    // Campos compostos viram os campos de base que eles movem.
+    // Atributo mexe em PV, PM, FÉ, PT, LA, inventário e Defesa; todos os compostos mexem nas perícias.
+    const campos = [];
+    let pericias = false;
+    (camposPedidos || []).forEach(c => {
+        if (!ehCampoComposto(c)) { campos.push(c); return; }
+        pericias = true;
+        if (partesCampo(c).prefixo === 'atributo') campos.push('pv', 'pm', 'fe', 'pt', 'la', 'inv', 'def');
+    });
+    if (pericias) {
+        recalcularCamposBase(campos);
+        atualizarPericias(true);
+        return;
+    }
+    recalcularCamposBase(campos);
+}
+
+function recalcularCamposBase(campos) {
     if (isHydrating()) return;
     const lista = Array.from(new Set(campos || [])).filter(campoValido);
     if (!lista.length) return;
@@ -449,7 +472,7 @@ function criarLinha(l, besta, nomeBesta) {
     li.dataset.campo = l.campo;
     if (besta) li.dataset.besta = besta;
 
-    const meta = CAMPOS_INCREMENTO[l.campo];
+    const meta = rotuloCampo(l.campo);
     const rotulo = document.createElement('span');
     rotulo.className = 'incr-row__campo';
     const nome = document.createElement('span');
@@ -461,6 +484,11 @@ function criarLinha(l, besta, nomeBesta) {
         const tag = document.createElement('span');
         tag.className = 'incr-row__tag';
         tag.textContent = 'ajuste manual';
+        rotulo.appendChild(tag);
+    } else if (ehLinhaDePoder(l)) {
+        const tag = document.createElement('span');
+        tag.className = 'incr-row__tag';
+        tag.textContent = l.origem.slice(PREFIXO_ORIGEM_PODER.length);
         rotulo.appendChild(tag);
     }
 
@@ -504,6 +532,8 @@ export function renderizarPainel() {
     list.replaceChildren(...linhas);
     _painel.querySelector('.incr-panel__count').textContent = String(linhas.length);
     _painel.querySelector('.incr-panel__empty').hidden = linhas.length > 0;
+    // O log vale nos dois modos. No Livre o painel fica sempre; no Regras só aparece se houver linhas.
+    _painel.hidden = !(isModoLivre() || linhas.length > 0);
     reposicionarPainel();
 }
 
@@ -734,7 +764,6 @@ function ligarAncoras() {
 export function syncIncrementosUi() {
     const livre = isModoLivre();
     document.body.classList.toggle('modo-livre', livre);
-    if (_painel) _painel.hidden = !livre;
     if (!livre) {
         fecharSeletor();
         marcarHover(null);

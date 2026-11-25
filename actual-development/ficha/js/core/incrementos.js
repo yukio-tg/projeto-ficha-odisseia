@@ -4,9 +4,7 @@
 // Cada linha é { id, campo, tipo: 'flat' | 'pct', valor }, mais `origem: 'manual'`
 // na linha que registra o número digitado à mão (no máximo uma por campo).
 // Fórmula por campo: (base do livro + Σflat) × (1 + Σpct/100), arredondada para baixo.
-// No modo Regras o log continua guardado, mas não se aplica.
-
-import { isModoLivre } from './state.js';
+// O log vale nos dois modos (Regras e Livre). Linhas de poder levam `origem: 'poder:<Nome>'`.
 
 export const TIPO_FLAT = 'flat';
 export const TIPO_PCT = 'pct';
@@ -27,8 +25,90 @@ export const CAMPOS_INCREMENTO = {
     bio:   { rotulo: 'Biológicos', nome: 'Limite de aspectos biológicos' },
 };
 
+export const ATRIBUTOS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
+
+// Campos "compostos": levam um argumento depois dos dois pontos.
+//   atributo:FOR      bônus no valor do atributo
+//   pericia:Lutar     bônus nos testes de uma perícia
+//   pericias:todas    bônus em todas as perícias; pericias:CAR, nas perícias de um atributo
+//   grau:Lutar        grau de proficiência grátis (não gasta o teto de pontos)
+// Só o valor fixo vale para eles; porcentagem é ignorada.
+const PREFIXOS_COMPOSTOS = ['atributo', 'pericia', 'pericias', 'grau'];
+
+export function partesCampo(campo) {
+    const txt = String(campo || '');
+    const i = txt.indexOf(':');
+    if (i < 0) return null;
+    const prefixo = txt.slice(0, i);
+    const arg = txt.slice(i + 1);
+    if (!PREFIXOS_COMPOSTOS.includes(prefixo) || !arg) return null;
+    return { prefixo, arg };
+}
+
+export function ehCampoComposto(campo) {
+    return partesCampo(campo) !== null;
+}
+
 export function campoValido(campo) {
-    return Object.prototype.hasOwnProperty.call(CAMPOS_INCREMENTO, campo);
+    if (Object.prototype.hasOwnProperty.call(CAMPOS_INCREMENTO, campo)) return true;
+    const p = partesCampo(campo);
+    if (!p) return false;
+    if (p.prefixo === 'atributo') return ATRIBUTOS.includes(p.arg);
+    if (p.prefixo === 'pericias') return p.arg === 'todas' || ATRIBUTOS.includes(p.arg);
+    return true;
+}
+
+/** Rótulo curto e nome longo de qualquer campo, para o painel. */
+export function rotuloCampo(campo) {
+    if (CAMPOS_INCREMENTO[campo]) return CAMPOS_INCREMENTO[campo];
+    const p = partesCampo(campo);
+    if (!p) return { rotulo: String(campo), nome: '' };
+    if (p.prefixo === 'atributo') return { rotulo: p.arg, nome: `Atributo ${p.arg}` };
+    if (p.prefixo === 'pericia') return { rotulo: p.arg, nome: `Testes de ${p.arg}` };
+    if (p.prefixo === 'grau') return { rotulo: `Grau ${p.arg}`, nome: `Grau de proficiência em ${p.arg} (grátis)` };
+    return p.arg === 'todas'
+        ? { rotulo: 'Perícias', nome: 'Testes de todas as perícias' }
+        : { rotulo: `Perícias ${p.arg}`, nome: `Testes das perícias de ${p.arg}` };
+}
+
+/** Só o modo de nome: sem acento, minúsculo. */
+export function chaveNome(nome) {
+    return String(nome || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+/** Soma só as linhas fixas de um campo composto. */
+function somaFlat(log, campo) {
+    let total = 0;
+    (log || []).forEach(l => {
+        if (l.campo === campo && l.tipo !== TIPO_PCT) total += Number(l.valor) || 0;
+    });
+    return total;
+}
+
+export function bonusAtributoEm(log, attr) {
+    return somaFlat(log, `atributo:${attr}`);
+}
+
+/** Bônus nos testes: perícia pelo nome, grupo do atributo dela e todas. */
+export function bonusPericiaEm(log, nomePericia, attrDaPericia) {
+    const alvo = chaveNome(nomePericia);
+    let total = somaFlat(log, 'pericias:todas');
+    if (attrDaPericia) total += somaFlat(log, `pericias:${attrDaPericia}`);
+    (log || []).forEach(l => {
+        const p = partesCampo(l.campo);
+        if (p?.prefixo === 'pericia' && l.tipo !== TIPO_PCT && chaveNome(p.arg) === alvo) total += Number(l.valor) || 0;
+    });
+    return total;
+}
+
+export function grauExtraEm(log, nomePericia) {
+    const alvo = chaveNome(nomePericia);
+    let total = 0;
+    (log || []).forEach(l => {
+        const p = partesCampo(l.campo);
+        if (p?.prefixo === 'grau' && l.tipo !== TIPO_PCT && chaveNome(p.arg) === alvo) total += Number(l.valor) || 0;
+    });
+    return total;
 }
 
 let _seq = 0;
@@ -47,6 +127,9 @@ function normalizarLinha(linha) {
     const id = linha.id ? String(linha.id) : novoId();
     const out = { id, campo, tipo, valor };
     if (linha.origem === ORIGEM_MANUAL) out.origem = ORIGEM_MANUAL;
+    else if (typeof linha.origem === 'string' && linha.origem.startsWith('poder:')) out.origem = linha.origem;
+    const porNivel = Number(linha.porNivel);
+    if (Number.isFinite(porNivel) && porNivel !== 0 && out.origem?.startsWith('poder:')) out.porNivel = porNivel;
     return out;
 }
 
@@ -98,7 +181,7 @@ export function valorComIncrementos(base, log, campo) {
 
 /** Mesmo cálculo de `incrementar`, para um log que não é o da ficha (ex.: uma besta). */
 export function incrementarEm(log, campo, base) {
-    return isModoLivre() ? valorComIncrementos(base, log, campo) : aplicarIncremento(base);
+    return valorComIncrementos(base, log, campo);
 }
 
 /**
@@ -175,15 +258,19 @@ export function setIncrementos(arr) {
     _log = normalizarLog(arr);
 }
 
-/** Só o modo Livre aplica o log. */
+/** O log vale nos dois modos: Regras e Livre acumulam as mesmas linhas. */
 export function incrementosAtivos() {
-    return isModoLivre() ? _log : [];
+    return _log;
 }
 
 /** Base do livro com a camada de incrementos do campo, se o modo Livre estiver ligado. */
 export function incrementar(campo, base) {
     return valorComIncrementos(base, incrementosAtivos(), campo);
 }
+
+export function getBonusAtributo(attr) { return bonusAtributoEm(_log, attr); }
+export function getBonusPericia(nome, attr) { return bonusPericiaEm(_log, nome, attr); }
+export function getGrauExtra(nome) { return grauExtraEm(_log, nome); }
 
 export function adicionarIncremento(campo, tipo, valor) {
     const linha = normalizarLinha({ campo, tipo, valor });

@@ -14,6 +14,7 @@ import { REACOES_PRESET, normalizarDescricaoReacao, popularReacoesPreset } from 
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { ASPECTOS_BIO, ASPECTOS_TREINO } from '../config/aspectos-besta.js';
 import { calcPmMax, basesBesta, derivadosBesta } from '../core/besta-regras.js';
+import { linhasAspectosBesta, reconciliarLinhas } from '../core/efeitos-passivos.js';
 import { normalizarLog, calcularFlatManual, aplicarAjusteManual } from '../core/incrementos.js';
 import { isModoLivre } from '../core/state.js';
 import { cartaoAberto, lembrarCartao } from '../core/card-state.js';
@@ -1110,7 +1111,7 @@ function criarBestaCardBio(b, h, instEl) {
         <textarea class="besta-hab-desc" placeholder="Descrição do Aspecto Biológico…" rows="2">${escapeHtml(h.desc||'')}</textarea>`;
 
     card.querySelector('.besta-bio-tipo-select').addEventListener('change', e => { h.subtipo = e.target.value; saveBestas(); });
-    card.querySelector('.besta-hab-nome').addEventListener('input', e => { h.nome = e.target.value; saveBestas(); });
+    card.querySelector('.besta-hab-nome').addEventListener('input', e => { h.nome = e.target.value; saveBestas(); sincronizarAspectosBesta(b); });
     card.querySelector('.besta-hab-desc').addEventListener('input', e => { h.desc = e.target.value; saveBestas(); });
 
     card.querySelectorAll('.besta-nivel-btn').forEach(btn => {
@@ -1118,6 +1119,7 @@ function criarBestaCardBio(b, h, instEl) {
             h.nivel = btn.dataset.nivel;
             card.querySelectorAll('.besta-nivel-btn').forEach(b2 => b2.classList.toggle('active', b2.dataset.nivel === h.nivel));
             saveBestas();
+            sincronizarAspectosBesta(b);
             if (instEl) refreshBioCounter(instEl, b);
         });
     });
@@ -1127,6 +1129,7 @@ function criarBestaCardBio(b, h, instEl) {
         if (i !== -1) b.hab.bio.splice(i, 1);
         card.remove();
         saveBestas();
+        sincronizarAspectosBesta(b);
         if (instEl) refreshBioCounter(instEl, b);
     });
 
@@ -1332,6 +1335,7 @@ function initBestaRadar(el, b) {
             const oldPmMax = derivedFor(b).pmMax;
             const wasFullPm = b.pmAtual !== 0 && b.pmAtual === oldPmMax;
             b.nivel = Math.max(1, Math.min(20, parseInt(levelInp.value,10)||1));
+            sincronizarAspectosBesta(b);
             const d2 = derivedFor(b);
             instance.maxPoints = d2.tetoAttr;
             instance.updateTotal();
@@ -1457,6 +1461,7 @@ function renderBestaInstance(b, container) {
     bindBestaEvents(el, b);
     initBestaRadar(el, b);
     bindBestaVitalToggles(el, b);
+    sincronizarAspectosBesta(b);
     updateBestaBar(b.pmAtual || 0, derivedFor(b).pmMax, el.querySelector(`#besta-mana-fill-${b.id}`));
     // Apply calc mode to besta PM actual input
     const pmAtualInp = el.querySelector('[data-besta-field="pmAtual"]');
@@ -1518,6 +1523,17 @@ function refreshBestaDerivados(el, b) {
 }
 
 const OVERRIDE_BESTA = { pm: 'pmMaxManual', def: 'defesaManual' };
+
+/** Aspectos com bônus fixo (Volátil) viram linhas no log da besta. Idempotente. */
+function sincronizarAspectosBesta(b) {
+    const { log, campos } = reconciliarLinhas(
+        normalizarLog(b.incrementos),
+        linhasAspectosBesta(b.hab?.bio, parseInt(b.nivel, 10) || 1),
+    );
+    if (!campos.length) return;
+    aplicarLogBesta(b, log, campos);
+    document.dispatchEvent(new CustomEvent('incrementos:mudou'));
+}
 
 function bestaEl(id) {
     return document.querySelector(`#tab-besta .besta-instance[data-besta-id="${id}"]`);
@@ -1873,6 +1889,7 @@ function selectAspecto(item, b, el) {
         b.hab.bio.push(h);
         saveBestas();
         if (bioList) bioList.appendChild(criarBestaCardBio(b, h, el));
+        sincronizarAspectosBesta(b);
         refreshBioCounter(el, b);
         abrirCartaoAspecto(el, 'bio');
     } else if (item._type === 'treino') {

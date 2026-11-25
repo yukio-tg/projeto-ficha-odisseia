@@ -2,7 +2,7 @@
 'use strict';
 
 import { uid } from './utils.js';
-import { getAtributoBase } from './radar-service.js';
+import { getAtributoBase, getAtributoComBonus } from './radar-service.js';
 import { criarCardAtaque } from '../ui/combat.js';
 import { isHydrating, isExplicitRecalc, isModoLivre, podeSobrescrever } from './state.js';
 import { devePularRecalcProtecao, temBaseRestaurada, aplicarBonusSobreBase } from './bonus-guard.js';
@@ -197,7 +197,7 @@ function totaisProtecao() {
 export function getBasesProtecaoLivro() {
     const t = totaisProtecao();
     return {
-        def: (getAtributoBase('DES') || 0) + 10 + t.defesa,
+        def: (getAtributoComBonus('DES') || 0) + 10 + t.defesa,
         desl: getBaseDeslocamento() * (1 - t.desloc),
     };
 }
@@ -253,7 +253,7 @@ function recalcProtectionBonuses() {
     // Apply to Defesa — skip if user has manually overridden it
     const defesaInput = document.querySelector('[data-field="defesa"]');
     if (defesaInput && podeSobrescrever('defesa')) {
-        const baseDefesa = (getAtributoBase('DES') || 0) + 10;
+        const baseDefesa = (getAtributoComBonus('DES') || 0) + 10;
         defesaInput.value = incrementar('def', baseDefesa + totalDefBonus);
         defesaInput.dataset.protBonus = totalDefBonus;
         defesaInput.dispatchEvent(new Event('input', { bubbles: true }));

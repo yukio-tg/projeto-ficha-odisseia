@@ -21,8 +21,11 @@ body.modo-livre .incr-anchor--open {
     border: 1px solid var(--leath3);
     border-radius: 8px;
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
-    color: var(--p0);
+    color: var(--incr-fg);
     overflow: hidden;
+    /* O fundo do painel é couro (sempre escuro). O texto não pode seguir o papel: no papel escuro
+       --p0 vira quase preto e some. Cor própria, clara. */
+    --incr-fg: #f7ecd4;
 }
 
 .incr-panel[hidden] {
@@ -126,7 +129,7 @@ body.modo-livre .incr-anchor--open {
     gap: 6px;
     padding: 4px 4px 4px 8px;
     border-radius: 5px;
-    background: color-mix(in srgb, var(--p0) 8%, transparent);
+    background: color-mix(in srgb, var(--incr-fg) 8%, transparent);
     font-size: 13px;
 }
 
@@ -148,7 +151,7 @@ body.modo-livre .incr-anchor--open {
 .incr-row__tag {
     font-size: 10px;
     letter-spacing: 0.04em;
-    color: color-mix(in srgb, var(--p0) 70%, transparent);
+    color: color-mix(in srgb, var(--incr-fg) 70%, transparent);
     font-style: italic;
 }
 
@@ -159,14 +162,15 @@ body.modo-livre .incr-anchor--open {
     padding: 0 4px;
     border: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
     border-radius: 4px;
-    background: color-mix(in srgb, var(--p0) 10%, transparent);
-    color: var(--p0);
+    background: color-mix(in srgb, var(--incr-fg) 10%, transparent);
+    color: var(--incr-fg);
     font-family: 'Cinzel', serif;
     font-size: 13px;
 }
 
 .incr-row__tipo option {
-    color: var(--ink1);
+    background: var(--leath1);
+    color: var(--incr-fg);
 }
 
 .incr-row__valor {
@@ -196,7 +200,7 @@ body.modo-livre .incr-anchor--open {
     background: none;
     border: none;
     border-radius: 4px;
-    color: color-mix(in srgb, var(--p0) 70%, transparent);
+    color: color-mix(in srgb, var(--incr-fg) 70%, transparent);
     cursor: pointer;
 }
 
@@ -214,7 +218,7 @@ body.modo-livre .incr-anchor--open {
     margin: 4px 2px;
     font-size: 12px;
     line-height: 1.4;
-    color: color-mix(in srgb, var(--p0) 70%, transparent);
+    color: color-mix(in srgb, var(--incr-fg) 70%, transparent);
 }
 
 .incr-panel__empty[hidden] {

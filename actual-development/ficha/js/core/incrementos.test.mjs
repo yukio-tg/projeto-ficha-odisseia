@@ -94,7 +94,7 @@ test('a base do livro muda e o +5 do log permanece', () => {
     reset();
 });
 
-test('modo Regras não aplica o log, mas não o apaga', () => {
+test('modo Regras também aplica o log, e o log não some ao trocar de modo', () => {
     reset();
     setSheetMode(MODO_LIVRE);
     adicionarIncremento('attr', 'flat', 2);
@@ -103,8 +103,8 @@ test('modo Regras não aplica o log, mas não o apaga', () => {
     assert.equal(incrementar('skill', 4), 5);
 
     setSheetMode(MODO_REGRAS);
-    assert.equal(incrementar('attr', 14), 14);
-    assert.equal(incrementar('skill', 4), 4);
+    assert.equal(incrementar('attr', 14), 16);
+    assert.equal(incrementar('skill', 4), 5);
     assert.equal(getIncrementos().length, 2);
 
     setSheetMode(MODO_LIVRE);
@@ -243,7 +243,7 @@ test('ajuste manual continua flat fixo quando a base muda', () => {
     // Sobe de nível: base 19, o +4 fica.
     assert.equal(incrementar('pv', 19), 23);
     setSheetMode(MODO_REGRAS);
-    assert.equal(incrementar('pv', 19), 19);
+    assert.equal(incrementar('pv', 19), 23);
     assert.equal(getIncrementos().length, 1);
     reset();
 });
@@ -281,7 +281,7 @@ test('editar uma linha muda só aquele campo', () => {
     reset();
 });
 
-test('besta: incrementos e ajuste manual no próprio log, Regras ignora sem apagar', () => {
+test('besta: incrementos e ajuste manual no próprio log, Regras também aplica', () => {
     reset();
     const b = {
         nivel: 1,
@@ -299,7 +299,7 @@ test('besta: incrementos e ajuste manual no próprio log, Regras ignora sem apag
     assert.equal(base.bio, 6);
 
     setSheetMode(MODO_REGRAS);
-    assert.equal(derivadosBesta(b).pmMax, base.pm);
+    assert.equal(derivadosBesta(b).pmMax, base.pm + 5);
 
     setSheetMode(MODO_LIVRE);
     assert.equal(derivadosBesta(b).pmMax, base.pm + 5);
@@ -320,7 +320,7 @@ test('besta: incrementos e ajuste manual no próprio log, Regras ignora sem apag
     assert.equal(derivadosBesta({ ...b, pmMaxManual: 50 }).pmMax, 50);
 
     setSheetMode(MODO_REGRAS);
-    assert.equal(derivadosBesta(b).defesa, 14);
+    assert.equal(derivadosBesta(b).defesa, 20);
     assert.equal(b.incrementos.length, 4);
     reset();
 });

@@ -194,7 +194,7 @@ export function getInventarioState() {
         const valor1 = card.querySelector('.item-valor1')?.value || '';
         const valor2 = card.querySelector('.item-valor2')?.value || '';
         const itemSource = card.dataset.itemSource || '';
-        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource });
+        cardsData.push({ id, nome, quantidade, pesoUnit, raridade, estado, categoria, descricao, valor1, valor2, itemSource, equipado: card.dataset.equipado === '1', escolha: card.dataset.escolha || '' });
     });
     return cardsData;
 }
@@ -236,6 +236,8 @@ export function setInventarioState(cardsData) {
             const v2 = card.querySelector('.item-valor2');
             if (v2 && data.valor2) v2.value = data.valor2;
             if (data.itemSource) card.dataset.itemSource = data.itemSource;
+            if (data.equipado) card.dataset.equipado = '1';
+            if (data.escolha) card.dataset.escolha = data.escolha;
             card.dispatchEvent(new Event('item-loaded', { bubbles: true }));
         });
         atualizarPesoTotal();

@@ -30,6 +30,7 @@ import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { shouldApplyRemoteSnapshot, fingerprintSheet } from './core/save-guard.js';
 import { initSharePopup } from './ui/share.js';
 import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
+import { initEfeitosPassivosUi } from './ui/efeitos-passivos-ui.js';
 import { initIncrementosUi, recalcularCampos, camposDoLog, sincronizarTetoAtributos } from './ui/incrementos-ui.js';
 import { initGrimorio } from './ui/grimorio-ui.js';
 
@@ -371,6 +372,7 @@ async function initAllModules() {
     initAnotacoes();
     initClassCrest();
     initIncrementosUi();
+    initEfeitosPassivosUi();
 }
 
 function atualizarHerancaETeto() {

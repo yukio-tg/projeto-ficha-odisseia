@@ -265,6 +265,7 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null, idFi
             cor: card.dataset.cor || 'Vermelho',
             collapsed: card.dataset.collapsed === 'true',
             herancaPower: card.dataset.herancaPower === 'true',
+            escolha: card.dataset.escolha || '',
         };
         esquecerCartao('poder:' + cardId);
         card.remove();
@@ -275,6 +276,7 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null, idFi
             const restored = criarCardPower(snap, '', snap.cor, cardId);
             toggleCard(restored, snap.collapsed);
             if (snap.herancaPower) _marcarComoPoderHeranca(restored);
+            if (snap.escolha) restored.dataset.escolha = snap.escolha;
             containerCards.appendChild(restored);
             atualizarTotalPt();
             reordenarCards();
@@ -520,6 +522,7 @@ export function getPowersState() {
         descricao: card.querySelector('.power-desc-textarea')?.value || '',
         cor: card.dataset.cor || 'Vermelho',
         herancaPower: card.dataset.herancaPower === 'true',
+        escolha: card.dataset.escolha || '',
     }));
 }
 
@@ -532,6 +535,7 @@ export function setPowersState(data) {
             descricao: p.descricao, cor: p.cor
         }, '', p.cor, p.id || '', typeof p.collapsed === 'boolean' ? !p.collapsed : undefined);
         if (p.herancaPower) _marcarComoPoderHeranca(card);
+        if (p.escolha) card.dataset.escolha = p.escolha;
         containerCards.appendChild(card);
     });
     atualizarTotalPt();

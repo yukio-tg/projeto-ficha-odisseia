@@ -1,5 +1,5 @@
 import { getRadarAttrWrap, getAtributoBase } from '../core/radar-service.js';
-import { periciasEstado, getTotalPericia } from './skills.js';
+import { periciasEstado, getTotalPericia, grauEfetivo } from './skills.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
 import { uid, normalizar, escapeHtml } from '../core/utils.js';
@@ -21,7 +21,7 @@ function getPericiaMaxDice(nomePericia) {
     const pericia = periciasEstado.find(p => p.nome === nomePericia);
     if (!pericia) return 0;
     const mapaDice = { 0: 0, 1: 4, 2: 6, 3: 8, 4: 10, 5: 12 };
-    return mapaDice[pericia.proficiencia] || 0;
+    return mapaDice[grauEfetivo(pericia)] || 0;
 }
 // ============================================================
 // CARTÕES: abrir/fechar lembrado por pessoa e botão "Excluir" com desfazer

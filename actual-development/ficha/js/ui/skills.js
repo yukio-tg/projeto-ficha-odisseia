@@ -1,7 +1,7 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
 import { autoCalcEnabled, manualOverrides, isHydrating } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
-import { incrementar } from '../core/incrementos.js';
+import { incrementar, getBonusAtributo, getBonusPericia, getGrauExtra } from '../core/incrementos.js';
 let afterSkillsUpdate = null;
 
 const D20_TEXT = 'd20';
@@ -241,14 +241,14 @@ export function atualizarPericias(force = false) {
             const modText = modInput.value.trim();
             const match = modText.match(/^[-+]?\d+/);
             if (match) modVal = parseInt(match[0], 10);
-            modsAttr[attr] = modVal;
+            modsAttr[attr] = modVal + getBonusAtributo(attr);
         }
     });
 
     // Atualizar Defesa (Destreza + 10) — respeita override manual
     const defesaInput = document.querySelector('[data-field="defesa"]');
     if (defesaInput && !manualOverrides.has('defesa') && !isHydrating()) {
-        const destrezaVal = valoresAttr['DES'] || 0;
+        const destrezaVal = (valoresAttr['DES'] || 0) + getBonusAtributo('DES');
         const protBonus = parseInt(defesaInput.dataset.protBonus, 10) || 0;
         defesaInput.value = incrementar('def', destrezaVal + 10 + protBonus);
     }
@@ -294,8 +294,10 @@ export function atualizarPericias(force = false) {
             const match = pericia.bonus.trim().match(/^[-+]?\d+/);
             if (match) bonusNum = parseInt(match[0], 10);
         }
-        const somaBonusBase = bonusNum + baseTotal;
-        const dice = diceMap[pericia.proficiencia] || '';
+        const bonusAuto = getBonusPericia(pericia.nome, pericia.attr);
+        const somaBonusBase = bonusNum + bonusAuto + baseTotal;
+        const grauEf = grauEfetivo(pericia);
+        const dice = diceMap[grauEf] || '';
         let totalStr = dice;
         if (dice) {
             totalStr += somaBonusBase !== 0 ? (somaBonusBase >= 0 ? '+' : '') + somaBonusBase : '';
@@ -310,8 +312,11 @@ export function atualizarPericias(force = false) {
             if (ac) totalCell.style.color = ac;
         }
 
+        const bonusCell = row.querySelector('.pericia-bonus')?.parentElement;
+        if (bonusCell) atualizarChipAuto(bonusCell, bonusAuto, getGrauExtra(pericia.nome));
+
         // Opacidade para não treinadas
-        if (pericia.proficiencia === 0) {
+        if (grauEf === 0) {
             row.classList.add('pericia-row-grau0');
         } else {
             row.classList.remove('pericia-row-grau0');
@@ -330,6 +335,28 @@ export function atualizarPericias(force = false) {
     if (afterSkillsUpdate) afterSkillsUpdate();
 }
 
+/** Grau do jogador mais o grau grátis do log, no máximo 5. */
+export function grauEfetivo(pericia) {
+    return Math.max(0, Math.min(5, (pericia.proficiencia || 0) + getGrauExtra(pericia.nome)));
+}
+
+/** Marca ao lado do campo de bônus: o que vem do log, separado do que o jogador digitou. */
+function atualizarChipAuto(td, bonus, grau) {
+    let chip = td.querySelector('.pericia-auto');
+    if (!bonus && !grau) { chip?.remove(); return; }
+    if (!chip) {
+        chip = document.createElement('span');
+        chip.className = 'pericia-auto';
+        chip.style.cssText = 'margin-left:6px;font-size:11px;opacity:.75;white-space:nowrap;';
+        td.appendChild(chip);
+    }
+    const partes = [];
+    if (bonus) partes.push(`${bonus > 0 ? '+' : ''}${bonus}`);
+    if (grau) partes.push(`grau ${grau > 0 ? '+' : ''}${grau}`);
+    chip.textContent = partes.join(' · ');
+    chip.title = 'Bônus automático (poderes e itens). Veja o painel de incrementos.';
+}
+
 export function getTotalPericia(nomePericia, attrOverride = null) {
     const pericia = periciasEstado.find(p => p.nome.toLowerCase() === nomePericia.trim().toLowerCase());
     if (!pericia) return '';
@@ -341,16 +368,16 @@ export function getTotalPericia(nomePericia, attrOverride = null) {
     const modAttrInput = wrap.querySelector('.mod-input');
     const baseAttr = baseAttrInput ? parseInt(baseAttrInput.value, 10) || 0 : 0;
     const modAttr = modAttrInput ? parseInt(modAttrInput.value, 10) || 0 : 0;
-    const baseTotal = baseAttr + modAttr;
+    const baseTotal = baseAttr + modAttr + getBonusAtributo(attr);
 
     let bonusNum = 0;
     if (pericia.bonus) {
         const match = pericia.bonus.trim().match(/^[-+]?\d+/);
         if (match) bonusNum = parseInt(match[0], 10);
     }
-    const soma = bonusNum + baseTotal;
+    const soma = bonusNum + getBonusPericia(pericia.nome, pericia.attr) + baseTotal;
     const diceMap = { 0:'', 1:'1d4', 2:'1d6', 3:'1d8', 4:'1d10', 5:'1d12' };
-    const dice = diceMap[pericia.proficiencia] || '';
+    const dice = diceMap[grauEfetivo(pericia)] || '';
 
     if (dice) {
         if (soma !== 0) return dice + (soma >= 0 ? '+' : '') + soma;
