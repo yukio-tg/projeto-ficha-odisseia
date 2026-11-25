@@ -697,6 +697,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return; // sem wires de edição
     }
 
+    // Cartões abertos/fechados: não acendem "não salvo" nem o autosave normal.
+    // Depois de uma pausa, gravam em silêncio, para o estado não se perder num recarregamento.
+    let _timerUiEstado = null;
+    document.addEventListener('ficha:ui-estado', () => {
+        if (suppressSave || isHydrating() || _hasUnsavedChanges || saveTimer) return; // o save já agendado leva o estado junto
+        clearTimeout(_timerUiEstado);
+        _timerUiEstado = setTimeout(() => {
+            _timerUiEstado = null;
+            if (!_hasUnsavedChanges && !saveTimer && !saveInFlight) performSave();
+        }, 4000);
+    });
+
     // Habilita o save de tema no Firestore (apenas para editores/donos)
     setThemeSaveFn((theme) => {
         if (!currentSheetId) return;
