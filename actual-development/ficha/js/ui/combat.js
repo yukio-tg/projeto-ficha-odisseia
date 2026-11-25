@@ -1,5 +1,6 @@
 import { getRadarAttrWrap, getAtributoBase } from '../core/radar-service.js';
 import { periciasEstado, getTotalPericia, grauEfetivo } from './skills.js';
+import { getBonusAtaque } from '../core/incrementos.js';
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { EFEITOS_CONDICOES, combinarEfeitos } from '../config/efeitos-condicoes.js';
 import { uid, normalizar, escapeHtml } from '../core/utils.js';
@@ -502,6 +503,63 @@ export function atualizarAvisoReacoes() {
 // ATTACK CARDS — accordion, UUID-keyed, no inline styles
 // ============================================================
 
+// ── Bônus automáticos no cartão de ataque (vêm do log de incrementos) ──────
+
+/** Categoria do ataque: pela perícia vinculada; sem perícia, pelo texto do alcance. */
+function categoriaAtaque(card) {
+    const pericia = card.querySelector('.ataque-pericia')?.value || '';
+    if (pericia === 'Magia') return 'magia';
+    if (pericia === 'Atirar') return 'distancia';
+    if (pericia === 'Lutar') return 'corpo';
+    const alcance = (card.querySelector('[data-field^="ataque-alcance-"]')?.value || '').trim();
+    if (!alcance || /corpo|adjacente|toque/i.test(alcance)) return 'corpo';
+    return 'distancia';
+}
+
+/** Soma `extra` ao número que fecha a expressão ("1d8+4" + 2 = "1d8+6"; "1d8+FOR" + 2 = "1d8+FOR+2"). */
+function somarNaExpressao(expr, extra) {
+    if (!extra) return expr;
+    const sinal = (n) => (n >= 0 ? `+${n}` : `${n}`);
+    const m = expr.match(/^(.*?)([+-]\d+)$/);
+    if (m) {
+        const soma = parseInt(m[2], 10) + extra;
+        return soma === 0 ? (m[1] || '0') : `${m[1]}${sinal(soma)}`;
+    }
+    return /^\d+$/.test(expr) ? String(parseInt(expr, 10) + extra) : `${expr}${sinal(extra)}`;
+}
+
+
+/** Linha de texto no corpo do cartão: o que o log está somando neste ataque. */
+function atualizarLinhaAuto(card, auto) {
+    const corpo = card.querySelector('.combat-card__body');
+    if (!corpo) return;
+    let linha = corpo.querySelector('.ataque-auto');
+    const partes = [];
+    const s = (n) => (n > 0 ? `+${n}` : `${n}`);
+    if (auto.dano) partes.push(`dano ${s(auto.dano)}`);
+    if (auto.dados) partes.push(`dano ${auto.dados > 0 ? '+' : '-'}${Math.abs(auto.dados)}d`);
+    if (auto.acerto) partes.push(`acerto ${s(auto.acerto)}`);
+    if (auto.margem) partes.push(`margem de ameaça ${auto.margem > 0 ? '-' : '+'}${Math.abs(auto.margem)}`);
+    if (auto.multi) partes.push(`multiplicador ${s(auto.multi)}`);
+    if (auto.alcance) partes.push(`alcance ${s(auto.alcance)} passo${Math.abs(auto.alcance) > 1 ? 's' : ''}`);
+    if (!partes.length) { linha?.remove(); return; }
+    if (!linha) {
+        linha = document.createElement('div');
+        linha.className = 'ataque-auto';
+        linha.style.cssText = 'margin:6px 0;padding:4px 8px;font-size:12px;border-left:3px solid var(--gold1);opacity:.9;';
+        corpo.querySelector('.ataque-fields-grid')?.after(linha);
+    }
+    linha.textContent = `Automático: ${partes.join(' · ')}`;
+    linha.title = 'Vem do painel de incrementos (poderes, itens e aspectos). Os campos acima não mudam.';
+}
+
+/** Refaz o resumo de todos os ataques. Chamado quando o log muda. */
+export function atualizarAtaquesAuto() {
+    document.querySelectorAll('#ataques-container .combat-card--ataque').forEach(card => {
+        if (typeof card._atualizarSummary === 'function') card._atualizarSummary();
+    });
+}
+
 export function criarCardAtaque(id, { open } = {}) {
     const card = document.createElement('div');
     card.className = 'combat-card combat-card--ataque';
@@ -676,21 +734,30 @@ export function criarCardAtaque(id, { open } = {}) {
         const ameaca = ameacaInput.value || '20';
         const multi = multiInput.value || '1.5';
 
-        summaryAcerto.innerHTML = buildAcertoDisplay(acerto);
-        summaryDano.textContent = dano;
+        // Bônus automáticos do log de incrementos (poderes, itens, aspectos). Os campos do jogador não mudam.
+        const auto = getBonusAtaque(categoriaAtaque(card));
+        const acertoFinal = acerto === '—' ? acerto : somarNaExpressao(acerto, auto.acerto);
+        let danoFinal = dano === '—' ? dano : somarNaExpressao(dano, auto.dano);
+        if (dano !== '—' && auto.dados) danoFinal += ` ${auto.dados > 0 ? '+' : '-'}${Math.abs(auto.dados)}d`;
+        const ameacaFinal = Math.max(1, (parseInt(ameaca, 10) || 20) - auto.margem);
+        const multiFinal = (parseFloat(multi) || 1.5) + auto.multi;
+
+        summaryAcerto.innerHTML = buildAcertoDisplay(acertoFinal);
+        summaryDano.textContent = danoFinal;
 
         // Crit com pipe e espaço antes
         if (critSpan) {
-            critSpan.textContent = `${ameaca}/×${multi}`;  // exemplo: · 20/×1.5
+            critSpan.textContent = `${ameacaFinal}/×${multiFinal}`;  // exemplo: · 20/×1.5
         }
+        atualizarLinhaAuto(card, auto);
     }
+    card._atualizarSummary = atualizarSummary;
 
     acertoInput.addEventListener('input', atualizarSummary);
     danoInput.addEventListener('input', atualizarSummary);
     ameacaInput.addEventListener('input', atualizarSummary);
     multiInput.addEventListener('input', atualizarSummary);
-
-    // Botões margem
+    card.querySelector('[data-field^="ataque-alcance-"]')?.addEventListener('input', atualizarSummary);
     card.querySelector('[data-action="inc-ameaca"]').addEventListener('click', () => {
         let val = parseInt(ameacaInput.value, 10) || 20;
         if (val < 20) ameacaInput.value = val + 1;

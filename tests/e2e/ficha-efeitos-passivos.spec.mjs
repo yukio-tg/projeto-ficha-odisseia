@@ -201,3 +201,50 @@ test('painel de incrementos: mostra as linhas do poder no modo Regras e o texto 
   await page.locator('.powers-container .btn-remove-power').first().click();
   await expect(painel).toBeHidden();
 });
+
+test('ataque, RD por tipo, DT, aviso e desligar linha no painel', async ({ page }) => {
+  await abrirFicha(page, 'Passivas Ataque');
+  await definir(page, 'classe-nome', 'Certeiro');
+  await expect.poll(() => pv(page), { timeout: 10_000 }).toBeGreaterThan(0);
+  const dt = async () => parseInt(await page.locator('[data-field="dt-sab"]').inputValue(), 10);
+  const dt0 = await dt();
+
+  // Um ataque à distância: perícia Atirar, dano 1d8+4.
+  await irPara(page, 'combate');
+  await page.click('#add-ataque-btn');
+  const ataque = page.locator('#ataques-container .combat-card--ataque').first();
+  await ataque.locator('.combat-card__header').click();
+  await ataque.locator('.ataque-pericia').selectOption('Atirar');
+  await ataque.locator('.ataque-dano').evaluate((e) => {
+    e.value = '1d8+4';
+    e.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  const dano = ataque.locator('[data-summary="dano"]');
+  await expect(dano).toHaveText('1d8+4');
+
+  await adicionarPoder(page, 'Mira Boa');
+  await irPara(page, 'combate');
+  await expect(dano).toHaveText('1d8+6');
+  await adicionarPoder(page, 'Disparo Pesado');
+  await irPara(page, 'combate');
+  await expect(dano).toHaveText('1d8+6 +1d');
+
+  // RD por tipo, DT e aviso
+  await adicionarPoder(page, 'Cuidado Onde Pisa!');
+  await adicionarPoder(page, 'Potência Mágica');
+  await adicionarPoder(page, 'Conexão Premeditada');
+  await expect.poll(dt).toBe(dt0 + 2);
+  await irPara(page, 'geral');
+  await expect(page.locator('#rd-auto')).toContainText('queda +2');
+
+  // Painel: aviso aparece como texto; desligar Mira Boa tira só o +2
+  const painel = page.locator('#incr-panel');
+  await expect(painel.locator('.incr-row--nota')).toHaveCount(1);
+  await expect(painel.locator('.incr-row--nota .incr-row__texto')).toContainText('Vantagem em todos os testes de Fé');
+  const linhaMira = painel.locator('.incr-row', { has: page.locator('.incr-row__tag', { hasText: 'Mira Boa' }) });
+  await linhaMira.locator('.incr-row__ativo').uncheck();
+  await irPara(page, 'combate');
+  await expect(dano).toHaveText('1d8+4 +1d');
+  await linhaMira.locator('.incr-row__ativo').check();
+  await expect(dano).toHaveText('1d8+6 +1d');
+});

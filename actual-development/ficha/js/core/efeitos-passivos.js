@@ -36,6 +36,30 @@ export const EFEITOS_PODERES = {
     // Ônus (cartões de Bônus/Ônus da aba Combate).
     'Macabro': [{ campo: 'pericias:CAR', valor: -5 }],
     'Malformado': [{ campo: 'pv', tipo: 'pct', valor: -20 }],
+    'Frágil': [{ campo: 'nota:Frágil', tipo: 'nota', texto: 'Ao cair em Morrendo, morre na hora.' }],
+    'Impedido de Sentidos': [{ campo: 'nota:Sentidos', tipo: 'nota', texto: 'Cego ou Surdo permanente (a sua escolha).' }],
+    'Instável': [{ campo: 'nota:Instável', tipo: 'nota', texto: 'Perde 2 PM ao fim de cada cena (dano não letal).' }],
+    'Sem Membros': [{ campo: 'nota:Sem Membros', tipo: 'nota', texto: 'Sem pernas: Caído permanente. Sem braços: não empunha itens.' }],
+
+    // Ataque: dano, acerto, crítico e alcance. O cartão de ataque lê estas linhas.
+    'Mira Boa': [{ campo: 'dano:distancia', valor: 2 }],
+    'Disparo Pesado': [{ campo: 'dano:todos', tipo: 'dado', valor: 1 }],
+    'Ataque Pesado': [{ campo: 'dano:corpo', tipo: 'dado', valor: 1 }],
+    'Benefício da Distância': [{ campo: 'acerto:distancia', valor: 5 }, { campo: 'alcance:distancia', valor: 1 }],
+
+    // Defesa e magia.
+    'Cuidado Onde Pisa!': [{ campo: 'rd:queda', valor: 2 }],
+    'Casca Grossa': [{ campo: 'rd:mundano', valor: 2, aCada: 3 }],
+    'Potência Mágica': [{ campo: 'dt', valor: 2 }],
+
+    // Só aviso: regras sem número que a ficha não calcula.
+    'Conexão Premeditada': [{ campo: 'nota:Fé', tipo: 'nota', texto: 'Vantagem em todos os testes de Fé.' }],
+    'Concessão por Mérito': [{ campo: 'nota:Fé por cena', tipo: 'nota', texto: 'Recupera 1 de FÉ ao fim de cada cena.' }],
+    'Atrair Mana': [{ campo: 'nota:PM por cena', tipo: 'nota', texto: 'Recupera 2 PM ao fim de cada cena.' }],
+    'Recuperação Acelerada': [{ campo: 'nota:Descanso', tipo: 'nota', texto: 'No Descanso, recupera +10 PV e +10 PM.' }],
+    'Recuperação Rápida': [{ campo: 'nota:Descanso rápido', tipo: 'nota', texto: 'No Descanso, recupera +2d12 PV e PM.' }],
+    'Lucro': [{ campo: 'nota:Venda', tipo: 'nota', texto: 'Itens vendidos valem +25%.' }],
+    'Movimento Tático': [{ campo: 'nota:Terreno', tipo: 'nota', texto: 'Ignora terreno difícil; +5 para resistir a efeitos do chão.' }],
 
     // Com escolha: o jogador escolhe o alvo no cartão. Sem escolha, o poder não faz nada.
     // `escolha` diz de onde vêm as opções; `prefixo` diz que tipo de campo a linha escreve.
@@ -131,6 +155,13 @@ function nivelValido(nivel) {
     return Number.isFinite(n) && n > 0 ? n : 1;
 }
 
+/** Valor da linha no nível dado: fixo, por nível (porNivel) ou por degrau (aCada: +valor a cada N níveis, desde o 1). */
+function valorDoEfeito(e, nivel) {
+    if (e.porNivel) return e.porNivel * nivelValido(nivel);
+    if (e.aCada) return e.valor * (Math.floor((nivelValido(nivel) - 1) / e.aCada) + 1);
+    return e.valor;
+}
+
 const ROMANOS = { I: 1, II: 2, III: 3 };
 
 export function ehLinhaDePoder(linha) {
@@ -166,10 +197,12 @@ export function linhasDesejadas(cartoes, nivel = 1) {
                 id: `poder_${id}_${chave.replace(/ /g, '-')}_${campo}`,
                 campo,
                 tipo: e.tipo || TIPO_FLAT,
-                valor: e.porNivel ? e.porNivel * nivelValido(nivel) : e.valor,
+                valor: e.tipo === 'nota' ? 1 : valorDoEfeito(e, nivel),
                 origem: `${PREFIXO_ORIGEM_PODER}${achado.nome}`,
             };
             if (e.porNivel) linha.porNivel = e.porNivel;
+            if (e.aCada) linha.porNivel = e.valor;
+            if (e.texto) linha.texto = e.texto;
             out.push(linha);
         });
     });

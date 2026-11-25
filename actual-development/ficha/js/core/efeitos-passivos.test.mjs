@@ -305,3 +305,110 @@ test('desequipar tira o bônus e deixa as outras linhas', () => {
     assert.equal(incrementar('def', 12), 15);
     reset();
 });
+
+// ── Ataque, RD por tipo, avisos, desligar linha ─────────────────────────────
+import {
+    getBonusAtaque, getRdPorTipo, getNotas, getVantagem, vantagemEm, aplicarEdicao,
+} from './incrementos.js';
+
+test('Mira Boa: +2 de dano só nos ataques à distância', () => {
+    reset();
+    setIncrementos(reconciliar([], [cartao('c1', 'Mira Boa')]).log);
+    assert.equal(getBonusAtaque('distancia').dano, 2);
+    assert.equal(getBonusAtaque('corpo').dano, 0);
+    reset();
+});
+
+test('Disparo Pesado soma +1d em todos os ataques; Ataque Pesado +1d só no corpo a corpo', () => {
+    reset();
+    setIncrementos(reconciliar([], [cartao('a', 'Disparo Pesado'), cartao('b', 'Ataque Pesado')]).log);
+    assert.equal(getBonusAtaque('distancia').dados, 1);
+    assert.equal(getBonusAtaque('corpo').dados, 2);
+    assert.equal(getBonusAtaque('magia').dados, 1);
+    reset();
+});
+
+test('Benefício da Distância: +5 de acerto e +1 passo de alcance à distância', () => {
+    reset();
+    setIncrementos(reconciliar([], [cartao('a', 'Benefício da Distância')]).log);
+    const d = getBonusAtaque('distancia');
+    assert.equal(d.acerto, 5);
+    assert.equal(d.alcance, 1);
+    assert.equal(getBonusAtaque('corpo').acerto, 0);
+    reset();
+});
+
+test('Casca Grossa: RD mundano +2 a cada 3 níveis, desde o nível 1', () => {
+    reset();
+    const valor = (nivel) => {
+        const r = reconciliar(getIncrementos(), [cartao('a', 'Casca Grossa')], nivel);
+        setIncrementos(r.log);
+        return getRdPorTipo().mundano;
+    };
+    assert.equal(valor(1), 2);
+    assert.equal(valor(3), 2);
+    assert.equal(valor(4), 4);
+    assert.equal(valor(7), 6);
+    reset();
+});
+
+test('RD por tipo, DT e avisos entram sem conta própria', () => {
+    reset();
+    setIncrementos(reconciliar([], [
+        cartao('a', 'Cuidado Onde Pisa!'), cartao('b', 'Potência Mágica'), cartao('c', 'Conexão Premeditada'),
+    ]).log);
+    assert.equal(getRdPorTipo().queda, 2);
+    assert.equal(incrementar('dt', 14), 16);
+    assert.equal(getNotas().length, 1);
+    assert.match(getNotas()[0].texto, /Vantagem/);
+    reset();
+});
+
+test('desligar uma linha tira o efeito, mas guarda a linha; a conferência não a recria', () => {
+    reset();
+    const cartoes = [cartao('a', 'Mira Boa'), cartao('b', 'Patrulha')];
+    let log = reconciliar([], cartoes).log;
+    setIncrementos(log);
+    const id = getIncrementos().find(l => l.campo === 'dano:distancia').id;
+    setIncrementos(aplicarEdicao(getIncrementos(), id, { ativo: false }));
+    assert.equal(getBonusAtaque('distancia').dano, 0);
+    assert.equal(getIncrementos().length, 2);
+    const r = reconciliar(getIncrementos(), cartoes);
+    assert.equal(r.campos.length, 0);
+    setIncrementos(r.log);
+    assert.equal(getIncrementos().length, 2);
+    // ligar de novo
+    setIncrementos(aplicarEdicao(getIncrementos(), id, { ativo: true }));
+    assert.equal(getBonusAtaque('distancia').dano, 2);
+    // desligar também vale para campos de base
+    const idDef = getIncrementos().find(l => l.campo === 'def').id;
+    setIncrementos(aplicarEdicao(getIncrementos(), idDef, { ativo: false }));
+    assert.equal(incrementar('def', 12), 12);
+    reset();
+});
+
+test('vantagem e desvantagem se anulam; perícia, atributo e todas', () => {
+    const log = [
+        { id: 'a', campo: 'vantagem:Lutar', tipo: 'flat', valor: 1 },
+        { id: 'b', campo: 'vantagem:FOR', tipo: 'flat', valor: -1 },
+        { id: 'c', campo: 'vantagem:CAR', tipo: 'flat', valor: -1 },
+    ];
+    assert.equal(vantagemEm(log, 'Lutar', 'FOR'), 0);
+    assert.equal(vantagemEm(log, 'Trabalho', 'FOR'), -1);
+    assert.equal(vantagemEm(log, 'Mentir', 'CAR'), -1);
+    assert.equal(vantagemEm(log, 'Magia', 'SAB'), 0);
+    reset();
+    setIncrementos(log.slice(0, 1));
+    assert.equal(getVantagem('Lutar', 'FOR'), 1);
+    reset();
+});
+
+test('porcentagem e dado não contaminam a soma de campos de base', () => {
+    reset();
+    setIncrementos([
+        { id: 'a', campo: 'pv', tipo: 'flat', valor: 5 },
+        { id: 'b', campo: 'dano:todos', tipo: 'dado', valor: 1 },
+    ]);
+    assert.equal(incrementar('pv', 30), 35);
+    reset();
+});

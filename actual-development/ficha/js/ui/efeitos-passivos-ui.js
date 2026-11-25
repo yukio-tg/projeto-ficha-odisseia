@@ -6,7 +6,8 @@ import { reconciliar, escolhaDoPoder, opcoesEscolha, ehItemComEfeito, itensQueCo
 import { getIncrementos, setIncrementos } from '../core/incrementos.js';
 import { isHydrating } from '../core/state.js';
 import { getNivel } from '../core/radar-service.js';
-import { recalcularCampos } from './incrementos-ui.js';
+import { recalcularCampos, atualizarSeloRd } from './incrementos-ui.js';
+import { atualizarAtaquesAuto } from './combat.js';
 
 const ROTULO_ESCOLHA = {
     'atributo': 'Atributo',
@@ -205,6 +206,10 @@ export function initEfeitosPassivosUi() {
         }
     });
     document.addEventListener('ficha:loaded', () => setTimeout(() => {
-        if (!isHydrating()) sincronizarEfeitosPoderes();
+        if (isHydrating()) return;
+        sincronizarEfeitosPoderes();
+        // Cartões e totais restaurados do salvamento ainda não leram o log.
+        atualizarAtaquesAuto();
+        atualizarSeloRd();
     }, 100));
 }

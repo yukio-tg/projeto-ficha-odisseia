@@ -52,7 +52,7 @@ export function atualizarDtSab() {
     if (!podeSobrescrever('dt-sab')) return;
     const nivel = getNivel();
     const sab = getAtributoTotal('SAB');
-    const valor = 10 + Math.floor(nivel / 2) + sab;
+    const valor = incrementar('dt', 10 + Math.floor(nivel / 2) + sab);
     const input = document.querySelector('[data-field="dt-sab"]');
     if (input) input.value = valor;
 }

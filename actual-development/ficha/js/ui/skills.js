@@ -1,7 +1,7 @@
 import { getNivel, getRadarAttrWrap } from '../core/radar-service.js';
 import { autoCalcEnabled, manualOverrides, isHydrating } from '../core/state.js';
 import { atualizarInertidao, calcStats } from '../core/calculation.js';
-import { incrementar, getBonusAtributo, getBonusPericia, getGrauExtra } from '../core/incrementos.js';
+import { incrementar, getBonusAtributo, getBonusPericia, getGrauExtra, getVantagem } from '../core/incrementos.js';
 let afterSkillsUpdate = null;
 
 const D20_TEXT = 'd20';
@@ -313,7 +313,7 @@ export function atualizarPericias(force = false) {
         }
 
         const bonusCell = row.querySelector('.pericia-bonus')?.parentElement;
-        if (bonusCell) atualizarChipAuto(bonusCell, bonusAuto, getGrauExtra(pericia.nome));
+        if (bonusCell) atualizarChipAuto(bonusCell, bonusAuto, getGrauExtra(pericia.nome), getVantagem(pericia.nome, pericia.attr));
 
         // Opacidade para não treinadas
         if (grauEf === 0) {
@@ -341,9 +341,9 @@ export function grauEfetivo(pericia) {
 }
 
 /** Marca ao lado do campo de bônus: o que vem do log, separado do que o jogador digitou. */
-function atualizarChipAuto(td, bonus, grau) {
+function atualizarChipAuto(td, bonus, grau, vantagem = 0) {
     let chip = td.querySelector('.pericia-auto');
-    if (!bonus && !grau) { chip?.remove(); return; }
+    if (!bonus && !grau && !vantagem) { chip?.remove(); return; }
     if (!chip) {
         chip = document.createElement('span');
         chip.className = 'pericia-auto';
@@ -353,6 +353,7 @@ function atualizarChipAuto(td, bonus, grau) {
     const partes = [];
     if (bonus) partes.push(`${bonus > 0 ? '+' : ''}${bonus}`);
     if (grau) partes.push(`grau ${grau > 0 ? '+' : ''}${grau}`);
+    if (vantagem) partes.push(vantagem > 0 ? 'vantagem' : 'desvantagem');
     chip.textContent = partes.join(' · ');
     chip.title = 'Bônus automático (poderes e itens). Veja o painel de incrementos.';
 }

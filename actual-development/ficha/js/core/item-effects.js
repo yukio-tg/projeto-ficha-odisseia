@@ -263,7 +263,7 @@ function recalcProtectionBonuses() {
     const rdInput = document.querySelector('[data-field="rd"]');
     if (rdInput && podeSobrescrever('rd')) {
         if (!temBaseRestaurada(rdInput.dataset.baseValue)) rdInput.dataset.baseValue = rdInput.value;
-        rdInput.value = aplicarBonusSobreBase(rdInput.dataset.baseValue, rdInput.value, totalRdBonus);
+        rdInput.value = incrementar('rd', aplicarBonusSobreBase(rdInput.dataset.baseValue, rdInput.value, totalRdBonus));
         rdInput.dataset.protBonus = totalRdBonus;
         rdInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
