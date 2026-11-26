@@ -34,6 +34,7 @@ import {
     getStableSnapshot,
 } from './state.js';
 import { syncModoUi } from '../ui/header.js';
+import { serializarCartoes, restaurarCartoes } from './card-state.js';
 
 const ATTRS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'];
 
@@ -176,6 +177,7 @@ export function serializeSheet() {
         autoCalcEnabled,
         sheetMode,
         incrementos: getIncrementos(),
+        cartoesAbertos: serializarCartoes(),
     };
     setStableSnapshot(clonePlain(snap));
     return snap;
@@ -202,6 +204,9 @@ export function deserializeSheet(data) {
             sheetMode,
             incrementos: getIncrementos(),
         }));
+
+        // Cartões abertos/fechados: restaura antes dos módulos de UI desenharem os cartões.
+        restaurarCartoes(data.cartoesAbertos);
 
         // ── RESTAURA A FLAG DE BÔNUS ──────────────────────────────────────────────
         // Deve ocorrer ANTES de qualquer evento que dispare atualizarHeranca().

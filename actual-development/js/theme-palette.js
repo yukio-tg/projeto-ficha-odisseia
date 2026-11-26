@@ -150,3 +150,80 @@ export function gold3For(metalicoId) {
         ?? PALETTE.find(c => c.id === SHEET_DEFAULTS.metalico);
     return genMetalico(m.h, m.s, m.bias)['--gold3'];
 }
+
+// ── Temas prontos e cor livre (só acréscimos; usado pela ficha) ──────────────
+
+/**
+ * Temas prontos da ficha. `slug` é o que vai para o Firestore ({ preset: slug }).
+ * Cada tema é um trio de ids da PALETTE (f, m, p) ou três hex (fundo, detalhes, pergaminho).
+ * `claro` diz em qual grupo do painel o tema aparece.
+ */
+export const SHEET_THEME_PRESETS = [
+    // Pergaminho claro
+    { slug: 'classico',           name: 'Pergaminho clássico', claro: true,  f: 'marrom',       m: 'amarelo-escuro', p: 'bege' },
+    { slug: 'everforest',         name: 'Everforest',          claro: true,  hex: ['#2d3a35', '#a7c080', '#f2efdf'] },
+    { slug: 'gruvbox',            name: 'Gruvbox',             claro: true,  hex: ['#3c3836', '#d79921', '#fbf1c7'] },
+    { slug: 'nord',               name: 'Nord',                claro: true,  hex: ['#3b4252', '#88c0d0', '#eceff4'] },
+    { slug: 'solarized',          name: 'Solarized',           claro: true,  hex: ['#073642', '#2aa198', '#fdf6e3'] },
+    { slug: 'carmim',             name: 'Carmim',              claro: true,  hex: ['#4a1f26', '#cf6b5f', '#f8ebe6'] },
+    { slug: 'tokyo-dia',          name: 'Tokyo Dia',           claro: true,  hex: ['#343b58', '#2e7de9', '#e6e7ed'] },
+    { slug: 'cinza',              name: 'Cinza',               claro: true,  f: 'cinza-escuro', m: 'cinza-claro',    p: 'cinza-claro' },
+    { slug: 'ambar',              name: 'Âmbar',               claro: true,  hex: ['#3b2a1a', '#e8872f', '#fdf3e1'] },
+    { slug: 'lavanda',            name: 'Lavanda',             claro: true,  hex: ['#3a3350', '#8f7bd1', '#f4f0fb'] },
+    // Pergaminho escuro
+    { slug: 'noite',              name: 'Noite',               claro: false, f: 'azul-escuro',  m: 'azul-claro',     p: 'azul-escuro' },
+    { slug: 'cripta',             name: 'Cripta',              claro: false, f: 'preto',        m: 'amarelo-escuro', p: 'preto' },
+    { slug: 'rose-pine',          name: 'Rosé Pine',           claro: false, hex: ['#403d52', '#ebbcba', '#26233a'] },
+    { slug: 'tokyo-night',        name: 'Tokyo Night',         claro: false, hex: ['#24283b', '#7aa2f7', '#1a1b26'] },
+    { slug: 'rubi',               name: 'Rubi',                claro: false, hex: ['#4a1c26', '#e06c75', '#1f1216'] },
+    { slug: 'ametista',           name: 'Ametista',            claro: false, hex: ['#2a1f3d', '#c084fc', '#120a1c'] },
+    { slug: 'everforest-noturno', name: 'Everforest Noturno',  claro: false, hex: ['#374145', '#a7c080', '#2d353b'] },
+    { slug: 'gruvbox-noturno',    name: 'Gruvbox Noturno',     claro: false, hex: ['#3c3836', '#fabd2f', '#282828'] },
+    { slug: 'solarized-noturno',  name: 'Solarized Noturno',   claro: false, hex: ['#073642', '#b58900', '#002b36'] },
+    { slug: 'one-dark',           name: 'One Dark',            claro: false, hex: ['#3e4451', '#56b6c2', '#21252b'] },
+];
+
+export function hexToRgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
+export function rgbToHex(a) { return '#' + a.map(x => clamp(Math.round(x), 0, 255).toString(16).padStart(2, '0')).join(''); }
+export function isHex6(v) { return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v); }
+
+/** Luminância relativa (WCAG), de 0 (preto) a 1 (branco). */
+export function luminanciaRGB([r, g, b]) {
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+
+export function rgbToHsl([r, g, b]) {
+    r /= 255; g /= 255; b /= 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+    let h = 0, s = 0;
+    if (d) {
+        s = d / (1 - Math.abs(2 * l - 1));
+        h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+        h = (h * 60 + 360) % 360;
+    }
+    return { h, s: s * 100, l: l * 100 };
+}
+
+/**
+ * Converte uma cor livre (RGB) na entrada dos geradores (inverso de swatchColor).
+ * O resultado é um tom DERIVADO pelas regras da ficha, não a cor exata escolhida.
+ * Pergaminho: escuro ou claro conforme a luminância da cor (limite 0,18).
+ */
+export function colorFromRGB(group, rgb) {
+    const { h, s, l } = rgbToHsl(rgb);
+    if (group === 'fundo')    return { h, s: s / 0.93, bias: l - 20 };
+    if (group === 'metalico') return { h, s, bias: (l - 52) * 2 };
+    return luminanciaRGB(rgb) < 0.18
+        ? { h, s: s / 0.85, bias: (l - 18) / 0.3, darkPaper: true }
+        : { h, s: s / 1.6,  bias: (l - 88) / 0.4, darkPaper: false };
+}
+
+/** Cores (fundo, detalhes, pergaminho) já resolvidas para buildThemeVars, a partir de 3 hex. */
+export function colorsFromHex({ fundo, metalico, pergaminho }) {
+    return [
+        colorFromRGB('fundo', hexToRgb(fundo)),
+        colorFromRGB('metalico', hexToRgb(metalico)),
+        colorFromRGB('pergaminho', hexToRgb(pergaminho)),
+    ];
+}

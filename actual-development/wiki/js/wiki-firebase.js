@@ -1,8 +1,8 @@
 // wiki-firebase.js — Firebase service for the Odisseia Wiki
 import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+import { getAuth, onAuthStateChanged, connectAuthEmulator } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 import {
-    getFirestore,
+    getFirestore, connectFirestoreEmulator,
     collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, setDoc,
     query, where, serverTimestamp, orderBy, limit, increment
 } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
@@ -12,9 +12,15 @@ let _app = null, _auth = null, _db = null;
 
 export function initWikiFirebase() {
     if (_app) return;
-    _app  = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
+    const isNew = !getApps().length;
+    _app  = isNew ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
     _auth = getAuth(_app);
     _db   = getFirestore(_app);
+    // Teste local: em localhost usa o emulador.
+    if (isNew && ['localhost', '127.0.0.1'].includes(location.hostname)) {
+        connectAuthEmulator(_auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        connectFirestoreEmulator(_db, '127.0.0.1', 8080);
+    }
 }
 
 export function waitForAuth() {

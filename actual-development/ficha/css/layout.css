@@ -543,11 +543,6 @@ a span:hover {
     border-radius: 8px;
 }
 
-#autocalc-switch.is-livre {
-    color: var(--p0);
-    background: color-mix(in srgb, var(--green2) 72%, var(--leath0));
-}
-
 #autosave-switch:hover,
 #manual-save:hover,
 #recalc-btn:hover,
@@ -560,10 +555,6 @@ a span:hover {
 
 #autocalc-switch:hover {
     color: var(--gold3);
-}
-
-#autocalc-switch.is-livre:hover {
-    color: var(--p0);
 }
 
 #autocalc-switch:active,

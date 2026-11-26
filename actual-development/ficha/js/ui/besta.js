@@ -14,8 +14,10 @@ import { REACOES_PRESET, normalizarDescricaoReacao, popularReacoesPreset } from 
 import { CONDICOES_LISTA } from '../config/condicoes.js';
 import { ASPECTOS_BIO, ASPECTOS_TREINO } from '../config/aspectos-besta.js';
 import { calcPmMax, basesBesta, derivadosBesta } from '../core/besta-regras.js';
+import { linhasAspectosBesta, reconciliarLinhas } from '../core/efeitos-passivos.js';
 import { normalizarLog, calcularFlatManual, aplicarAjusteManual } from '../core/incrementos.js';
 import { isModoLivre } from '../core/state.js';
+import { cartaoAberto, lembrarCartao } from '../core/card-state.js';
 
 // ── Shared constants ───────────────────────────────────────────────────────
 
@@ -40,12 +42,6 @@ const TAMANHO_OPTIONS = [
 const ATTRS = ['FOR','DES','CON','INT','SAB','CAR'];
 
 const ATTR_COLORS = { FOR:'#b52418',DES:'#4a7cb5',CON:'#d4620a',INT:'#d4a800',SAB:'#3a8a5c',CAR:'#8a4ab5' };
-
-const HAB_TYPES = {
-    bio:   { label:'Aspecto Biológico',  color:'var(--hab-bio-color)' },
-    treino:{ label:'Aspecto de Treino',  color:'var(--hab-treino-color)' },
-    indiv: { label:'Aspecto Individual', color:'var(--hab-indiv-color)' },
-};
 
 const MAGIC_TYPES = ['arcanismo','feromancia','teurgia'];
 
@@ -376,72 +372,37 @@ function buildSkillsSection(b, d, container) {
         cWarn.style.display = totalGasto > maxPts ? 'flex' : 'none';
     }
 
-    // Collapsible wrapper — rows control visibility, tableWrap animates height
+    // "Janela" de perícias: altura fixa (definida no CSS), com rolagem interna.
+    // Abrir/fechar só troca quais linhas aparecem; nada abaixo da janela se mexe.
     const tableWrap = document.createElement('div');
     tableWrap.className = 'besta-skills-table-wrap';
 
-    function getNonEssentialRows() {
-        const rows = [];
+    const hint = document.createElement('div');
+    hint.className = 'besta-skills-hint';
+
+    // Perícia "relevante" = com treino ou com bônus escrito.
+    const relevante = (nome) => (b.pericias[nome] || 0) > 0 || (b.periciaBonus?.[nome] || '') !== '';
+
+    function refreshEstado() {
+        const aberto = !!b.expandSkills;
+        const n = periciasData.filter(p => relevante(p.nome)).length;
         tbody.querySelectorAll('tr[data-skill-row]').forEach(tr => {
-            const nome = tr.dataset.skillRow;
-            const hasTraining = (b.pericias[nome] || 0) > 0;
-            const hasBonus = (b.periciaBonus?.[nome] || '') !== '';
-            if (!hasTraining && !hasBonus) rows.push(tr);
+            tr.toggleAttribute('data-untrained', !relevante(tr.dataset.skillRow));
         });
-        return rows;
-    }
-
-    function showAllRows() {
-        tbody.querySelectorAll('tr[data-skill-hidden]').forEach(tr => {
-            tr.removeAttribute('data-skill-hidden');
-            tr.style.display = '';
-        });
-    }
-
-    function hideNonEssentialRows() {
-        getNonEssentialRows().forEach(tr => {
-            tr.setAttribute('data-skill-hidden', '');
-            tr.style.display = 'none';
-        });
+        wrap.classList.toggle('is-open', aberto);
+        // Sem nenhuma perícia relevante e fechada: a tabela some e fica só o aviso.
+        wrap.classList.toggle('is-vazio', n === 0 && !aberto);
+        hint.textContent = n === 0
+            ? 'Nenhuma perícia treinada ainda. Clique em “Perícias” para treinar.'
+            : `${n} perícia${n > 1 ? 's' : ''} com treino ou bônus. Clique em “Perícias” para ver as ${periciasData.length - n} restantes.`;
+        expandBtn.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        expandBtn.innerHTML = `<span class="material-symbols-outlined besta-skills-chevron">${aberto ? 'expand_less' : 'expand_more'}</span>
+            ${aberto ? 'Recolher' : 'Perícias'}`;
     }
 
     expandBtn.addEventListener('click', () => {
         b.expandSkills = !b.expandSkills;
-        expandBtn.setAttribute('aria-expanded', b.expandSkills ? 'true' : 'false');
-
-        if (b.expandSkills) {
-            expandBtn.innerHTML = `<span class="material-symbols-outlined besta-skills-chevron">expand_less</span> Recolher`;
-            const currentH = tableWrap.offsetHeight;
-            showAllRows();
-            const newH = tableWrap.scrollHeight;
-            tableWrap.style.overflow = 'hidden';
-            tableWrap.style.height = currentH + 'px';
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                tableWrap.style.height = newH + 'px';
-                tableWrap.addEventListener('transitionend', () => {
-                    tableWrap.style.height = '';
-                    tableWrap.style.overflow = '';
-                }, { once: true });
-            }));
-        } else {
-            expandBtn.innerHTML = `<span class="material-symbols-outlined besta-skills-chevron">expand_more</span> Perícias`;
-            const nonEssential = getNonEssentialRows();
-            const currentH = tableWrap.offsetHeight;
-            // Temporarily hide to measure essential-only height
-            nonEssential.forEach(tr => { tr.style.display = 'none'; });
-            const essentialH = tableWrap.scrollHeight;
-            nonEssential.forEach(tr => { tr.style.display = ''; });
-            tableWrap.style.overflow = 'hidden';
-            tableWrap.style.height = currentH + 'px';
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                tableWrap.style.height = essentialH + 'px';
-                tableWrap.addEventListener('transitionend', () => {
-                    hideNonEssentialRows();
-                    tableWrap.style.height = '';
-                    tableWrap.style.overflow = '';
-                }, { once: true });
-            }));
-        }
+        refreshEstado();
         saveBestas();
         notifyFichaChanged();
     });
@@ -467,11 +428,9 @@ function buildSkillsSection(b, d, container) {
         const diceStr = DICE[prof] || '';
         const bonusNum = parseInt(bonus, 10) || 0;
         const totalStr = buildTotalStr(diceStr, bonusNum, baseVal);
-        const hidden = !b.expandSkills && prof === 0 && bonus === '';
 
         const tr = document.createElement('tr');
         tr.dataset.skillRow = p.nome;
-        if (hidden) { tr.setAttribute('data-skill-hidden', ''); tr.style.display = 'none'; }
         if (prof === 0) tr.classList.add('pericia-row-grau0');
         tr.style.setProperty('--row-attr-color', color);
         tr.style.borderLeft = `2.5px solid ${color}30`;
@@ -510,13 +469,9 @@ function buildSkillsSection(b, d, container) {
                 });
                 labelSpan.textContent = nv === 0 ? '—' : DICE_LABEL[nv];
                 tr.classList.toggle('pericia-row-grau0', nv === 0);
-                if (!b.expandSkills) {
-                    const curBonus = (b.periciaBonus?.[p.nome] || '') !== '';
-                    if (nv === 0 && !curBonus) { tr.setAttribute('data-skill-hidden', ''); tr.style.display = 'none'; }
-                    else { tr.removeAttribute('data-skill-hidden'); tr.style.display = ''; }
-                }
                 recalcTotal();
                 refreshCounter();
+                refreshEstado();
                 saveBestas();
             });
             pipsDiv.appendChild(pip);
@@ -536,13 +491,8 @@ function buildSkillsSection(b, d, container) {
         bonusInp.addEventListener('input', () => {
             if (!b.periciaBonus) b.periciaBonus = {};
             b.periciaBonus[p.nome] = bonusInp.value;
-            if (!b.expandSkills) {
-                const hasTraining = (b.pericias[p.nome] || 0) > 0;
-                const hasBonus = bonusInp.value !== '';
-                if (!hasTraining && !hasBonus) { tr.setAttribute('data-skill-hidden', ''); tr.style.display = 'none'; }
-                else { tr.removeAttribute('data-skill-hidden'); tr.style.display = ''; }
-            }
             recalcTotal();
+            refreshEstado();
             saveBestas();
         });
         bonusTd.appendChild(bonusInp);
@@ -586,20 +536,21 @@ function buildSkillsSection(b, d, container) {
     container.refreshProfCounter = refreshCounter;
 
     table.appendChild(tbody);
-    tableWrap.appendChild(table);
+    tableWrap.append(table, hint);
     wrap.appendChild(tableWrap);
     container.appendChild(wrap);
     refreshCounter();
+    refreshEstado();
 }
 
 function buildCombatHTML(b, d) {
     return `<div class="besta-section besta-combat-section">
-        <div class="besta-sh">Ataques</div>
+        <div class="sh">Ataques</div>
         <div class="besta-ataques-list" data-besta-ataque-list="${b.id}"></div>
         <button type="button" class="besta-add-btn" data-besta-add="ataque">
             <span class="material-symbols-outlined" style="font-size:14px">add</span> Adicionar Ataque
         </button>
-        <div class="besta-sh" style="margin-top:14px">Reações Complexas</div>
+        <div class="sh">Reações Complexas</div>
         <div class="besta-reacoes-list" data-besta-reacao-list="${b.id}"></div>
         <button type="button" class="besta-add-btn" data-besta-add="reacao">
             <span class="material-symbols-outlined" style="font-size:14px">add</span> Adicionar Reação Complexa
@@ -609,12 +560,12 @@ function buildCombatHTML(b, d) {
 
 function buildConditionsHTML(b) {
     return `<div class="besta-section besta-conditions-section">
-        <div class="besta-sh">Bônus &amp; Ônus</div>
+        <div class="sh">Bônus &amp; Ônus</div>
         <div class="besta-bonus-cards-list" data-besta-bonus-list="${b.id}"></div>
         <button type="button" class="besta-add-btn" data-besta-add="bonusOnus" style="margin-bottom:10px">
             <span class="material-symbols-outlined" style="font-size:14px">add</span> Bônus / Ônus
         </button>
-        <div class="besta-sh">Condições</div>
+        <div class="sh">Condições</div>
         <div class="besta-condicoes-list" data-besta-condicao-list="${b.id}"></div>
         <button type="button" class="besta-add-btn" data-besta-add="condicao">
             <span class="material-symbols-outlined" style="font-size:14px">add</span> Condição
@@ -1039,98 +990,73 @@ function refreshBioCounter(el, b) {
 function refreshTreinoCounter(el, b) {
     const span = el.querySelector(`[data-treino-counter="${b.id}"]`);
     if (!span) return;
-    span.textContent = `(${sumTreinoPt(b)} PT)`;
+    span.textContent = `${sumTreinoPt(b)} PT`;
 }
 
-function buildBioCounter(b) {
-    const used = sumBioNiveis(b);
-    const max  = derivedFor(b).bioLim;
-    const over = used > max;
-    return `<span class="besta-bio-inline" data-bio-counter="${b.id}"> (<span class="besta-bio-used" style="color:${over?'var(--blood2)':'inherit'}">${used}</span>/<span class="besta-bio-max">${max}</span>${over ? ' <span class="besta-bio-warn material-symbols-outlined" style="font-size:11px;vertical-align:middle">warning</span>' : '<span class="besta-bio-warn" style="display:none"></span>'})</span>`;
+/** Abre o cartão do grupo (se estiver fechado) ao acrescentar um aspecto, para o novo item aparecer. */
+function abrirCartaoAspecto(el, tipo) {
+    const card = el.querySelector(`[data-asp-card="${tipo}"]`);
+    if (card?.querySelector('.combat-card__body')?.hidden) card.querySelector('.combat-card__header').click();
+}
+
+function refreshIndivCounter(el, b) {
+    const span = el.querySelector(`[data-indiv-counter="${b.id}"]`);
+    if (span) span.textContent = (b.hab.indiv || []).length || '—';
+}
+
+/** Cartão dobrável de um grupo de aspectos (mesmo cabeçalho dos cartões do Combate; a cor do tipo é só a fita). */
+function buildAspectoCard(tipo, titulo, resumoHtml, corpoHtml) {
+    return `<div class="combat-card asp-card g-${tipo}" data-asp-card="${tipo}">
+        <div class="combat-card__header" role="button" tabindex="0" aria-expanded="false">
+            <div class="combat-card__header-left"><span class="asp-card-title">${titulo}</span></div>
+            <div class="combat-card__header-summary">${resumoHtml}</div>
+            <span class="combat-card__chevron material-symbols-outlined" aria-hidden="true">expand_more</span>
+        </div>
+        <div class="combat-card__body" hidden>${corpoHtml}</div>
+    </div>`;
 }
 
 function buildAbilitiesHTML(b) {
-    const bioColor    = HAB_TYPES.bio.color;
-    const treinoColor = HAB_TYPES.treino.color;
-    const indivColor  = HAB_TYPES.indiv.color;
-
     const indivCards = (b.hab.indiv || []).map((h, i) => buildIndivCard(h, i)).join('');
 
     const bioUsed = sumBioNiveis(b);
     const bioMax  = derivedFor(b).bioLim;
     const bioOver = bioUsed > bioMax;
     const ptUsado = sumTreinoPt(b);
+    const nIndiv  = (b.hab.indiv || []).length;
+
+    const addBtn = (attr, rotulo) => `<button type="button" class="besta-add-btn asp-add" ${attr}>
+        <span class="material-symbols-outlined" style="font-size:14px">add</span> ${rotulo}
+    </button>`;
 
     return `<div class="besta-section besta-abilities-section">
-        <div class="besta-aspects-card">
-
-            <!-- Unified searcher -->
-            <div class="besta-aspects-searcher" data-aspects-searcher="${b.id}">
-                <input type="text" class="besta-aspects-search-input" placeholder="Buscar aspecto…" autocomplete="off"
-                    data-aspects-search="${b.id}" aria-label="Buscar aspecto de besta">
-                <button type="button" class="besta-add-btn" data-besta-add="aspecto-search"
-                    style="margin-top:0;padding:4px 10px">
-                    <span class="material-symbols-outlined" style="font-size:14px">add</span>
-                </button>
-                <div class="besta-aspects-dropdown" id="besta-aspects-dd-${b.id}"></div>
-            </div>
-
-            <!-- Aspectos Biológicos -->
-            <div class="besta-aspect-subsection" data-hab-type="bio">
-                <div class="besta-aspect-sub-header">
-                    <span class="besta-aspect-sub-title" style="--aspect-color:${bioColor}">
-                        <span class="besta-aspect-pip" style="background:${bioColor};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span>
-                        Aspectos Biológicos
-                    </span>
-                    <span class="besta-aspect-sub-counter" data-bio-counter="${b.id}">
-                        (<span class="besta-bio-used" style="color:${bioOver?'var(--blood2)':'inherit'}">${bioUsed}</span>/<span class="besta-bio-max">${bioMax}</span>${bioOver?'<span class="besta-bio-warn material-symbols-outlined" style="font-size:11px;vertical-align:middle">warning</span>':''})
-                    </span>
-                </div>
-                <div class="besta-hab-list" data-besta-hab-list="bio"></div>
-                <button type="button" class="besta-add-btn besta-add-hab" data-besta-add-hab="bio"
-                    style="border-color:color-mix(in srgb, ${bioColor} 37%, transparent);color:${bioColor}">
-                    <span class="material-symbols-outlined" style="font-size:14px">add</span> Aspecto Biológico
-                </button>
-            </div>
-
-            <!-- Aspectos de Treino -->
-            <div class="besta-aspect-subsection" data-hab-type="treino">
-                <div class="besta-aspect-sub-header">
-                    <span class="besta-aspect-sub-title" style="--aspect-color:${treinoColor}">
-                        <span class="besta-aspect-pip" style="background:${treinoColor};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span>
-                        Aspectos de Treino
-                    </span>
-                    <span class="besta-aspect-sub-counter" data-treino-counter="${b.id}">(${ptUsado} PT)</span>
-                </div>
-                <div class="besta-hab-list" data-besta-hab-list="treino"></div>
-                <button type="button" class="besta-add-btn besta-add-hab" data-besta-add-hab="treino"
-                    style="border-color:color-mix(in srgb, ${treinoColor} 37%, transparent);color:${treinoColor}">
-                    <span class="material-symbols-outlined" style="font-size:14px">add</span> Aspecto de Treino
-                </button>
-            </div>
-
-            <!-- Aspectos Individuais -->
-            <div class="besta-aspect-subsection" data-hab-type="indiv">
-                <div class="besta-aspect-sub-header">
-                    <span class="besta-aspect-sub-title" style="--aspect-color:${indivColor}">
-                        <span class="besta-aspect-pip" style="background:${indivColor};display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px"></span>
-                        Aspectos Individuais
-                    </span>
-                </div>
-                <div class="besta-indiv-list" data-besta-indiv-list="${b.id}">${indivCards}</div>
-                <button type="button" class="besta-add-btn" data-besta-add="indiv"
-                    style="border-color:color-mix(in srgb, ${indivColor} 37%, transparent);color:${indivColor}">
-                    <span class="material-symbols-outlined" style="font-size:14px">add</span> Aspecto Individual
-                </button>
-            </div>
-
+        <div class="besta-aspects-searcher" data-aspects-searcher="${b.id}">
+            <input type="text" class="combat-input besta-aspects-search-input" placeholder="Buscar aspecto…" autocomplete="off"
+                data-aspects-search="${b.id}" aria-label="Buscar aspecto de besta">
+            <button type="button" class="besta-add-btn" data-besta-add="aspecto-search" title="Adicionar aspecto em branco ou o buscado">
+                <span class="material-symbols-outlined" style="font-size:14px">add</span>
+            </button>
+            <div class="besta-aspects-dropdown" id="besta-aspects-dd-${b.id}"></div>
+        </div>
+        <div class="asp-cards">
+            ${buildAspectoCard('bio', 'Aspectos Biológicos',
+                `<span class="besta-aspect-sub-counter" data-bio-counter="${b.id}"><span class="besta-bio-used" style="color:${bioOver?'var(--blood2)':'inherit'}">${bioUsed}</span>/<span class="besta-bio-max">${bioMax}</span>${bioOver?'<span class="besta-bio-warn material-symbols-outlined" style="font-size:11px;vertical-align:middle">warning</span>':''}</span>`,
+                `<div class="besta-hab-list" data-besta-hab-list="bio"></div>
+                 ${addBtn('data-besta-add-hab="bio"', 'Aspecto Biológico')}`)}
+            ${buildAspectoCard('treino', 'Aspectos de Treino',
+                `<span class="besta-aspect-sub-counter" data-treino-counter="${b.id}">${ptUsado} PT</span>`,
+                `<div class="besta-hab-list" data-besta-hab-list="treino"></div>
+                 ${addBtn('data-besta-add-hab="treino"', 'Aspecto de Treino')}`)}
+            ${buildAspectoCard('indiv', 'Aspectos Individuais',
+                `<span class="besta-aspect-sub-counter" data-indiv-counter="${b.id}">${nIndiv || '—'}</span>`,
+                `<div class="besta-indiv-list" data-besta-indiv-list="${b.id}">${indivCards}</div>
+                 ${addBtn('data-besta-add="indiv"', 'Aspecto Individual')}`)}
         </div>
     </div>`;
 }
 
 function buildIndivCard(h, i) {
-    const color = HAB_TYPES.indiv.color;
-    return `<div class="besta-indiv-card" data-indiv-idx="${i}" style="border-left:3px solid ${color}">
+    return `<div class="besta-indiv-card" data-indiv-idx="${i}">
         <div class="besta-indiv-card-header">
             <input type="text" class="besta-indiv-titulo" placeholder="Título do Aspecto" value="${escapeHtml(h.titulo||'')}">
             <button type="button" class="besta-del-btn" data-besta-del="indiv" data-idx="${i}" title="Remover">
@@ -1163,10 +1089,8 @@ function criarBestaCardBio(b, h, instEl) {
     if (!h.id)     h.id     = uid();
     if (!h.nivel)  h.nivel  = 'I';
     if (!h.subtipo) h.subtipo = 'Ofensivo';
-    const color = HAB_TYPES.bio.color;
     const card = document.createElement('div');
     card.className = 'besta-hab-card besta-hab-card--bio';
-    card.style.borderLeft = `3px solid ${color}`;
     card.dataset.bestaHabBioId = h.id;
 
     card.innerHTML = `
@@ -1187,7 +1111,7 @@ function criarBestaCardBio(b, h, instEl) {
         <textarea class="besta-hab-desc" placeholder="Descrição do Aspecto Biológico…" rows="2">${escapeHtml(h.desc||'')}</textarea>`;
 
     card.querySelector('.besta-bio-tipo-select').addEventListener('change', e => { h.subtipo = e.target.value; saveBestas(); });
-    card.querySelector('.besta-hab-nome').addEventListener('input', e => { h.nome = e.target.value; saveBestas(); });
+    card.querySelector('.besta-hab-nome').addEventListener('input', e => { h.nome = e.target.value; saveBestas(); sincronizarAspectosBesta(b); });
     card.querySelector('.besta-hab-desc').addEventListener('input', e => { h.desc = e.target.value; saveBestas(); });
 
     card.querySelectorAll('.besta-nivel-btn').forEach(btn => {
@@ -1195,6 +1119,7 @@ function criarBestaCardBio(b, h, instEl) {
             h.nivel = btn.dataset.nivel;
             card.querySelectorAll('.besta-nivel-btn').forEach(b2 => b2.classList.toggle('active', b2.dataset.nivel === h.nivel));
             saveBestas();
+            sincronizarAspectosBesta(b);
             if (instEl) refreshBioCounter(instEl, b);
         });
     });
@@ -1204,6 +1129,7 @@ function criarBestaCardBio(b, h, instEl) {
         if (i !== -1) b.hab.bio.splice(i, 1);
         card.remove();
         saveBestas();
+        sincronizarAspectosBesta(b);
         if (instEl) refreshBioCounter(instEl, b);
     });
 
@@ -1212,10 +1138,8 @@ function criarBestaCardBio(b, h, instEl) {
 
 function criarBestaCardTreino(b, h, instEl) {
     if (!h.id) h.id = uid();
-    const color = HAB_TYPES.treino.color;
     const card = document.createElement('div');
     card.className = 'besta-hab-card besta-hab-card--treino';
-    card.style.borderLeft = `3px solid ${color}`;
     card.dataset.bestaHabTreinoId = h.id;
 
     card.innerHTML = `
@@ -1358,13 +1282,13 @@ function buildBestaHTML(b) {
             </button>
         </div>
         ${buildIdentityHTML(b, d)}
-        <div class="sh besta-sub-sh" style="margin-top:16px">Vitalidade &amp; Atributos</div>
+        <div class="sh besta-sub-sh">Vitalidade &amp; Atributos</div>
         <div class="vitals-attrs-grid">
             ${buildVitalsHTML(b, d)}
             ${buildAttrsHTML(b, d)}
         </div>
         ${buildCombatHTML(b, d)}
-        <div class="besta-sh" style="margin-top:16px">Aspectos</div>
+        <div class="sh">Aspectos</div>
         ${buildAbilitiesHTML(b)}
         ${buildConditionsHTML(b)}
         ${buildAnotacoesHTML(b)}
@@ -1401,6 +1325,8 @@ function initBestaRadar(el, b) {
     instance.maxPoints = d.tetoAttr;
     instance.updateTotal();
     bestaRadars.set(b.id, instance);
+    // Caixas de modificador livre: sem traço no lugar do valor, para não parecerem caixas pretas quebradas
+    container.querySelectorAll('.mod-input').forEach(inp => { inp.placeholder = '—'; });
 
     // Sync nivel changes from radar level-input → b.nivel
     const levelInp = container.querySelector('.level-input');
@@ -1409,6 +1335,7 @@ function initBestaRadar(el, b) {
             const oldPmMax = derivedFor(b).pmMax;
             const wasFullPm = b.pmAtual !== 0 && b.pmAtual === oldPmMax;
             b.nivel = Math.max(1, Math.min(20, parseInt(levelInp.value,10)||1));
+            sincronizarAspectosBesta(b);
             const d2 = derivedFor(b);
             instance.maxPoints = d2.tetoAttr;
             instance.updateTotal();
@@ -1423,17 +1350,7 @@ function initBestaRadar(el, b) {
             // Refresh proficiency counter
             const sm = el.querySelector(`#besta-skills-mount-${b.id}`);
             if (sm?.refreshProfCounter) sm.refreshProfCounter();
-            // Refresh bio counter
-            const bioUsedEl = el.querySelector(`[data-bio-counter="${b.id}"] .besta-bio-used`);
-            const bioMaxEl  = el.querySelector(`[data-bio-counter="${b.id}"] .besta-bio-max`);
-            const bioWarnEl = el.querySelector(`[data-bio-counter="${b.id}"] .besta-bio-warn`);
-            if (bioMaxEl) {
-                const newMax = d2.bioLim;
-                const used = (b.hab.bio || []).length;
-                bioMaxEl.textContent = newMax;
-                if (bioUsedEl) bioUsedEl.style.color = used > newMax ? 'var(--blood2)' : 'inherit';
-                if (bioWarnEl) bioWarnEl.style.display = used > newMax ? 'inline' : 'none';
-            }
+            refreshBioCounter(el, b);
             saveBestas();
         });
     }
@@ -1505,6 +1422,11 @@ function renderBestaInstance(b, container) {
     if (bioList) { bioList.innerHTML = ''; b.hab.bio.forEach(h => bioList.appendChild(criarBestaCardBio(b, h, el))); }
     const treinoList = el.querySelector('[data-besta-hab-list="treino"]');
     if (treinoList) { treinoList.innerHTML = ''; b.hab.treino.forEach(h => treinoList.appendChild(criarBestaCardTreino(b, h, el))); }
+    // Cartões de aspectos: lembram aberto/fechado por pessoa (não marca a ficha como alterada)
+    el.querySelectorAll('[data-asp-card]').forEach(card => {
+        const chave = `besta:${b.id}:${card.dataset.aspCard}`;
+        setupAccordion(card, { open: cartaoAberto(chave, true), onUserToggle: (aberto) => lembrarCartao(chave, aberto) });
+    });
     const ataqueList = el.querySelector(`[data-besta-ataque-list="${b.id}"]`);
     if (ataqueList) {
         // Ensure a Porrada base attack exists in state
@@ -1539,6 +1461,7 @@ function renderBestaInstance(b, container) {
     bindBestaEvents(el, b);
     initBestaRadar(el, b);
     bindBestaVitalToggles(el, b);
+    sincronizarAspectosBesta(b);
     updateBestaBar(b.pmAtual || 0, derivedFor(b).pmMax, el.querySelector(`#besta-mana-fill-${b.id}`));
     // Apply calc mode to besta PM actual input
     const pmAtualInp = el.querySelector('[data-besta-field="pmAtual"]');
@@ -1600,6 +1523,17 @@ function refreshBestaDerivados(el, b) {
 }
 
 const OVERRIDE_BESTA = { pm: 'pmMaxManual', def: 'defesaManual' };
+
+/** Aspectos com bônus fixo (Volátil) viram linhas no log da besta. Idempotente. */
+function sincronizarAspectosBesta(b) {
+    const { log, campos } = reconciliarLinhas(
+        normalizarLog(b.incrementos),
+        linhasAspectosBesta(b.hab?.bio, parseInt(b.nivel, 10) || 1),
+    );
+    if (!campos.length) return;
+    aplicarLogBesta(b, log, campos);
+    document.dispatchEvent(new CustomEvent('incrementos:mudou'));
+}
 
 function bestaEl(id) {
     return document.querySelector(`#tab-besta .besta-instance[data-besta-id="${id}"]`);
@@ -1806,6 +1740,8 @@ function bindBestaEvents(el, b) {
                 saveBestas();
                 const list = el.querySelector(`[data-besta-indiv-list="${b.id}"]`);
                 if (list) list.appendChild(indivCardDOM(h, b.hab.indiv.length - 1));
+                refreshIndivCounter(el, b);
+                abrirCartaoAspecto(el, 'indiv');
                 return;
             }
             if (type === 'aspecto-search') return; // handled by setupAspectosSearcher
@@ -1823,6 +1759,7 @@ function bindBestaEvents(el, b) {
                 const list = el.querySelector('[data-besta-hab-list="bio"]');
                 if (list) list.appendChild(criarBestaCardBio(b, h, el));
                 refreshBioCounter(el, b);
+                abrirCartaoAspecto(el, 'bio');
             } else if (key === 'treino') {
                 const h = {id:uid(), nome:'', custo:'0', desc:''};
                 b.hab.treino.push(h);
@@ -1831,6 +1768,7 @@ function bindBestaEvents(el, b) {
                 if (list) list.appendChild(criarBestaCardTreino(b, h, el));
                 refreshTreinoCounter(el, b);
                 atualizarPtBesta();
+                abrirCartaoAspecto(el, 'treino');
             }
             return;
         }
@@ -1847,6 +1785,7 @@ function bindBestaEvents(el, b) {
                     list.innerHTML = '';
                     (b.hab.indiv || []).forEach((h2, i2) => list.appendChild(indivCardDOM(h2, i2)));
                 }
+                refreshIndivCounter(el, b);
             }
             return;
         }
@@ -1930,17 +1869,14 @@ function getAllAspectos() {
 
 function renderAspectoDdItem(item) {
     if (item._type === 'bio') {
-        const cor = 'var(--hab-bio-color)';
-        const custo = item.nivel || 'I';
-        return `<span class="besta-aspects-dd-custo" style="color:${cor}">${escapeHtml(custo)}</span>` +
+        return `<span class="asp-dd-custo">${escapeHtml(item.nivel || 'I')}</span>` +
                `<span class="besta-aspects-dd-nome">${escapeHtml(item.nome)}</span>` +
-               `<span class="besta-aspects-dd-tipo" style="color:${cor};background:color-mix(in srgb, ${cor} 10%, transparent)">Biológico ${escapeHtml(item.subtipo||'')}</span>`;
+               `<span class="asp-dd-tipo">Biológico ${escapeHtml(item.subtipo||'')}</span>`;
     }
     if (item._type === 'treino') {
-        const cor = 'var(--hab-treino-color)';
-        return `<span class="besta-aspects-dd-custo" style="color:${cor}">${item.custo} PT</span>` +
+        return `<span class="asp-dd-custo">${escapeHtml(String(item.custo))} PT</span>` +
                `<span class="besta-aspects-dd-nome">${escapeHtml(item.nome)}</span>` +
-               `<span class="besta-aspects-dd-tipo" style="color:${cor};background:color-mix(in srgb, ${cor} 10%, transparent)">De Treino</span>`;
+               `<span class="asp-dd-tipo">De Treino</span>`;
     }
     return escapeHtml(item.nome);
 }
@@ -1953,7 +1889,9 @@ function selectAspecto(item, b, el) {
         b.hab.bio.push(h);
         saveBestas();
         if (bioList) bioList.appendChild(criarBestaCardBio(b, h, el));
+        sincronizarAspectosBesta(b);
         refreshBioCounter(el, b);
+        abrirCartaoAspecto(el, 'bio');
     } else if (item._type === 'treino') {
         const h = { id:uid(), nome:item.nome, custo:String(item.custo||0), desc:item.desc };
         b.hab.treino.push(h);
@@ -1961,6 +1899,7 @@ function selectAspecto(item, b, el) {
         if (treinoList) treinoList.appendChild(criarBestaCardTreino(b, h, el));
         refreshTreinoCounter(el, b);
         atualizarPtBesta();
+        abrirCartaoAspecto(el, 'treino');
     }
 }
 
@@ -1988,7 +1927,7 @@ function setupAspectosSearcher(el, b) {
         dropdown.innerHTML = '';
         ddItems.forEach((item, i) => {
             const div = document.createElement('div');
-            div.className = 'besta-aspects-dropdown-item';
+            div.className = `besta-aspects-dropdown-item g-${item._type}`;
             div.innerHTML = renderAspectoDdItem(item);
             div.addEventListener('mouseenter', () => setActive(i));
             div.addEventListener('mousedown', e => { e.preventDefault(); });
@@ -2034,6 +1973,7 @@ function setupAspectosSearcher(el, b) {
                 const bioList = el.querySelector('[data-besta-hab-list="bio"]');
                 if (bioList) bioList.appendChild(criarBestaCardBio(b, h, el));
                 refreshBioCounter(el, b);
+                abrirCartaoAspecto(el, 'bio');
             }
             searchInp.value = '';
             searchInp.focus();
@@ -2056,6 +1996,7 @@ function setupAspectosSearcher(el, b) {
                 const bioList = el.querySelector('[data-besta-hab-list="bio"]');
                 if (bioList) bioList.appendChild(criarBestaCardBio(b, h, el));
                 refreshBioCounter(el, b);
+                abrirCartaoAspecto(el, 'bio');
             }
             searchInp.value = '';
             searchInp.focus();

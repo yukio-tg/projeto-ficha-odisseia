@@ -1,8 +1,8 @@
 // core/firebase-service.js
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+import { getAuth, onAuthStateChanged, connectAuthEmulator } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
 import {
-    getFirestore,
+    getFirestore, connectFirestoreEmulator,
     doc, collection,
     getDoc, setDoc, updateDoc, deleteDoc,
     query, where, limit, getDocs,
@@ -21,6 +21,11 @@ export function initFirebase() {
     app = initializeApp(FIREBASE_CONFIG);
     auth = getAuth(app);
     db = getFirestore(app);
+    // Teste local: em localhost usa o emulador.
+    if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+        connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    }
 }
 
 /** Resolve com o User atual (ou null) assim que o estado de auth é conhecido. */

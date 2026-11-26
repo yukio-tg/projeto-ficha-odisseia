@@ -1,4 +1,5 @@
-// ui/grimorio-ui.js — Assistente da ficha. A regra de quem aparece fica em grimorio-acesso.js.
+// ui/grimorio-ui.js — Grimório: assistente da ficha, painel acoplado (não modal).
+// A regra de quem aparece e de quem pode ser colocado fica em core/grimorio-acesso.js.
 
 import { normalizar } from '../core/utils.js';
 import { getNivel, getAtributoBase } from '../core/radar-service.js';
@@ -7,6 +8,8 @@ import {
     avaliar,
     contarGastos,
     textoPrereq,
+    limitesDaHierarquia,
+    chaveRaridade,
     MALS_MONSTRO,
 } from '../core/grimorio-acesso.js';
 import { getPoderesCatalogo, adicionarPoderCatalogo } from './powers.js';
@@ -15,109 +18,70 @@ import { getItensCatalogo, adicionarItemCatalogo } from './inventory.js';
 import { listarBestasConsulta, adicionarAspectoNaBesta } from './besta.js';
 import { ASPECTOS_BIO, ASPECTOS_TREINO } from '../config/aspectos-besta.js';
 
-const FILTROS = [
-    { id: 'acesso', label: 'Pode receber' },
-    { id: 'poderes', label: 'Poderes' },
-    { id: 'magias', label: 'Magias' },
-    { id: 'itens', label: 'Itens' },
-    { id: 'aspectos', label: 'Aspectos' },
+const ABAS = [
+    { id: 'sugestoes', nome: 'Sugestões', runa: 'K' },
+    { id: 'poderes', nome: 'Poderes', runa: 'P' },
+    { id: 'magias', nome: 'Magias', runa: 'M' },
+    { id: 'itens', nome: 'Itens', runa: 'N' },
+    { id: 'besta', nome: 'Besta', runa: 'A' },
 ];
 
+const RARIDADES = ['banal', 'comum', 'incomum', 'raro', 'epico', 'lendario'];
+const NOME_RARIDADE = ['Banal', 'Comum', 'Incomum', 'Raro', 'Épico', 'Lendário'];
+const SUBTIPOS = ['Ofensivo', 'Defensivo', 'Movimentacional', 'Temperamental', 'Optativo'];
+const GRUPOS_ITEM = { arma: 'Armas', 'proteção': 'Proteções', 'básico': 'Itens básicos', fonte: 'Fontes' };
+const TRADICOES = { arcanismo: 'Arcanismo', feromancia: 'Feromancia', teurgia: 'Teurgia' };
+const TAG_TIPO = { poder: 'Poder', magia: 'Magia', item: 'Item', aspecto: 'Besta' };
+const ORDEM_SECOES = ['Armas', 'Proteções', 'Itens básicos', 'Fontes', 'Arcanismo', 'Feromancia', 'Teurgia',
+    'Aspectos biológicos', 'Aspectos de treino'];
+const LIMITE_GRUPO = 6;   // linhas visíveis por grupo antes do "Ver mais"
+const LIMITE_FALTA = 12;  // linhas de "Ver o que falta" antes do "Ver mais"
+
 let painel = null;
+let btn = null;
 let listaEl = null;
-let chipsEl = null;
-let contextoEl = null;
 let buscaEl = null;
-let bestaEl = null;
-let vazioEl = null;
-let filtro = 'acesso';
+let abasEl = null;
+let alvoEl = null;
+let contextoEl = null;
+let zonaEl = null;
+let aberta = false;
+let aba = 'sugestoes';
 let busca = '';
-let trilha = 'besta';
 let bestaId = '';
 let pendente = '';
-let aberta = false;
+let faltaAberta = false;
+let temporizador = 0;
+const expandidos = new Set();
+const gruposAbertos = new Set();
 
-const RARIDADE = ['banal', 'comum', 'incomum', 'raro', 'epico', 'lendario'];
-
-const RUNA = {
-    classe: 'runa-classe',
-    ramo: 'runa-ramo',
-    geral: 'runa-geral',
-    habito: 'runa-habito',
-    'magia-1': 'runa-magia-1',
-    'magia-2': 'runa-magia-2',
-    'magia-3': 'runa-magia-3',
-    'magia-4': 'runa-magia-4',
-    'magia-s': 'runa-magia-s',
-    item: 'runa-item',
-    bio: 'runa-bio',
-    treino: 'runa-treino',
-    monstro: 'runa-monstro',
-};
-
-const SPRITE = `
-<svg id="grimorio-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0">
-  <style>
-    path, circle { fill: none; stroke: currentColor; stroke-width: 1.7; }
-  </style>
-  <symbol id="runa-classe" viewBox="0 0 32 32"><path d="M16 3 V29 M8 9 H24 M10 23 H22"/></symbol>
-  <symbol id="runa-ramo" viewBox="0 0 32 32"><path d="M16 4 V15 L7 28 M16 15 L25 28"/></symbol>
-  <symbol id="runa-geral" viewBox="0 0 32 32"><path d="M4 16 H28 M20 16 L28 8"/></symbol>
-  <symbol id="runa-habito" viewBox="0 0 32 32"><circle cx="16" cy="16" r="8"/></symbol>
-  <symbol id="runa-magia-1" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M16 8 V15"/></symbol>
-  <symbol id="runa-magia-2" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M12 12 V18 M20 12 V18"/></symbol>
-  <symbol id="runa-magia-3" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M10 11 V17 M16 8 V16 M22 11 V17"/></symbol>
-  <symbol id="runa-magia-4" viewBox="0 0 32 32"><path d="M6 22 Q16 4 26 22 M9 13 V18 M13 10 V17 M19 10 V17 M23 13 V18"/></symbol>
-  <symbol id="runa-magia-s" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><path d="M16 8 L22 16 L16 24 L10 16 Z"/></symbol>
-  <symbol id="runa-item" viewBox="0 0 32 32"><path d="M8 13 H24 V26 H8 Z M8 13 L16 7 L24 13"/></symbol>
-  <symbol id="runa-bio" viewBox="0 0 32 32"><path d="M7 24 L16 7 L25 24"/></symbol>
-  <symbol id="runa-treino" viewBox="0 0 32 32"><path d="M7 24 L16 7 L25 24 M16 13 V24 M11 18 H21"/></symbol>
-  <symbol id="runa-monstro" viewBox="0 0 32 32"><path d="M16 4 L28 16 L16 28 L4 16 Z"/></symbol>
-  <symbol id="glifo-pt" viewBox="0 0 32 32"><path d="M3 16 H29 M20 9 L29 16 L20 23"/></symbol>
-  <symbol id="glifo-habito" viewBox="0 0 32 32"><circle cx="16" cy="16" r="6"/></symbol>
-  <symbol id="glifo-la" viewBox="0 0 32 32"><path d="M6 22 Q16 8 26 22"/></symbol>
-  <symbol id="glifo-peso" viewBox="0 0 32 32"><path d="M6 16 H22"/></symbol>
-  <symbol id="sigilo-aberto" viewBox="0 0 32 32"><path d="M16 5 A11 11 0 1 1 8 11"/></symbol>
-  <symbol id="sigilo-fechado" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/></symbol>
-  <symbol id="sigilo-partido" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10"/><path d="M8 8 L24 24"/></symbol>
-  <symbol id="florao" viewBox="0 0 32 32"><path d="M16 4 L20 12 L28 16 L20 20 L16 28 L12 20 L4 16 L12 12 Z"/></symbol>
-  <symbol id="canto" viewBox="0 0 32 32"><path d="M6 28 V8 H28 M10 28 V14 H28"/></symbol>
-</svg>`;
-
-function modoDock() {
-    return window.matchMedia('(min-width: 960px)').matches;
-}
-
-function prefereParado() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
+// ── Leitura da ficha ────────────────────────────────────────────────────────
 
 function leitura() {
     return document.body.classList.contains('mode-readonly');
 }
 
 function num(seletor) {
-    const el = document.querySelector(seletor);
-    const n = parseInt(el?.value, 10);
+    const n = parseInt(document.querySelector(seletor)?.value, 10);
     return Number.isFinite(n) ? n : 0;
-}
-
-function aplicarModo() {
-    if (!painel) return;
-    painel.classList.toggle('grimorio--overlay', !modoDock());
-    document.body.classList.toggle('grimorio-overlay', aberta && !modoDock());
 }
 
 function nomesDos(seletor, ler) {
     return [...document.querySelectorAll(seletor)].map(ler).map(s => (s || '').trim()).filter(Boolean);
 }
 
+// Mesma condição da aba Besta da ficha (besta.js, checkBestaTabVisibility).
+function temAbaBesta() {
+    const classe = (document.querySelector('[data-field="classe-nome"]')?.value || '').trim().toLowerCase();
+    const vinculo = (document.querySelector('[data-field="besta-nome"]')?.value || '').trim().toLowerCase();
+    return classe === 'treinador' || (vinculo !== '' && vinculo !== 'nenhum');
+}
+
 function perfilAtual() {
     const poderes = getPoderesCatalogo();
-    const cards = [...document.querySelectorAll('.powers-container .card-power')];
     const nomes = [];
     const owned = [];
-    for (const card of cards) {
+    for (const card of document.querySelectorAll('.powers-container .card-power')) {
         const nome = card.querySelector('.power-name-input')?.value?.trim() || '';
         if (!nome) continue;
         nomes.push(nome);
@@ -132,10 +96,8 @@ function perfilAtual() {
         if (hit) owned.push(hit);
         else if (ASPECTOS_BIO.some(a => normalizar(a.nome) === normalizar(nome))) owned.push({ grupo: 'monstro', nome });
     }
-    const nomesMagia = nomesDos('.magic-card .magic-nome', el => el.textContent);
     const bestas = listarBestasConsulta();
     if (!bestaId || !bestas.some(b => b.id === bestaId)) bestaId = bestas[0]?.id || '';
-    const besta = bestas.find(b => b.id === bestaId) || null;
     const cotasUsadas = { banal: 0, comum: 0, incomum: 0, raro: 0, epico: 0, lendario: 0 };
     document.querySelectorAll('.item-card').forEach(card => {
         const estado = card.querySelector('.item-estado-select')?.value;
@@ -143,6 +105,7 @@ function perfilAtual() {
         const chave = normalizar(card.dataset.raridade || '');
         if (chave in cotasUsadas) cotasUsadas[chave] += 1;
     });
+    const selHierarquia = document.querySelector('[data-field="hierarquia"]');
     const base = {
         nivel: getNivel(),
         classe: document.querySelector('[data-field="classe-nome"]')?.value?.trim() || '',
@@ -150,607 +113,699 @@ function perfilAtual() {
         alinhamento: document.querySelector('[data-field="alinhamento-nome"]')?.value?.trim() || '',
         sabedoria: getAtributoBase('SAB'),
         monstro: document.querySelector('[data-field="monstro"]')?.checked ?? false,
-        hierarquia: document.querySelector('[data-field="hierarquia"]')?.value || 'pobre',
+        hierarquia: selHierarquia?.value || 'pobre',
+        hierarquiaNome: (selHierarquia?.selectedOptions?.[0]?.textContent || selHierarquia?.value || 'pobre').trim().toLowerCase(),
         ptRestante: num('[data-field="pt-total"]') - num('[data-field="pt-atual"]'),
         laRestante: num('[data-field="la-total"]') - num('[data-field="la-atual"]'),
         pesoAtual: num('[data-field="inv-atual"]'),
         pesoLimite: num('[data-field="inv-total"]'),
         cotasUsadas,
         nomes,
-        nomesMagia,
+        nomesMagia: nomesDos('.magic-card .magic-nome', el => el.textContent),
         fontes: getFontes().map(f => ({
-            deusa: f.deusa,
-            grauMax: f.grauMax,
-            laMax: f.laMax,
-            usedLa: f.usedLa,
-            raridade: f.raridade,
+            deusa: f.deusa, grauMax: f.grauMax, laMax: f.laMax, usedLa: f.usedLa, raridade: f.raridade,
         })),
-        besta,
+        besta: bestas.find(b => b.id === bestaId) || null,
+        bestas,
         malsLivres: MALS_MONSTRO.filter(m => !nomes.some(n => normalizar(n) === normalizar(`Mal: ${m.nome}`))).length,
     };
     base.gastos = contarGastos(owned, base);
     return base;
 }
 
+// ── Claro ou escuro: mede o brilho do pergaminho da ficha (sem opção do jogador) ──
+
+function brilhoDoPergaminho() {
+    const amostra = document.createElement('i');
+    amostra.style.cssText = 'position:absolute;width:0;height:0;background:var(--sheet-bg);';
+    document.body.appendChild(amostra);
+    const cor = getComputedStyle(amostra).backgroundColor;
+    amostra.remove();
+    const tela = document.createElement('canvas');
+    tela.width = tela.height = 1;
+    const ctx = tela.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return 1;
+    ctx.fillStyle = '#e8dcc0';
+    ctx.fillStyle = cor;
+    ctx.fillRect(0, 0, 1, 1);
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+function detectarPergaminho() {
+    if (!painel) return;
+    painel.classList.toggle('grimorio--escuro', brilhoDoPergaminho() < 0.4);
+}
+
+// ── Montagem das entradas (usam as regras de grimorio-acesso.js) ──────────────
+
 function descricaoMagia(m) {
     const partes = [];
+    if (m.custo) partes.push(`Custo: ${m.custo}`);
     if (m.descricao) partes.push(m.descricao);
     if (m.descricao_geral) partes.push(m.descricao_geral);
     if (m.descricao_sucesso) partes.push('Sucesso: ' + m.descricao_sucesso);
     if (m.descricao_fracasso) partes.push('Fracasso: ' + m.descricao_fracasso);
-    (m.aprimoramentos || []).forEach(a => {
-        partes.push(`${a.custo || ''} ${a.descricao || ''}`.trim());
-    });
-    return partes.filter(Boolean).join('\n\n');
+    (m.aprimoramentos || []).forEach(a => partes.push(`${a.custo || ''} ${a.descricao || ''}`.trim()));
+    return partes.filter(Boolean);
+}
+
+function finalizar(entrada, resultado) {
+    const ja = resultado.motivo === 'já na ficha';
+    return { ...entrada, ...resultado, ja, falta: resultado.visivel && !resultado.podeAdicionar && !ja };
 }
 
 function entradaPoder(p, perfil) {
-    const resultado = avaliar({ kind: 'poder', ...p }, perfil);
-    return {
+    const origem = p.origem;
+    let secao = 'Poderes gerais';
+    if (origem === 'classe') secao = 'Habilidades de classe';
+    else if (origem === 'ramo') secao = `Ramo ${p.ramo || ''}`.trim();
+    else if (origem === 'habito') secao = 'Hábito';
+    return finalizar({
         key: `poder:${normalizar(p.nome)}:${p.ptCost}:${p.classe || ''}:${p.ramo || ''}`,
         kind: 'poder',
         nome: p.nome,
-        custo: p.origem === 'habito' ? (p.otherCosts || 'Hábito') : `${Number(p.ptCost) || 0} PT${p.otherCosts ? ' ' + p.otherCosts : ''}`,
-        descricao: p.descricao || '',
+        custo: origem === 'habito' ? (p.otherCosts || 'Hábito') : `${Number(p.ptCost) || 0} PT${p.otherCosts ? ' ' + p.otherCosts : ''}`,
+        descricao: [p.descricao || ''].filter(Boolean),
         prereq: textoPrereq(p.prereq),
-        filtros: p.origem === 'habito'
-            ? { subtipo: p.habito === 'luta' ? 'Luta' : p.habito === 'magia' ? 'Magia' : 'Gerais' }
-            : { ramo: p.origem === 'ramo' ? p.ramo : (p.origem === 'geral' ? 'Geral' : 'Classe') },
+        secao,
         raw: p,
-        ...resultado,
-    };
+    }, avaliar({ kind: 'poder', ...p }, perfil));
 }
 
 function entradaMagia(m, perfil) {
     const grau = m.grau === 'S' ? 'S' : (parseInt(m.grau, 10) || 1);
     const la = m.fe || m.la || 1;
-    const entrada = {
-        kind: 'magia',
-        nome: m.nome,
-        tradicao: m.tipo,
-        grau,
-        la,
-        divindade: m.divindade || '',
-    };
-    return {
+    const tradicao = normalizar(m.tipo);
+    return finalizar({
         key: `magia:${normalizar(m.nome)}:${m.tipo}`,
         kind: 'magia',
         nome: m.nome,
-        custo: `${m.tipo || ''} · ${grau}° · LA ${la}${m.divindade ? ' · ' + m.divindade : ''}`,
+        custo: `${grau}° · LA ${la}`,
         descricao: descricaoMagia(m),
-        prereq: '',
-        filtros: {
-            grau: grau === 'S' ? 'S' : `${grau}°`,
-            deusa: m.divindade || '',
-        },
+        prereq: m.divindade ? `Divindade: ${m.divindade}` : '',
+        secao: TRADICOES[tradicao] || 'Magia',
+        ordem: [Object.keys(TRADICOES).indexOf(tradicao), grau === 'S' ? 9 : grau, Number(la) || 0],
         raw: m,
-        ...avaliar(entrada, perfil),
-    };
+    }, avaliar({ kind: 'magia', nome: m.nome, tradicao: m.tipo, grau, la, divindade: m.divindade || '' }, perfil));
 }
 
 function entradaItem(item, perfil) {
-    return {
+    const chave = chaveRaridade(item.raridade);
+    const idx = Math.max(0, RARIDADES.indexOf(chave));
+    return finalizar({
         key: `item:${normalizar(item.nome)}`,
         kind: 'item',
         nome: item.nome,
-        custo: `${item.raridade || ''} · ${item.categoria || ''} · peso ${item.peso || 0}`,
-        descricao: item.descricao || '',
+        custo: `${Number(item.peso) || 0} Inv.`,
+        tag: NOME_RARIDADE[idx],
+        descricao: [item.descricao || ''].filter(Boolean),
         prereq: '',
-        filtros: { raridade: item.raridade || '', categoria: item.categoria || '' },
+        secao: GRUPOS_ITEM[item.categoria] || 'Itens básicos',
+        ordem: [idx],
         raw: item,
-        ...avaliar({ kind: 'item', nome: item.nome, raridade: item.raridade, peso: item.peso }, perfil),
-    };
+    }, avaliar({ kind: 'item', nome: item.nome, raridade: item.raridade, peso: item.peso }, perfil));
 }
 
-function entradaAspecto(item, perfil) {
-    const grupo = item.grupo;
-    const entrada = {
+function entradaAspecto(a, grupo, perfil) {
+    const custo = grupo === 'treino' ? `${a.custo} PT` : (grupo === 'monstro' ? '2 PT' : `Nível ${a.nivel}`);
+    const secao = grupo === 'treino' ? 'Aspectos de treino'
+        : grupo === 'monstro' ? 'Aspectos de monstro' : 'Aspectos biológicos';
+    return finalizar({
+        key: `aspecto:${grupo}:${normalizar(a.nome)}`,
         kind: 'aspecto',
         grupo,
-        nome: item.nome,
-        nivel: item.nivel,
-        custo: item.custo,
-    };
-    const custo = grupo === 'treino' ? `${item.custo} PT` : (grupo === 'monstro' ? '2 PT' : item.nivel);
-    return {
-        key: `aspecto:${grupo}:${normalizar(item.nome)}`,
-        kind: 'aspecto',
-        grupo,
-        nome: item.nome,
+        nome: a.nome,
         custo,
-        descricao: item.desc || item.descricao || '',
+        descricao: [a.desc || a.descricao || ''].filter(Boolean),
         prereq: '',
-        filtros: { subtipo: item.subtipo || (grupo === 'treino' ? 'Treino' : '') },
-        raw: item,
-        ...avaliar(entrada, perfil),
-    };
+        secao,
+        sub: grupo === 'bio' ? a.subtipo : '',
+        raw: a,
+    }, avaliar({ kind: 'aspecto', grupo, nome: a.nome, nivel: a.nivel, custo: grupo === 'monstro' ? 2 : a.custo }, perfil));
 }
 
-function aspectosDaTrilha(perfil) {
-    const bestas = listarBestasConsulta();
-    const temBesta = bestas.length > 0;
-    const temMonstro = perfil.monstro;
-    if (trilha === 'monstro' && !temMonstro) trilha = temBesta ? 'besta' : 'monstro';
-    if (trilha === 'besta' && !temBesta) trilha = temMonstro ? 'monstro' : 'besta';
-    if (trilha === 'monstro') {
-        return ASPECTOS_BIO.map(a => ({ ...a, grupo: 'monstro', custo: 2 }));
-    }
-    return [
-        ...ASPECTOS_BIO.map(a => ({ ...a, grupo: 'bio' })),
-        ...ASPECTOS_TREINO.map(a => ({ ...a, grupo: 'treino', subtipo: 'Treino' })),
-    ];
-}
-
-function listaBruta(perfil) {
+function catalogo(perfil) {
     const poderes = getPoderesCatalogo()
         .filter(p => ['classe', 'ramo', 'geral', 'habito'].includes(p.origem))
         .map(p => entradaPoder(p, perfil));
     const magias = getMagiasCatalogo().map(m => entradaMagia(m, perfil));
-    if (filtro === 'poderes') return poderes;
-    if (filtro === 'magias') return magias;
-    if (filtro === 'itens') return getItensCatalogo().map(item => entradaItem(item, perfil));
-    if (filtro === 'aspectos') return aspectosDaTrilha(perfil).map(a => entradaAspecto(a, perfil));
-    return poderes.concat(magias);
-}
-
-function aplicarBusca(lista) {
-    const q = normalizar(busca);
-    if (!q) return lista;
-    return lista.filter(e => normalizar(e.nome).includes(q) || normalizar(e.descricao).includes(q));
-}
-
-function travarLeitura(entrada) {
-    if (!leitura() || !entrada.podeAdicionar) return entrada;
-    return { ...entrada, podeAdicionar: false, motivo: 'modo leitura' };
-}
-
-function secaoDe(entrada, perfil) {
-    if (entrada.kind === 'poder') {
-        const origem = entrada.raw?.origem;
-        if (origem === 'classe') return 'Habilidades de classe';
-        if (origem === 'ramo') return `Ramo ${entrada.raw?.ramo || ''}`.trim();
-        if (origem === 'geral') return 'Poderes gerais';
-        if (origem === 'habito') return 'Hábito';
+    const itens = getItensCatalogo().map(i => entradaItem(i, perfil));
+    const aspectos = [];
+    if (perfil.monstro) ASPECTOS_BIO.forEach(a => aspectos.push(entradaAspecto({ ...a, custo: 2 }, 'monstro', perfil)));
+    if (temAbaBesta() && perfil.besta) {
+        ASPECTOS_BIO.forEach(a => aspectos.push(entradaAspecto(a, 'bio', perfil)));
+        ASPECTOS_TREINO.forEach(a => aspectos.push(entradaAspecto(a, 'treino', perfil)));
     }
-    if (entrada.kind === 'magia') {
-        const trad = String(entrada.raw?.tipo || '');
-        const nome = trad ? trad.charAt(0).toUpperCase() + trad.slice(1) : 'Magia';
-        return `${nome} · ${entrada.filtros.grau || ''}`.trim();
-    }
-    if (entrada.kind === 'item') return entrada.filtros.raridade || 'Itens';
-    if (entrada.grupo === 'monstro') return 'Aspectos de monstro';
-    if (entrada.grupo === 'treino') return 'Treino';
-    return entrada.filtros.subtipo || 'Biológico';
+    return { poderes, magias, itens, aspectos };
 }
 
-function igualRamo(a, b) {
-    return normalizar(a) === normalizar(b);
+// Sugestões: o que combina com a ficha e cabe agora (mistura de tipos).
+function sugestoes(cat, perfil) {
+    const livres = lista => lista.filter(e => e.visivel && e.podeAdicionar);
+    const classe = normalizar(perfil.classe);
+    const tradicaoPreferida = { arcanista: 'arcanismo', feromantico: 'feromancia', teurgista: 'teurgia' }[classe];
+    const proprios = livres(cat.poderes).filter(e => ['classe', 'ramo'].includes(e.raw.origem));
+    const gerais = livres(cat.poderes).filter(e => e.raw.origem === 'geral');
+    const magias = livres(cat.magias).sort((a, b) => {
+        const pa = normalizar(a.raw.tipo) === tradicaoPreferida ? 0 : 1;
+        const pb = normalizar(b.raw.tipo) === tradicaoPreferida ? 0 : 1;
+        return pa - pb || a.ordem[1] - b.ordem[1] || a.ordem[2] - b.ordem[2];
+    });
+    const itens = livres(cat.itens).filter(e => e.ordem[0] <= 1).sort((a, b) => a.ordem[0] - b.ordem[0]);
+    const bio = livres(cat.aspectos).filter(e => e.grupo === 'bio' && /Ofensivo|Defensivo/.test(e.sub || ''));
+    return [...proprios.slice(0, 3), ...gerais.slice(0, 1), ...magias.slice(0, 2), ...itens.slice(0, 2), ...bio.slice(0, 2)];
 }
 
-function ordemSecao(nome, perfil) {
+// ── Pintura ───────────────────────────────────────────────────────────────────
+
+function el(tag, classe, texto) {
+    const e = document.createElement(tag);
+    if (classe) e.className = classe;
+    if (texto != null) e.textContent = texto;
+    return e;
+}
+
+function botao(classe, texto) {
+    const b = el('button', classe, texto);
+    b.type = 'button';
+    return b;
+}
+
+function ordemPoder(nome, perfil) {
     if (nome === 'Habilidades de classe') return '0';
-    if (nome.startsWith('Ramo ')) {
-        const ramo = nome.slice(5);
-        return igualRamo(ramo, perfil.ramo) ? '1a' + ramo : '1b' + ramo;
-    }
+    if (nome.startsWith('Ramo ')) return (normalizar(nome.slice(5)) === normalizar(perfil.ramo) ? '1a' : '1b') + nome;
     if (nome === 'Poderes gerais') return '2';
     if (nome === 'Hábito') return '3';
-    if (nome.startsWith('Arcanismo')) return '4' + nome;
-    if (nome.startsWith('Feromancia')) return '5' + nome;
-    if (nome.startsWith('Teurgia')) return '6' + nome;
-    return '7' + nome;
+    return '4' + nome;
 }
 
-function agrupar(lista, perfil) {
-    const mapa = new Map();
-    lista.forEach(entrada => {
-        const nome = secaoDe(entrada, perfil);
-        if (!mapa.has(nome)) mapa.set(nome, []);
-        mapa.get(nome).push(entrada);
+function comparar(a, b) {
+    const oa = a.ordem || [];
+    const ob = b.ordem || [];
+    for (let i = 0; i < Math.max(oa.length, ob.length); i += 1) {
+        const d = (oa[i] || 0) - (ob[i] || 0);
+        if (d) return d;
+    }
+    return a.nome.localeCompare(b.nome, 'pt');
+}
+
+/**
+ * Quantos itens iguais ou equivalentes a este já estão no inventário (soma as quantidades).
+ * Equivalente: mesmo nome, sem contar maiúsculas, acentos nem um sufixo de numeração
+ * ("Arco Curto 2", "Arco Curto (2)", "Arco Curto x2").
+ */
+function quantosNaFicha(nome) {
+    const alvo = normalizar(nome);
+    let total = 0;
+    document.querySelectorAll('.item-card').forEach(card => {
+        const escrito = normalizar(card.querySelector('.item-nome-input')?.value || '')
+            .replace(/\s*(\([^)]*\)|x?\s*\d+)\s*$/, '').trim();
+        if (escrito !== alvo) return;
+        total += Math.max(1, parseInt(card.querySelector('.item-quantidade')?.value, 10) || 1);
     });
-    return [...mapa.entries()].sort((a, b) => ordemSecao(a[0], perfil).localeCompare(ordemSecao(b[0], perfil), 'pt'));
+    return total;
 }
 
-function textoContexto(perfil) {
-    const quem = perfil.classe
-        ? `${perfil.classe} · nv ${perfil.nivel || 0}`
-        : `Nível ${perfil.nivel || 0}`;
-    const ramo = perfil.ramo ? ` · ${perfil.ramo}` : '';
-    const sem = !perfil.alinhamento || normalizar(perfil.alinhamento) === 'nenhum';
-    const alin = sem ? '' : ` · ${perfil.alinhamento}`;
-    return `${quem}${ramo}${alin}`;
+function criarLinha(e, comTipo) {
+    const li = el('div', 'grimorio__item' + (e.falta ? ' is-falta' : '') + (e.ja ? ' is-ja' : ''));
+    const cab = el('div', 'grimorio__item-cab');
+    const aberto = expandidos.has(e.key);
+    const nome = botao('grimorio__nome', e.nome);
+    nome.setAttribute('aria-expanded', String(aberto));
+    nome.dataset.fk = `${e.key}|nome`;
+    cab.appendChild(nome);
+    if (e.kind === 'item') {
+        const qtd = quantosNaFicha(e.nome);
+        if (qtd > 0) {
+            const marca = el('span', 'grimorio__qtd', `x${qtd}`);
+            marca.setAttribute('aria-label', `${qtd} na ficha`);
+            marca.title = `${qtd} ${qtd === 1 ? 'igual já está' : 'iguais já estão'} na ficha`;
+            cab.appendChild(marca);
+        }
+    }
+    const tag = e.kind === 'item'
+        ? (comTipo ? `Item · ${e.tag}` : e.tag)
+        : (comTipo ? TAG_TIPO[e.kind] : '');
+    if (tag) cab.appendChild(el('span', 'grimorio__tag' + (e.kind === 'item' ? ` grimorio__tag--r${RARIDADES.indexOf(chaveRaridade(e.raw.raridade))}` : ''), tag));
+    cab.appendChild(el('span', 'grimorio__custo', e.custo));
+
+    const corpo = el('div', 'grimorio__corpo');
+    corpo.hidden = !aberto;
+    if (e.prereq) corpo.appendChild(el('p', 'grimorio__pre', `Pré-requisito: ${e.prereq}`));
+    e.descricao.forEach(t => corpo.appendChild(el('p', '', t)));
+    nome.addEventListener('click', () => {
+        corpo.hidden = !corpo.hidden;
+        nome.setAttribute('aria-expanded', String(!corpo.hidden));
+        if (corpo.hidden) expandidos.delete(e.key); else expandidos.add(e.key);
+    });
+
+    if (e.ja) {
+        cab.appendChild(el('span', 'grimorio__ja', 'Na ficha'));
+    } else if (e.podeAdicionar && !leitura()) {
+        const b = botao('grimorio__colocar', 'Colocar');
+        b.setAttribute('aria-label', `Colocar ${e.nome} na ficha`);
+        b.dataset.fk = `${e.key}|colocar`;
+        b.addEventListener('click', () => colocar(e));
+        cab.appendChild(b);
+    }
+    li.append(cab, corpo);
+    if (e.falta && e.motivo) li.appendChild(el('p', 'grimorio__motivo', e.motivo));
+    else if (e.aviso) li.appendChild(el('p', 'grimorio__motivo', e.aviso));
+    if (pendente === e.key && e.grupo === 'monstro' && e.podeAdicionar) li.appendChild(escolherMal(e));
+    return li;
+}
+
+function escolherMal(e) {
+    const caixa = el('div', 'grimorio__mals');
+    caixa.appendChild(el('span', 'grimorio__mals-rot', 'Escolha o mal:'));
+    const perfil = perfilAtual();
+    MALS_MONSTRO.filter(m => !perfil.nomes.some(n => normalizar(n) === normalizar(`Mal: ${m.nome}`))).forEach(mal => {
+        const b = botao('grimorio__colocar', mal.nome);
+        b.setAttribute('aria-label', `Escolher o mal ${mal.nome}`);
+        b.addEventListener('click', () => confirmarMal(e, mal));
+        caixa.appendChild(b);
+    });
+    return caixa;
+}
+
+// Escreve um bloco de linhas com limite e "Ver mais N".
+function blocoDeLinhas(entradas, chave, pai, comTipo, limite, forcarTodas) {
+    const todas = forcarTodas || gruposAbertos.has(chave) || entradas.length <= limite + 1;
+    entradas.forEach((e, i) => { if (todas || i < limite) pai.appendChild(criarLinha(e, comTipo)); });
+    if (!todas) {
+        const mais = botao('grimorio__mais', `Ver mais ${entradas.length - limite}`);
+        mais.addEventListener('click', () => { gruposAbertos.add(chave); pintar(); });
+        pai.appendChild(mais);
+    }
+}
+
+function titulo(texto, runa) {
+    const h = el('h3', 'grimorio__grupo');
+    h.append(el('b', 'grimorio__runa', runa), document.createTextNode(texto));
+    return h;
+}
+
+function pintarGrupos(entradas, comTipo, perfil, forcar) {
+    const mapa = new Map();
+    entradas.forEach(e => {
+        const nome = comTipo && aba === 'sugestoes' && !busca.trim() ? 'Combina com a sua ficha' : e.secao;
+        if (!mapa.has(nome)) mapa.set(nome, []);
+        mapa.get(nome).push(e);
+    });
+    const nomes = [...mapa.keys()];
+    if (aba === 'poderes') nomes.sort((a, b) => ordemPoder(a, perfil).localeCompare(ordemPoder(b, perfil), 'pt'));
+    else nomes.sort((a, b) => ORDEM_SECOES.indexOf(a) - ORDEM_SECOES.indexOf(b));
+    nomes.forEach(nome => {
+        const itens = mapa.get(nome).sort(comparar);
+        const sec = el('section', 'grimorio__secao');
+        const bio = nome === 'Aspectos biológicos' && aba === 'besta';
+        const total = bio && perfil.besta ? `${perfil.besta.bioUsado}/${perfil.besta.bioLim}` : String(itens.length);
+        const runa = aba === 'besta' ? 'A' : ABAS.find(a => a.id === aba)?.runa || 'K';
+        sec.appendChild(titulo(`${nome} · ${total}`, nome === 'Aspectos de monstro' ? 'P' : runa));
+        if (bio) {
+            SUBTIPOS.forEach(sub => {
+                const parte = itens.filter(e => e.sub === sub);
+                if (!parte.length) return;
+                const caixa = el('div', 'grimorio__sub');
+                caixa.appendChild(el('h4', 'grimorio__sub-rot', `${sub} · ${parte.length}`));
+                blocoDeLinhas(parte, `${aba}:${nome}:${sub}`, caixa, comTipo, LIMITE_GRUPO, forcar);
+                sec.appendChild(caixa);
+            });
+        } else {
+            blocoDeLinhas(itens, `${aba}:${nome}`, sec, comTipo, LIMITE_GRUPO, forcar);
+        }
+        listaEl.appendChild(sec);
+    });
+}
+
+function linhaLimites(perfil) {
+    const limites = limitesDaHierarquia(perfil.hierarquia);
+    const usadas = perfil.cotasUsadas;
+    const com = [1, 2, 3, 4, 5].filter(i => limites[i] > 0)
+        .map(i => `${NOME_RARIDADE[i]} ${usadas[RARIDADES[i]] || 0}/${limites[i]}`).join(' · ');
+    const sem = [1, 2, 3, 4, 5].filter(i => limites[i] === 0).map(i => NOME_RARIDADE[i]).join(', ');
+    return `Limites da hierarquia ${perfil.hierarquiaNome}: ${com || 'nenhum item além dos banais'}.${sem ? ` ${sem} não aparecem.` : ''}`;
+}
+
+function pintarAlvo(perfil) {
+    alvoEl.replaceChildren();
+    alvoEl.hidden = aba !== 'besta';
+    if (aba !== 'besta') return;
+    alvoEl.appendChild(Object.assign(el('label', 'grimorio__alvo-rot', 'Besta'), { htmlFor: 'grimorio-besta-sel' }));
+    if (perfil.bestas.length > 1) {
+        const sel = el('select');
+        sel.id = 'grimorio-besta-sel';
+        perfil.bestas.forEach(b => {
+            const o = el('option', '', b.nome || 'Besta');
+            o.value = b.id;
+            o.selected = b.id === bestaId;
+            sel.appendChild(o);
+        });
+        sel.addEventListener('change', () => { bestaId = sel.value; pintar(); });
+        alvoEl.appendChild(sel);
+    } else {
+        const nome = el('span', 'grimorio__alvo-nome', perfil.bestas[0]?.nome || 'Nenhuma besta na ficha');
+        nome.id = 'grimorio-besta-sel';
+        alvoEl.appendChild(nome);
+    }
+}
+
+function pintarAbas() {
+    const mostrar = ABAS.filter(a => a.id !== 'besta' || temAbaBesta());
+    if (!mostrar.some(a => a.id === aba)) aba = 'sugestoes';
+    abasEl.replaceChildren();
+    mostrar.forEach(a => {
+        const b = botao('grimorio__aba');
+        b.setAttribute('role', 'tab');
+        b.setAttribute('aria-selected', String(a.id === aba));
+        b.tabIndex = a.id === aba ? 0 : -1;
+        b.dataset.aba = a.id;
+        const runa = el('span', 'grimorio__aba-runa', a.runa);
+        runa.setAttribute('aria-hidden', 'true');
+        b.dataset.fk = `aba|${a.id}`;
+        b.append(runa, document.createTextNode(a.nome));
+        abasEl.appendChild(b);
+    });
 }
 
 function pintar() {
     if (!painel || !aberta) return;
+    const foco = document.activeElement?.dataset?.fk && painel.contains(document.activeElement)
+        ? document.activeElement.dataset.fk : '';
+    const rolagem = listaEl.scrollTop;
     const perfil = perfilAtual();
-    const visiveis = listaBruta(perfil).filter(e => e.visivel).map(travarLeitura);
-    const finais = aplicarBusca(visiveis);
-    if (contextoEl) contextoEl.textContent = textoContexto(perfil);
-    pintarChips();
-    pintarBesta(perfil);
-    listaEl.innerHTML = '';
-    agrupar(finais, perfil).forEach(([nome, itens]) => {
-        listaEl.appendChild(criarSecao(nome, itens.length));
-        itens.forEach(entrada => listaEl.appendChild(criarCard(entrada)));
+    const cat = catalogo(perfil);
+    contextoEl.textContent = textoContexto(perfil);
+    pintarAbas();
+    pintarAlvo(perfil);
+    listaEl.replaceChildren();
+
+    const q = normalizar(busca.trim());
+    const comTipo = aba === 'sugestoes';
+    const todas = [...cat.poderes, ...cat.magias, ...cat.itens, ...cat.aspectos];
+    let base;
+    if (q) {
+        // Em Sugestões a busca procura em tudo; nas outras abas, só no que a aba lista.
+        base = comTipo ? todas : daAba(cat, perfil);
+        base = base.filter(e => e.visivel && normalizar(e.nome).includes(q));
+    } else if (comTipo) {
+        base = sugestoes(cat, perfil);
+    } else {
+        base = daAba(cat, perfil).filter(e => e.visivel);
+    }
+
+    if (aba === 'itens' && !q) listaEl.appendChild(el('p', 'grimorio__nota', linhaLimites(perfil)));
+    if (leitura()) listaEl.appendChild(el('p', 'grimorio__nota', 'Ficha em modo leitura: nada pode ser colocado.'));
+    if (aba === 'besta' && !perfil.bestas.length) {
+        listaEl.appendChild(el('p', 'grimorio__vazio', 'Nenhuma besta na ficha ainda. Crie uma na aba Besta da ficha.'));
+    }
+
+    const livres = base.filter(e => !e.falta);
+    const falta = base.filter(e => e.falta);
+    pintarGrupos(livres, comTipo || (q && aba === 'sugestoes'), perfil, !!q);
+    if (falta.length) pintarFalta(falta, comTipo, !!q);
+    if (!base.length && !(aba === 'besta' && !perfil.bestas.length)) {
+        listaEl.appendChild(el('p', 'grimorio__vazio', q
+            ? `Nada para “${busca.trim()}”.`
+            : (comTipo ? 'Nada cabe na ficha agora. Veja as outras abas.' : 'Nada desta lista cabe nesta ficha agora.')));
+    }
+
+    listaEl.scrollTop = rolagem;
+    if (foco) {
+        const alvo = [...listaEl.querySelectorAll('[data-fk]')].find(b => b.dataset.fk === foco)
+            || [...listaEl.querySelectorAll('[data-fk]')].find(b => b.dataset.fk === `${foco.split('|')[0]}|nome`);
+        alvo?.focus({ preventScroll: true });
+    }
+    medirRunas();
+}
+
+function daAba(cat, perfil) {
+    if (aba === 'poderes') return [...cat.poderes, ...cat.aspectos.filter(e => e.grupo === 'monstro')];
+    if (aba === 'magias') return cat.magias;
+    if (aba === 'itens') return cat.itens;
+    if (aba === 'besta') return cat.aspectos.filter(e => e.grupo !== 'monstro');
+    return [];
+}
+
+function pintarFalta(falta, comTipo, forcar) {
+    const sec = el('section', 'grimorio__falta');
+    const abre = faltaAberta || forcar;
+    const bt = botao('grimorio__falta-bt', `Ver o que falta · ${falta.length}`);
+    bt.setAttribute('aria-expanded', String(abre));
+    const caixa = el('div', 'grimorio__falta-corpo');
+    caixa.hidden = !abre;
+    falta.sort(comparar);
+    blocoDeLinhas(falta, `${aba}:falta`, caixa, comTipo, LIMITE_FALTA, forcar);
+    bt.addEventListener('click', () => {
+        faltaAberta = !faltaAberta;
+        caixa.hidden = !faltaAberta;
+        bt.setAttribute('aria-expanded', String(faltaAberta));
+        medirRunas();
     });
-    vazioEl.hidden = finais.length > 0;
-    vazioEl.textContent = visiveis.length === 0
-        ? 'Nada desta lista cabe nesta ficha agora.'
-        : 'Nada com essa busca. Tente outro nome.';
+    sec.append(bt, caixa);
+    listaEl.appendChild(sec);
 }
 
-function pintarChips() {
-    chipsEl.innerHTML = '';
-    FILTROS.forEach(f => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'grimorio__chip' + (filtro === f.id ? ' is-on' : '');
-        btn.textContent = f.label;
-        btn.addEventListener('click', () => {
-            filtro = f.id;
-            pendente = '';
-            pintar();
-        });
-        chipsEl.appendChild(btn);
-    });
+function textoContexto(perfil) {
+    const quem = perfil.classe ? `${perfil.classe} · nível ${perfil.nivel || 0}` : `Nível ${perfil.nivel || 0}`;
+    const sem = !perfil.alinhamento || normalizar(perfil.alinhamento) === 'nenhum';
+    return `${quem}${perfil.ramo ? ' · ' + perfil.ramo : ''}${sem ? '' : ' · ' + perfil.alinhamento}`;
 }
 
-function pintarBesta(perfil) {
-    bestaEl.hidden = filtro !== 'aspectos';
-    bestaEl.innerHTML = '';
-    if (filtro !== 'aspectos') return;
-    const bestas = listarBestasConsulta();
-    if (perfil.monstro) {
-        const troca = document.createElement('div');
-        troca.className = 'grimorio__sub';
-        ['besta', 'monstro'].forEach(id => {
-            if (id === 'besta' && !bestas.length) return;
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'grimorio__chip' + (trilha === id ? ' is-on' : '');
-            btn.textContent = id === 'besta' ? 'Besta' : 'Monstro';
-            btn.addEventListener('click', () => { trilha = id; pendente = ''; pintar(); });
-            troca.appendChild(btn);
-        });
-        if (troca.childElementCount > 1) bestaEl.appendChild(troca);
-    }
-    if (trilha === 'besta' && bestas.length > 1) {
-        const sel = document.createElement('select');
-        sel.className = 'grimorio__besta';
-        sel.setAttribute('aria-label', 'Besta');
-        bestas.forEach(b => {
-            const opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = b.nome || 'Besta';
-            if (b.id === bestaId) opt.selected = true;
-            sel.appendChild(opt);
-        });
-        sel.addEventListener('change', () => { bestaId = sel.value; pintar(); });
-        bestaEl.appendChild(sel);
-    } else if (trilha === 'besta' && bestas.length === 1) {
-        const nome = document.createElement('p');
-        nome.className = 'grimorio__besta-nome';
-        nome.textContent = bestas[0].nome || 'Besta';
-        bestaEl.appendChild(nome);
-    } else if (trilha === 'besta' && !bestas.length && !perfil.monstro) {
-        const nome = document.createElement('p');
-        nome.className = 'grimorio__besta-nome';
-        nome.textContent = 'Nenhuma besta na ficha.';
-        bestaEl.appendChild(nome);
-    }
-}
+// ── Colocar na ficha ──────────────────────────────────────────────────────────
 
-function etapaDe(entrada) {
-    if (entrada.kind === 'poder') {
-        const origem = entrada.raw?.origem;
-        if (origem === 'classe' || origem === 'ramo' || origem === 'geral' || origem === 'habito') return origem;
-    }
-    if (entrada.kind === 'magia') {
-        if (entrada.grau === 'S') return 'magia-s';
-        const grau = parseInt(entrada.grau, 10) || 1;
-        return 'magia-' + Math.min(4, Math.max(1, grau));
-    }
-    if (entrada.kind === 'item') return 'item';
-    if (entrada.grupo === 'monstro' || entrada.grupo === 'treino') return entrada.grupo;
-    return 'bio';
-}
-
-function glifosDe(entrada) {
-    if (entrada.kind === 'poder') {
-        return [{ simbolo: entrada.raw?.origem === 'habito' ? 'glifo-habito' : 'glifo-pt' }];
-    }
-    if (entrada.kind === 'magia') {
-        if (entrada.grau === 'S') return [{ simbolo: 'runa-magia-s' }, { simbolo: 'glifo-la' }];
-        return [{ pontos: parseInt(entrada.grau, 10) || 1 }, { simbolo: 'glifo-la' }];
-    }
-    if (entrada.kind === 'item') {
-        const chave = normalizar(entrada.filtros?.raridade || '').replace(/\s+/g, '');
-        const n = RARIDADE.indexOf(chave);
-        return [{ pontas: n < 0 ? 1 : n + 1 }, { simbolo: 'glifo-peso' }];
-    }
-    if (entrada.grupo === 'treino') return [{ simbolo: 'glifo-pt' }];
-    return [{ simbolo: 'glifo-peso' }];
-}
-
-function ico(id) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'grimorio__ico');
-    svg.setAttribute('viewBox', '0 0 32 32');
-    svg.setAttribute('aria-hidden', 'true');
-    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-    use.setAttribute('href', '#' + id);
-    svg.appendChild(use);
-    return svg;
-}
-
-function pontas(quantidade, raridade) {
-    const faixa = document.createElement('span');
-    faixa.className = 'grimorio__pontas' + (raridade ? ' grimorio__pontas--raridade' : '');
-    faixa.setAttribute('aria-hidden', 'true');
-    for (let i = 0; i < quantidade; i += 1) faixa.appendChild(document.createElement('i'));
-    return faixa;
-}
-
-function filete() {
-    const linha = document.createElement('span');
-    linha.className = 'grimorio__filete';
-    linha.setAttribute('aria-hidden', 'true');
-    return linha;
-}
-
-function canto(lado) {
-    const el = ico('canto');
-    el.classList.add('grimorio__canto', 'grimorio__canto--' + lado);
-    return el;
-}
-
-function criarSecao(nome, quantidade) {
-    const titulo = document.createElement('h3');
-    titulo.className = 'grimorio__secao';
-    const rotulo = document.createElement('span');
-    rotulo.className = 'grimorio__secao-nome';
-    rotulo.textContent = `${nome} · ${quantidade}`;
-    titulo.append(rotulo, filete(), ico('florao'), filete());
-    return titulo;
-}
-
-function criarCard(entrada) {
-    const etapa = etapaDe(entrada);
-    const card = document.createElement('article');
-    card.className = 'grimorio__card grimorio__card--' + etapa + (entrada.podeAdicionar ? '' : ' is-mudo');
-    const head = document.createElement('button');
-    head.type = 'button';
-    head.className = 'grimorio__card-head';
-    const nome = document.createElement('span');
-    nome.className = 'grimorio__nome';
-    nome.textContent = entrada.nome;
-    const valor = document.createElement('span');
-    valor.className = 'grimorio__valor';
-    glifosDe(entrada).forEach(glifo => {
-        if (glifo.simbolo) valor.appendChild(ico(glifo.simbolo));
-        else if (glifo.pontos) valor.appendChild(pontas(glifo.pontos, false));
-        else if (glifo.pontas) valor.appendChild(pontas(glifo.pontas, true));
-    });
-    const custo = document.createElement('span');
-    custo.className = 'grimorio__custo';
-    custo.textContent = entrada.custo;
-    valor.appendChild(custo);
-    head.append(ico(RUNA[etapa] || 'runa-geral'), nome, valor);
-    const body = document.createElement('div');
-    body.className = 'grimorio__card-body';
-    body.hidden = true;
-    const desc = document.createElement('p');
-    desc.className = 'grimorio__desc';
-    desc.textContent = entrada.descricao || '';
-    body.appendChild(desc);
-    if (entrada.prereq) {
-        const pre = document.createElement('p');
-        pre.className = 'grimorio__prereq';
-        pre.textContent = 'Pré-requisito: ' + entrada.prereq;
-        body.appendChild(pre);
-    }
-    head.addEventListener('click', () => { body.hidden = !body.hidden; });
-    card.append(head, body);
-
-    if (entrada.aviso) {
-        const aviso = document.createElement('p');
-        aviso.className = 'grimorio__aviso';
-        aviso.append(ico('sigilo-aberto'), document.createTextNode(entrada.aviso));
-        card.appendChild(aviso);
-    }
-
-    if (pendente === entrada.key && entrada.grupo === 'monstro' && entrada.podeAdicionar) {
-        const mals = document.createElement('div');
-        mals.className = 'grimorio__mals';
-        mals.appendChild(ico('sigilo-partido'));
-        const perfil = perfilAtual();
-        const livres = MALS_MONSTRO.filter(m => !perfil.nomes.some(n => normalizar(n) === normalizar(`Mal: ${m.nome}`)));
-        livres.forEach(mal => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'grimorio__add';
-            btn.textContent = mal.nome;
-            btn.addEventListener('click', () => confirmarMal(entrada, mal));
-            mals.appendChild(btn);
-        });
-        card.appendChild(mals);
-        return card;
-    }
-
-    if (entrada.podeAdicionar) {
-        const acao = document.createElement('button');
-        acao.type = 'button';
-        acao.className = 'grimorio__add';
-        acao.append(ico('sigilo-aberto'), document.createTextNode(entrada.grupo === 'monstro' ? 'Colocar e escolher mal' : 'Colocar na ficha'));
-        acao.addEventListener('click', () => adicionar(entrada));
-        card.appendChild(acao);
-    } else if (entrada.motivo) {
-        const motivo = document.createElement('p');
-        motivo.className = 'grimorio__motivo';
-        motivo.append(ico('sigilo-fechado'), document.createTextNode(entrada.motivo));
-        card.appendChild(motivo);
-    }
-    return card;
-}
-
-function adicionar(entrada) {
-    if (!entrada.podeAdicionar || leitura()) return;
-    if (entrada.grupo === 'monstro') {
-        pendente = entrada.key;
+function colocar(e) {
+    if (!e.podeAdicionar || leitura()) return;
+    if (e.grupo === 'monstro') {
+        pendente = e.key;
         pintar();
         return;
     }
-    if (entrada.kind === 'poder') adicionarPoderCatalogo(entrada.raw);
-    else if (entrada.kind === 'magia') adicionarMagiaCatalogo(entrada.raw);
-    else if (entrada.kind === 'item') adicionarItemCatalogo(entrada.raw);
-    else if (entrada.kind === 'aspecto') {
-        const besta = bestaId || listarBestasConsulta()[0]?.id;
-        if (!besta) return;
-        adicionarAspectoNaBesta(besta, {
-            _type: entrada.grupo === 'treino' ? 'treino' : 'bio',
-            nome: entrada.raw.nome,
-            desc: entrada.raw.desc,
-            nivel: entrada.raw.nivel,
-            subtipo: entrada.raw.subtipo,
-            custo: entrada.raw.custo,
+    if (e.kind === 'poder') adicionarPoderCatalogo(e.raw);
+    else if (e.kind === 'magia') adicionarMagiaCatalogo(e.raw);
+    else if (e.kind === 'item') adicionarItemCatalogo(e.raw);
+    else if (e.kind === 'aspecto') {
+        const id = bestaId || listarBestasConsulta()[0]?.id;
+        if (!id) return;
+        adicionarAspectoNaBesta(id, {
+            _type: e.grupo === 'treino' ? 'treino' : 'bio',
+            nome: e.raw.nome,
+            desc: e.raw.desc,
+            nivel: e.raw.nivel,
+            subtipo: e.raw.subtipo,
+            custo: e.raw.custo,
         });
     }
+    pintar();
 }
 
-function confirmarMal(entrada, mal) {
+function confirmarMal(e, mal) {
     pendente = '';
     const aspecto = adicionarPoderCatalogo({
-        nome: entrada.nome,
-        ptCost: 2,
-        otherCosts: '',
-        descricao: entrada.descricao,
-        cor: 'Roxo',
+        nome: e.nome, ptCost: 2, otherCosts: '', descricao: e.descricao.join('\n\n'), cor: 'Roxo',
     });
     if (aspecto) aspecto.dataset.grimorioGrupo = 'monstro';
     const malCard = adicionarPoderCatalogo({
-        nome: `Mal: ${mal.nome}`,
-        ptCost: 0,
-        otherCosts: '',
-        descricao: mal.descricao,
-        cor: 'Roxo',
+        nome: `Mal: ${mal.nome}`, ptCost: 0, otherCosts: '', descricao: mal.descricao, cor: 'Roxo',
     });
     if (malCard) malCard.dataset.grimorioGrupo = 'mal';
+    pintar();
 }
 
-function marcarAbertura(aberto) {
-    ['grimorio-btn', 'grimorio-fab'].forEach(id => {
-        document.getElementById(id)?.setAttribute('aria-expanded', aberto ? 'true' : 'false');
-    });
+// ── Runas flutuantes (decoração; ficam nas faixas laterais e atrás do texto) ──
+
+function semente(inicial) {
+    let s = inicial;
+    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
 }
+
+function criarRunas(painelEl) {
+    const rnd = semente(21);
+    const letras = 'ABCDEFGHIJKLMNOPRSTUVWYZabcdefghijklmnoprstuvwy';
+    // Cada runa tem 14 a 16px e balança no máximo 4px: cabe na faixa livre de 30px.
+    const runa = (lado, x) => {
+        const e = el('span', 'grimorio__fl', letras[Math.floor(rnd() * letras.length)]);
+        e.style[lado] = x;
+        e.style.setProperty('--t', `${14 + Math.floor(rnd() * 3)}px`);
+        e.style.setProperty('--d', `${(13 + rnd() * 9).toFixed(1)}s`);
+        e.style.setProperty('--atraso', `${(-rnd() * 20).toFixed(1)}s`);
+        e.style.setProperty('--dx', `${((rnd() - 0.5) * 8).toFixed(1)}px`);
+        e.style.setProperty('--giro', `${((rnd() - 0.5) * 80).toFixed(0)}deg`);
+        e.style.setProperty('--pico', (0.78 + rnd() * 0.2).toFixed(2));
+        return e;
+    };
+    const caixa = (classe) => {
+        const c = el('div', `grimorio__flutua ${classe}`);
+        c.setAttribute('aria-hidden', 'true');
+        return c;
+    };
+    const lateral = caixa('');
+    for (let i = 0; i < 7; i += 1) lateral.appendChild(runa('left', `${(3 + rnd() * 3).toFixed(1)}px`));
+    for (let i = 0; i < 7; i += 1) lateral.appendChild(runa('right', `${(3 + rnd() * 3).toFixed(1)}px`));
+    // Topo: dos dois lados do título, que fica no centro.
+    const topo = caixa('grimorio__flutua--topo');
+    for (let i = 0; i < 4; i += 1) topo.appendChild(runa('left', `${(i % 2 ? 14 + rnd() * 8 : 76 + rnd() * 8).toFixed(0)}%`));
+    // Vazio abaixo de listas curtas: a zona é posicionada em medirRunas().
+    zonaEl = caixa('grimorio__flutua--vazio');
+    zonaEl.hidden = true;
+    for (let i = 0; i < 4; i += 1) zonaEl.appendChild(runa('left', `${(12 + rnd() * 76).toFixed(0)}%`));
+    painelEl.append(lateral, topo, zonaEl);
+}
+
+function medirRunas() {
+    if (!painel || !aberta) return;
+    painel.style.setProperty('--alt', `${painel.clientHeight}px`);
+    // Onde a lista termina o painel está livre: ali as runas sobem por trás do vazio.
+    const ultimo = listaEl.lastElementChild;
+    const fim = ultimo ? ultimo.offsetTop + ultimo.offsetHeight : 0;
+    const sobra = listaEl.clientHeight - fim - 24;
+    if (listaEl.scrollHeight <= listaEl.clientHeight && sobra > 110) {
+        zonaEl.style.top = `${listaEl.offsetTop + fim + 12}px`;
+        zonaEl.style.setProperty('--alt-zona', `${sobra}px`);
+        zonaEl.hidden = false;
+    } else {
+        zonaEl.hidden = true;
+    }
+}
+
+function escrituras(painelEl) {
+    const caixa = el('div', 'grimorio__escrita');
+    caixa.setAttribute('aria-hidden', 'true');
+    const linhas = [
+        ['run', 3, 8, -2, 'Vo Ka Ne Tu Ra Sa Mi Eth Or Va Lu Ni Ha Ke Do'],
+        ['cur', 17, 14, 1.5, 'Arcana verba in pelle scripta, quae nemo legit.'],
+        ['run', 31, 6, 1, 'Ru Ta Be Ol Ga Ni Fe Su Ha Mo Ti Ak Re Zu'],
+        ['cur', 46, 10, -1.5, 'Per umbram lucis et noctis fines.'],
+        ['run', 60, 12, 2, 'Ni Pa Ro Ev Ul Ka Se Do Ma Ti Ah Bo'],
+        ['cur', 74, 8, -1, 'Quod scribitur manet, quod dicitur volat.'],
+        ['run', 88, 10, 1.2, 'Ek Lu Ra Sa Vo Ni Tu Ha Ke Mi Or Fa'],
+    ];
+    linhas.forEach(([tipo, topo, esq, giro, texto]) => {
+        const p = el('p', `grimorio__esc grimorio__esc--${tipo}`, texto);
+        p.style.cssText = `top:${topo}%;left:${esq}%;transform:rotate(${giro}deg)`;
+        caixa.appendChild(p);
+    });
+    painelEl.appendChild(caixa);
+}
+
+// Borda esquerda irregular (só em tela larga; no celular a gaveta é reta).
+function bordaIrregular(painelEl) {
+    const rnd = semente(7);
+    const pontos = ['100% 0'];
+    for (let y = 0; y <= 100; y += 3.2) pontos.push(`${(rnd() * 5 * (y % 6 < 3 ? 1 : 0.6)).toFixed(2)}px ${y}%`);
+    pontos.push('100% 100%');
+    painelEl.style.setProperty('--borda', `polygon(${pontos.join(',')})`);
+}
+
+// ── Painel ────────────────────────────────────────────────────────────────────
 
 function abrir(aberto) {
     if (!painel) return;
     aberta = aberto;
-    marcarAbertura(aberto);
-    aplicarModo();
-    if (aberto) pintar();
-
-    if (prefereParado()) {
-        painel.hidden = !aberto;
-        painel.classList.toggle('is-aberto', aberto);
-        painel.classList.toggle('is-lombada', aberto);
-        return;
-    }
-
+    painel.classList.toggle('is-aberto', aberto);
+    painel.inert = !aberto;
+    document.body.classList.toggle('grimorio-aberto', aberto);
+    btn?.setAttribute('aria-expanded', String(aberto));
     if (aberto) {
-        const estavaFora = painel.hidden;
-        painel.hidden = false;
-        if (estavaFora) {
-            painel.classList.remove('is-aberto', 'is-lombada');
-            void painel.offsetWidth;
-        }
-        painel.classList.add('is-aberto');
-        return;
+        detectarPergaminho();
+        pintar();
     }
+}
 
-    painel.classList.remove('is-aberto', 'is-lombada');
+function trocarAba(id, focar) {
+    aba = id;
+    pendente = '';
+    pintar();
+    listaEl.scrollTop = 0;
+    if (focar) abasEl.querySelector(`[data-aba="${id}"]`)?.focus();
+}
+
+function aoTeclarNasAbas(ev) {
+    const abas = [...abasEl.querySelectorAll('[role="tab"]')];
+    const i = abas.indexOf(document.activeElement);
+    if (i < 0) return;
+    let alvo = -1;
+    if (ev.key === 'ArrowRight') alvo = (i + 1) % abas.length;
+    else if (ev.key === 'ArrowLeft') alvo = (i - 1 + abas.length) % abas.length;
+    else if (ev.key === 'Home') alvo = 0;
+    else if (ev.key === 'End') alvo = abas.length - 1;
+    if (alvo < 0) return;
+    ev.preventDefault();
+    trocarAba(abas[alvo].dataset.aba, true);
+}
+
+function agendarPintura() {
+    if (!aberta) return;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(pintar, 150);
 }
 
 function criarPainel() {
     painel = document.createElement('aside');
     painel.id = 'grimorio-panel';
     painel.className = 'grimorio';
-    painel.setAttribute('aria-label', 'Assistente da ficha');
-    painel.hidden = true;
-    painel.insertAdjacentHTML('afterbegin', SPRITE);
-    painel.addEventListener('transitionend', (e) => {
-        if (e.target !== painel || e.propertyName !== 'transform') return;
-        if (painel.classList.contains('is-aberto')) painel.classList.add('is-lombada');
-        else painel.hidden = true;
-    });
+    painel.setAttribute('aria-label', 'Grimório, assistente da ficha');
+    painel.inert = true;
+    bordaIrregular(painel);
+    escrituras(painel);
+    criarRunas(painel);
 
-    const head = document.createElement('div');
-    head.className = 'grimorio__head';
-    head.innerHTML = '<span class="grimorio__marca"><span class="grimorio__title">Grimório</span><span class="grimorio__oficio">Assistente da ficha</span></span>';
-    const fechar = document.createElement('button');
-    fechar.type = 'button';
-    fechar.className = 'grimorio__fechar';
-    fechar.setAttribute('aria-label', 'Fechar o assistente');
-    fechar.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">close</span>';
-    fechar.addEventListener('click', () => abrir(false));
-    head.appendChild(fechar);
+    const cab = el('header', 'grimorio__cab');
+    cab.appendChild(el('h2', 'grimorio__titulo', 'Grimório'));
+    contextoEl = el('p', 'grimorio__sub');
+    cab.appendChild(contextoEl);
+    const fechar = botao('grimorio__fechar', '×');
+    fechar.setAttribute('aria-label', 'Fechar o Grimório');
+    fechar.addEventListener('click', () => { abrir(false); btn?.focus(); });
+    cab.appendChild(fechar);
 
-    buscaEl = document.createElement('input');
+    const campo = el('div', 'grimorio__busca');
+    const rotulo = el('label', 'grimorio__sr', 'Buscar o que colocar na ficha');
+    rotulo.htmlFor = 'grimorio-busca';
+    buscaEl = el('input');
+    buscaEl.id = 'grimorio-busca';
     buscaEl.type = 'search';
-    buscaEl.className = 'grimorio__busca';
-    buscaEl.placeholder = 'O que colocar na ficha';
-    buscaEl.setAttribute('aria-label', 'Buscar o que colocar na ficha');
-    buscaEl.addEventListener('input', () => {
-        busca = buscaEl.value;
-        pintar();
+    buscaEl.placeholder = 'Buscar em tudo...';
+    buscaEl.autocomplete = 'off';
+    buscaEl.addEventListener('input', () => { busca = buscaEl.value; pintar(); });
+    campo.append(rotulo, buscaEl);
+
+    abasEl = el('nav', 'grimorio__abas');
+    abasEl.setAttribute('role', 'tablist');
+    abasEl.setAttribute('aria-label', 'O que o Grimório sugere');
+    abasEl.addEventListener('click', ev => {
+        const b = ev.target.closest('[data-aba]');
+        if (b) trocarAba(b.dataset.aba, false);
     });
+    abasEl.addEventListener('keydown', aoTeclarNasAbas);
 
-    contextoEl = document.createElement('p');
-    contextoEl.className = 'grimorio__contexto';
+    alvoEl = el('div', 'grimorio__alvo');
+    alvoEl.hidden = true;
+    listaEl = el('div', 'grimorio__lista');
 
-    chipsEl = document.createElement('div');
-    chipsEl.className = 'grimorio__chips';
-    chipsEl.setAttribute('role', 'tablist');
-    chipsEl.setAttribute('aria-label', 'O que o assistente lista');
-    bestaEl = document.createElement('div');
-    bestaEl.className = 'grimorio__besta-bar';
-
-    const folha = document.createElement('div');
-    folha.className = 'grimorio__folha';
-    ['tl', 'tr', 'bl', 'br'].forEach(lado => folha.appendChild(canto(lado)));
-
-    listaEl = document.createElement('div');
-    listaEl.className = 'grimorio__lista';
-    vazioEl = document.createElement('p');
-    vazioEl.className = 'grimorio__vazio';
-    vazioEl.hidden = true;
-
-    folha.append(contextoEl, buscaEl, chipsEl, bestaEl, listaEl, vazioEl);
-    painel.append(head, folha);
+    painel.append(cab, campo, abasEl, alvoEl, listaEl);
+    // O que se digita aqui não é edição da ficha: não deve chegar ao salvamento.
     ['input', 'change'].forEach(tipo => painel.addEventListener(tipo, e => e.stopPropagation()));
+    // Esc fecha só quando o foco está dentro do Grimório.
+    painel.addEventListener('keydown', ev => {
+        if (ev.key === 'Escape' && aberta) {
+            ev.stopPropagation();
+            abrir(false);
+            btn?.focus();
+        }
+    });
     document.body.appendChild(painel);
-
-    const fab = document.createElement('button');
-    fab.id = 'grimorio-fab';
-    fab.type = 'button';
-    fab.className = 'grimorio-fab';
-    fab.setAttribute('aria-label', 'Abrir o assistente da ficha');
-    fab.setAttribute('aria-expanded', 'false');
-    fab.setAttribute('aria-controls', 'grimorio-panel');
-    fab.innerHTML = '<span class="material-symbols-outlined" aria-hidden="true">menu_book</span><span class="grimorio-fab__rotulo">Grimório</span>';
-    fab.addEventListener('click', () => abrir(!aberta));
-    document.body.appendChild(fab);
 }
 
 export function initGrimorio() {
-    const btn = document.getElementById('grimorio-btn');
+    btn = document.getElementById('grimorio-btn');
     if (!btn || painel) return;
     criarPainel();
     btn.addEventListener('click', () => abrir(!aberta));
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && aberta) abrir(false);
-    });
-    document.addEventListener('ficha:changed', () => { if (aberta) pintar(); });
-    window.addEventListener('resize', () => { if (aberta) aplicarModo(); });
+    document.addEventListener('ficha:changed', agendarPintura);
+    // Mudanças na ficha que não disparam ficha:changed (hierarquia, classe, nível...).
+    ['input', 'change'].forEach(tipo => document.addEventListener(tipo, agendarPintura));
+    document.addEventListener('ficha:tema-mudou', detectarPergaminho);
+    window.addEventListener('resize', () => { if (aberta) medirRunas(); });
 }

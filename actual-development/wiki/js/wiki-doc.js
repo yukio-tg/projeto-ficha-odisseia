@@ -386,7 +386,8 @@ async function renderDoc(doc, user, isAdmin) {
     const authorEl = document.createElement('div');
     authorEl.className = 'wiki-doc-author';
     const authorName = document.createElement('span');
-    authorName.textContent = doc.authorEmail ?? '';
+    // Mostra só o nome antes do @: o e-mail completo não precisa ficar público.
+    authorName.textContent = (doc.authorEmail ?? '').split('@')[0];
     authorEl.appendChild(authorName);
     if (doc.createdAt) {
         const sep = document.createElement('span');

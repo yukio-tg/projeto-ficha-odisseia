@@ -76,6 +76,23 @@ node --test actual-development/ficha/js/core/sheet-trust.test.mjs
 
 Cobre a ida e volta do snapshot (número não editado permanece), o eco do save, o override manual e o bônus de herança/proteção que não empilha no segundo load. Não há jsdom: o que depende de DOM fica de fora.
 
+### Ambiente local (emuladores do Firebase)
+
+Roda Auth, Firestore e Hosting no seu computador, com um projeto falso (`demo-odisseia`). Nada toca os dados reais. Em `localhost` ou `127.0.0.1`, o dashboard, a ficha e a wiki ligam sozinhos ao emulador.
+
+Precisa de Java 21 (o emulador do Firestore usa) e de `actual-development/firebase-config.js` (copie o `.example` e preencha com qualquer valor, ou use o projeto `demo-odisseia`).
+
+```bash
+npm install
+npx playwright install chromium   # só na primeira vez
+npm run emulators                 # site em http://127.0.0.1:5050, painel em http://127.0.0.1:4000
+npm run test:rules                # regras do Firestore (firestore.rules)
+npm run test:e2e                  # navegador: cadastro, login, ficha, gravação
+npm test                          # os dois
+```
+
+`scripts/run.mjs` acha o Java em `~/.local/jdk/current` se ele não estiver no PATH. Os dados do emulador somem ao fechar. Os testes de navegador guardam os scripts do Firebase em `tests/e2e/.cdn-cache/` para não depender da rede.
+
 ---
 
 ## Licença

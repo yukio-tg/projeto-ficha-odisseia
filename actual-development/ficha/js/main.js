@@ -30,6 +30,7 @@ import { serializeSheet, deserializeSheet } from './core/sheet-serializer.js';
 import { shouldApplyRemoteSnapshot, fingerprintSheet } from './core/save-guard.js';
 import { initSharePopup } from './ui/share.js';
 import { initThemePanel, applyRemoteTheme, setThemeSaveFn, setThemeUpdateFn } from './ui/theme.js';
+import { initEfeitosPassivosUi } from './ui/efeitos-passivos-ui.js';
 import { initIncrementosUi, recalcularCampos, camposDoLog, sincronizarTetoAtributos } from './ui/incrementos-ui.js';
 import { initGrimorio } from './ui/grimorio-ui.js';
 
@@ -221,6 +222,7 @@ function applyReadOnlyMode(ownerEmail) {
     document.getElementById('autocalc-switch')?.closest('.header-autocalc')?.style.setProperty('display', 'none');
     document.getElementById('autosave-switch')?.closest('.header-autosave')?.style.setProperty('display', 'none');
     document.getElementById('share-btn-wrapper')?.style.setProperty('display', 'none');
+    document.getElementById('recalc-btn')?.closest('.header-recalc')?.style.setProperty('display', 'none');
 
     // Exibe banner de leitura
     const banner = document.getElementById('readonly-banner');
@@ -254,6 +256,9 @@ function setupRealtimeSync(sheetId) {
 
             // Escrita local ainda não confirmada: o eco chega de novo com hasPendingWrites false.
             if (snap.metadata.hasPendingWrites && currentPermission !== 'read') return;
+
+            // Tema em tempo real: outra pessoa mudou (ou restaurou) as cores
+            applyRemoteTheme(extractSheetTheme(snap.data()), true);
 
             const remoteData = snap.data()?.data;
             if (!remoteData) return;
@@ -367,6 +372,7 @@ async function initAllModules() {
     initAnotacoes();
     initClassCrest();
     initIncrementosUi();
+    initEfeitosPassivosUi();
 }
 
 function atualizarHerancaETeto() {
@@ -696,6 +702,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyReadOnlyMode(ownerEmail);
         return; // sem wires de edição
     }
+
+    // Cartões abertos/fechados: não acendem "não salvo" nem o autosave normal.
+    // Depois de uma pausa, gravam em silêncio, para o estado não se perder num recarregamento.
+    let _timerUiEstado = null;
+    document.addEventListener('ficha:ui-estado', () => {
+        if (suppressSave || isHydrating() || _hasUnsavedChanges || saveTimer) return; // o save já agendado leva o estado junto
+        clearTimeout(_timerUiEstado);
+        _timerUiEstado = setTimeout(() => {
+            _timerUiEstado = null;
+            if (!_hasUnsavedChanges && !saveTimer && !saveInFlight) performSave();
+        }, 4000);
+    });
 
     // Habilita o save de tema no Firestore (apenas para editores/donos)
     setThemeSaveFn((theme) => {

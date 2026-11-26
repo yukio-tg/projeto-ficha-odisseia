@@ -77,6 +77,11 @@ export function chaveRaridade(raridade) {
     return normalizar(raridade).replace(/\s+/g, '');
 }
 
+// Limites de cada raridade (banal..lendário) para a hierarquia; usado na linha de resumo do Grimório.
+export function limitesDaHierarquia(hierarquia) {
+    return [...(LIMITES_RARIDADE[normalizar(hierarquia)] || LIMITES_RARIDADE.pobre)];
+}
+
 export function cotaMaxima(hierarquia, raridade) {
     const tabela = LIMITES_RARIDADE[normalizar(hierarquia)] || LIMITES_RARIDADE.pobre;
     const idx = RARIDADE_IDX[chaveRaridade(raridade)];
@@ -268,6 +273,9 @@ function avaliarAspecto(entrada, perfil) {
     if ((besta.nomes || []).some(n => igual(n, entrada.nome))) return mudo('já na ficha');
 
     if (grupo === 'bio') {
+        // Níveis II e III só aparecem depois do anterior estar na Besta.
+        const anterior = nomeRankAnterior(entrada.nome);
+        if (anterior && !besta.nomes.some(n => igual(n, anterior))) return escondido();
         const peso = pesoRank(entrada.nivel || baseAspecto(entrada.nome).rank);
         if ((Number(besta.bioUsado) || 0) + peso > (Number(besta.bioLim) || 0)) return mudo('limite biológico');
         return livre();

@@ -5,7 +5,7 @@ import {
     initWikiFirebase, getWikiDoc, createWikiDoc, updateWikiDoc,
     titleExists, getTagSuggestions, registerTags,
 } from './wiki-firebase.js';
-import { getAuthState, requireAuth }                     from './wiki-auth.js';
+import { getAuthState }                                  from './wiki-auth.js';
 import { escapeHtml, getParam, slugifyTag, showToast, safeHttpUrl } from './wiki-utils.js';
 import {
     buildThemePicker, applyDocTheme, resetDocTheme,
@@ -22,6 +22,8 @@ let tipos         = [];
 let regioes       = [];
 let user          = null;
 let isAdmin       = false;
+let dirty         = false;          // há alterações ainda não salvas
+const commitPendingTags = [];       // grava o texto solto nos campos de tag
 const tipoChipMap   = new Map();
 const regiaoChipMap = new Map();
 
@@ -57,11 +59,19 @@ function updateTypeVisibility(type) {
 
 const ATTR_KEYS = ['corpo', 'velocidade', 'essencia', 'inteligencia'];
 
+/** Lê um atributo: vazio vira null; o resto vira inteiro de 0 a 10. */
+function readAttr(key) {
+    const n = parseInt(document.getElementById(`attr-${key}`)?.value, 10);
+    return Number.isNaN(n) ? null : Math.min(10, Math.max(0, n));
+}
+
 /** Renders or updates the chip preview next to an attribute input. */
 function updateAttrChipPreview(key) {
     const input = document.getElementById(`attr-${key}`);
     if (!input) return;
-    const val = Math.min(10, Math.max(0, parseInt(input.value, 10) || 5));
+    // 0 e campo vazio mostram zero chips (o "|| 5" antigo trocava o 0 por 5).
+    const n = parseInt(input.value, 10);
+    const val = Number.isNaN(n) ? 0 : Math.min(10, Math.max(0, n));
 
     // Find or create the chip preview element
     const row = input.closest('.wiki-attr-row');
@@ -91,10 +101,28 @@ function initAttrChipPreviews() {
     ATTR_KEYS.forEach(key => {
         const input = document.getElementById(`attr-${key}`);
         if (input) {
-            input.addEventListener('input', () => updateAttrChipPreview(key));
+            if (input.dataset.chipsWired !== '1') {
+                input.dataset.chipsWired = '1';
+                input.addEventListener('input', () => updateAttrChipPreview(key));
+                // Ao sair do campo, o número digitado é corrigido para a faixa 0 a 10.
+                input.addEventListener('change', () => {
+                    const v = readAttr(key);
+                    input.value = v === null ? '' : String(v);
+                    updateAttrChipPreview(key);
+                });
+            }
             updateAttrChipPreview(key);
         }
     });
+}
+
+function clearAttrs() {
+    ATTR_KEYS.forEach(key => {
+        const input = document.getElementById(`attr-${key}`);
+        if (input) input.value = '';
+        updateAttrChipPreview(key);
+    });
+    dirty = true;
 }
 
 // ── Bootstrap ──────────────────────────────────────────────────────────────────
@@ -105,10 +133,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     initWikiFirebase();
     currentDocId = getParam('id') || null;
 
-    const authedUser = await requireAuth('/index.html');
-    if (!authedUser) return;
-
     ({ user, isAdmin } = await getAuthState());
+    if (!user) { showLoginNeeded(); return; }
 
     // Sidebar
     initWikiSidebar(null);
@@ -150,7 +176,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('wiki-add-image')?.addEventListener('click', () => addGalleryItem());
 
     // Form submission
-    document.getElementById('wiki-form')?.addEventListener('submit', handleSubmit);
+    const form = document.getElementById('wiki-form');
+    form?.addEventListener('submit', handleSubmit);
+
+    // Enter num campo de uma linha não envia o formulário (os campos de tag usam Enter para criar a tag).
+    form?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) e.preventDefault();
+    });
+
+    // Alterações não salvas: avisa antes de sair da página.
+    form?.addEventListener('input',  () => { dirty = true; });
+    form?.addEventListener('change', () => { dirty = true; });
+    window.addEventListener('beforeunload', (e) => {
+        if (!dirty) return;
+        e.preventDefault();
+        e.returnValue = '';
+    });
+
+    // Some o aviso de erro assim que a pessoa volta a escrever no campo.
+    ['field-title-wrap', 'field-summary-wrap'].forEach(id => {
+        const wrap = document.getElementById(id);
+        wrap?.addEventListener('input', () => wrap.classList.remove('error'));
+    });
+
+    document.getElementById('wiki-attrs-clear')?.addEventListener('click', clearAttrs);
 
     // Type selector: update field visibility on change
     const typeSelect = document.getElementById('field-type');
@@ -169,7 +218,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Edit mode: load existing doc
     if (currentDocId) await loadDoc(currentDocId);
+    dirty = false;
 });
+
+/** Sem login: explica o motivo em vez de mandar a pessoa para outra tela sem aviso. */
+function showLoginNeeded() {
+    const wrap = document.querySelector('.wiki-editor-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'wiki-empty';
+    const icon = document.createElement('span');
+    icon.className = 'material-symbols-outlined';
+    icon.textContent = 'lock';
+    const msg = document.createElement('p');
+    msg.textContent = currentDocId
+        ? 'Entre na sua conta para editar este artigo.'
+        : 'Entre na sua conta para criar artigos.';
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap';
+    const login = document.createElement('a');
+    login.href = '/index.html';
+    login.className = 'wiki-btn wiki-btn-primary';
+    login.textContent = 'Entrar';
+    const back = document.createElement('a');
+    back.href = '/wiki';
+    back.className = 'wiki-btn wiki-btn-secondary';
+    back.textContent = 'Voltar à enciclopédia';
+    actions.append(login, back);
+    box.append(icon, msg, actions);
+    wrap.appendChild(box);
+}
 
 // ── Controlled-vocabulary selects ─────────────────────────────────────────────
 
@@ -220,6 +299,7 @@ function addTagChip(name, slugFn, chipMap, arr, fieldId, category) {
 
     arr.push(name);
     chipMap.set(slug, name);
+    dirty = true;
 
     const field = document.getElementById(fieldId);
     if (!field) return;
@@ -241,6 +321,7 @@ function addTagChip(name, slugFn, chipMap, arr, fieldId, category) {
         if (idx !== -1) arr.splice(idx, 1);
         chipMap.delete(slug);
         chip.remove();
+        dirty = true;
     });
 
     chip.appendChild(removeBtn);
@@ -260,6 +341,20 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
         name, slugifyTag, chipMap, arr, fieldId, category
     );
 
+    let activeIdx = -1;
+
+    function setActive(idx) {
+        const items = [...list.querySelectorAll('.wiki-autocomplete-item')];
+        activeIdx = items.length ? (idx + items.length) % items.length : -1;
+        items.forEach((li, i) => li.classList.toggle('active', i === activeIdx));
+        items[activeIdx]?.scrollIntoView({ block: 'nearest' });
+    }
+
+    function hideList() {
+        list.style.display = 'none';
+        activeIdx = -1;
+    }
+
     function showSuggestions(query) {
         const q = (query || '').toLowerCase();
         const matches = (
@@ -267,6 +362,7 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
         ).filter(s => s.toLowerCase().includes(q) && !chipMap.has(slugifyTag(s)));
 
         list.innerHTML = '';
+        activeIdx = -1;
         if (!matches.length || !q) { list.style.display = 'none'; return; }
 
         matches.slice(0, 8).forEach(s => {
@@ -277,7 +373,7 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
                 e.preventDefault(); // prevent blur before click
                 addFn(s);
                 input.value = '';
-                list.style.display = 'none';
+                hideList();
             });
             list.appendChild(li);
         });
@@ -287,12 +383,26 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
     function commitInput() {
         const val = input.value.trim();
         if (val) { addFn(val); input.value = ''; }
-        list.style.display = 'none';
+        hideList();
     }
+    // O envio do formulário também grava o texto que ficou solto no campo.
+    commitPendingTags.push(commitInput);
 
     input.addEventListener('input', () => showSuggestions(input.value));
-    input.addEventListener('blur',  () => setTimeout(() => { list.style.display = 'none'; }, 150));
+    // Ao sair do campo, o texto digitado vira tag (antes ele ficava no campo e não era salvo).
+    input.addEventListener('blur',  () => commitInput());
     input.addEventListener('keydown', (e) => {
+        const open = list.style.display !== 'none' && list.children.length > 0;
+        if (e.key === 'ArrowDown' && open) { e.preventDefault(); setActive(activeIdx + 1); return; }
+        if (e.key === 'ArrowUp'   && open) { e.preventDefault(); setActive(activeIdx - 1); return; }
+        if (e.key === 'Escape'    && open) { e.preventDefault(); hideList(); return; }
+        if (e.key === 'Enter' && open && activeIdx >= 0) {
+            e.preventDefault();
+            addFn(list.children[activeIdx].textContent);
+            input.value = '';
+            hideList();
+            return;
+        }
         if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); commitInput(); }
         if (e.key === 'Backspace' && !input.value && arr.length) {
             const last = arr[arr.length - 1];
@@ -302,6 +412,7 @@ function wireTagInput(inputId, listId, fieldId, suggestions, chipMap, arr, categ
             const field = document.getElementById(fieldId);
             const chips = field?.querySelectorAll('.wiki-tag-chip');
             chips?.[chips.length - 1]?.remove();
+            dirty = true;
         }
     });
     input.addEventListener('paste', (e) => {
@@ -343,7 +454,12 @@ function addSection(section = {}) {
     removeIcon.className = 'material-symbols-outlined';
     removeIcon.textContent = 'close';
     removeBtn.appendChild(removeIcon);
-    removeBtn.addEventListener('click', () => item.remove());
+    removeBtn.addEventListener('click', () => {
+        const temTexto = headingInput.value.trim() || bodyArea.value.trim();
+        if (temTexto && !confirm('Remover esta seção? O texto escrito nela será perdido.')) return;
+        item.remove();
+        dirty = true;
+    });
 
     controls.appendChild(removeBtn);
     headerRow.appendChild(headingInput);
@@ -433,13 +549,23 @@ function addGalleryItem(imgData = {}) {
     urlInput.value = url;
     urlInput.addEventListener('input', () => {
         const v = urlInput.value.trim();
+        imgError.style.display = 'none';
         if (v) {
+            preview.style.display = '';
             preview.src = v;
             if (row.contains(placeholder)) row.replaceChild(preview, placeholder);
         } else {
             if (row.contains(preview)) row.replaceChild(placeholder, preview);
         }
     });
+
+    // Aviso quando o endereço não abre como imagem.
+    const imgError = document.createElement('span');
+    imgError.className = 'wiki-input-hint wiki-gallery-img-error';
+    imgError.textContent = 'Não foi possível carregar esta imagem. Confira o endereço.';
+    imgError.style.cssText = 'display:none;color:var(--blood2);opacity:1';
+    preview.addEventListener('error', () => { if (preview.getAttribute('src')) imgError.style.display = ''; });
+    preview.addEventListener('load',  () => { imgError.style.display = 'none'; });
 
     const captionInput = document.createElement('input');
     captionInput.type = 'text';
@@ -455,9 +581,10 @@ function addGalleryItem(imgData = {}) {
     rIcon.className = 'material-symbols-outlined';
     rIcon.textContent = 'delete';
     removeBtn.appendChild(rIcon);
-    removeBtn.addEventListener('click', () => row.remove());
+    removeBtn.addEventListener('click', () => { row.remove(); dirty = true; });
 
     inputs.appendChild(urlInput);
+    inputs.appendChild(imgError);
     inputs.appendChild(captionInput);
     inputs.appendChild(removeBtn);
 
@@ -512,12 +639,18 @@ async function populateForm(doc) {
 
     // Attributes (monstro/pessoa)
     if (doc.attributes) {
-        const attrKeys = ['corpo', 'velocidade', 'essencia', 'inteligencia'];
-        attrKeys.forEach(k => {
+        ATTR_KEYS.forEach(k => {
             const inp = document.getElementById(`attr-${k}`);
             if (inp && doc.attributes[k] !== undefined) inp.value = doc.attributes[k];
         });
+    } else {
+        // Artigo salvo sem atributos: não inventa 5/5/5/5 ao editar.
+        ATTR_KEYS.forEach(k => {
+            const inp = document.getElementById(`attr-${k}`);
+            if (inp) inp.value = '';
+        });
     }
+    initAttrChipPreviews();
 
     setVal('field-sheet-url', doc.sheetUrl || '');
 
@@ -543,6 +676,15 @@ function setSelect(id, val)    {
 }
 
 // ── Form submission ────────────────────────────────────────────────────────────
+
+/** Rola até o primeiro campo com erro e põe o cursor nele. */
+function focusFirstError() {
+    const wrap = document.querySelector('.wiki-field.error');
+    if (!wrap) return;
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    wrap.querySelector('input, textarea')?.focus({ preventScroll: true });
+    showToast('Confira o campo marcado em vermelho.', true);
+}
 
 async function handleSubmit(e) {
     e.preventDefault();
@@ -572,7 +714,13 @@ async function handleSubmit(e) {
         summaryWrap?.classList.remove('error');
     }
 
-    if (!valid) return;
+    if (!valid) {
+        focusFirstError();
+        return;
+    }
+
+    // Texto solto nos campos de tag entra como tag antes de salvar.
+    commitPendingTags.forEach(fn => fn());
 
     // Unique title check
     const submitBtn    = document.getElementById('wiki-submit-btn');
@@ -588,6 +736,7 @@ async function handleSubmit(e) {
             if (errSpan) errSpan.textContent = 'Já existe um documento com este nome.';
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalHTML;
+            focusFirstError();
             return;
         }
     } catch (e) {
@@ -626,12 +775,12 @@ async function handleSubmit(e) {
     // Attributes (monstro/pessoa)
     let attributes = null;
     if (typeAllows('field-attrs-wrap', docType)) {
-        attributes = {
-            corpo:        parseInt(document.getElementById('attr-corpo')?.value, 10) || 0,
-            velocidade:   parseInt(document.getElementById('attr-velocidade')?.value, 10) || 0,
-            essencia:     parseInt(document.getElementById('attr-essencia')?.value, 10) || 0,
-            inteligencia: parseInt(document.getElementById('attr-inteligencia')?.value, 10) || 0,
-        };
+        const lidos = Object.fromEntries(ATTR_KEYS.map(k => [k, readAttr(k)]));
+        // Todos vazios = artigo sem atributos (a página não mostra o quadro).
+        // Um campo vazio entre os outros vale 0. O valor é sempre limitado a 0..10.
+        attributes = ATTR_KEYS.every(k => lidos[k] === null)
+            ? null
+            : Object.fromEntries(ATTR_KEYS.map(k => [k, lidos[k] ?? 0]));
     }
 
     const data = {
@@ -666,6 +815,7 @@ async function handleSubmit(e) {
             registerTags(savedRegions, 'regiao'),
         ]);
 
+        dirty = false; // salvou: sair da página não deve avisar
         if (currentDocId) {
             await updateWikiDoc(currentDocId, data);
             window.location.href = `/wiki/doc?id=${currentDocId}`;
@@ -677,6 +827,7 @@ async function handleSubmit(e) {
         }
     } catch (saveErr) {
         console.error('[wiki-editor] handleSubmit error:', saveErr);
+        dirty = true;
         submitBtn.disabled  = false;
         submitBtn.innerHTML = originalHTML;
         showToast('Erro ao salvar: ' + (saveErr.message || String(saveErr)), true);

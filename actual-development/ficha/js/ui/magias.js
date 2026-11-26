@@ -5,6 +5,7 @@ import { normalizar as normalizarMagia, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { isHydrating } from '../core/state.js';
 import { setupCardMinimize, notifyFichaChanged } from '../core/dom-helpers.js';
+import { cartaoAberto, lembrarCartao, esquecerCartao } from '../core/card-state.js';
 import { getFontes, addSpellToFonte, removeSpellFromFonte, validateSpellForFonte, setFonteDeusa, transferSpellBetweenFontes } from '../core/item-effects.js';
 import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
 
@@ -170,8 +171,11 @@ function aplicarCorDivindade(card, divindade) {
 }
 
 // ========== Construção do card ==========
-function criarCardMagia(magiaData, tipo, grau, nomeForcado = '', { collapsed = true } = {}) {
-    const cardId = `magia_${Date.now()}_${cardMagiaCounter++}`;
+// `id`: id gravado na ficha (a magia mantém o mesmo cartão aberto/fechado ao recarregar).
+// `abertoLegado`: estado de fichas antigas, que não tinham id.
+function criarCardMagia(magiaData, tipo, grau, nomeForcado = '', { id, abertoLegado } = {}) {
+    const cardId = id || `magia_${Date.now()}_${cardMagiaCounter++}`;
+    const collapsed = !cartaoAberto('magia:' + cardId, false, abertoLegado);
     const card = document.createElement('div');
     card.className = `magic-card magic-card--${tipo}`;
     card.dataset.cardId = cardId;
@@ -270,7 +274,7 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '', { collapsed = t
 
     // Minimizar
     setupCardMinimize(card, '.btn-magic-minimize', '.magic-card-body', collapsed, {
-        onUserToggle: notifyFichaChanged,
+        onUserToggle: (minimizado) => lembrarCartao('magia:' + cardId, !minimizado),
     });
 
     // LA input -> atualiza total
@@ -285,10 +289,12 @@ function criarCardMagia(magiaData, tipo, grau, nomeForcado = '', { collapsed = t
             removeSpellFromFonte(card.dataset.fonteId, parseInt(card.dataset.fonteFe, 10) || 0, card);
         }
         const sheetEl = card.closest('.magic-sheet');
+        esquecerCartao('magia:' + cardId);
         card.remove();
         atualizarLaAtual();
         if (sheetEl) atualizarVisibilidadeGraus(sheetEl);
         offerUndo('Magia removida', () => {
+            lembrarCartao('magia:' + cardId, !snap.collapsed);
             inserirMagiaSalva(snap, snap.tipo, { religarFonte: true });
             atualizarLaAtual();
             if (snap.tipo) ativarTab(snap.tipo);
@@ -1018,7 +1024,7 @@ export function getMagiasState() {
                 divindade: getInfo('divindade'),
                 fonteId: card.dataset.fonteId || null,
                 fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
-                collapsed: card.dataset.collapsed === 'true',
+                id: card.dataset.cardId,
             });
         });
     });
@@ -1060,7 +1066,8 @@ function snapshotMagia(card) {
         divindade: getInfo('divindade'),
         fonteId: card.dataset.fonteId || null,
         fonteFe: card.dataset.fonteFe ? parseInt(card.dataset.fonteFe, 10) : null,
-        collapsed: card.dataset.collapsed === 'true',
+        id: card.dataset.cardId,
+        collapsed: card.dataset.collapsed === 'true', // só para o desfazer; não vai para a ficha
     };
 }
 
@@ -1080,8 +1087,9 @@ function inserirMagiaSalva(m, tipo, { religarFonte = false } = {}) {
     const grauKey = grauToKey(m.grau);
     const grauDiv = sheet.querySelector(`.${grauKey}`);
     if (!grauDiv) return null;
-    // Saved spells without `collapsed` (older sheets) open, as they always did.
-    const card = criarCardMagia(magiaData, tipo, String(m.grau), '', { collapsed: m.collapsed === true });
+    // Fichas antigas (sem id): o estado vinha no próprio cartão e, sem ele, abria.
+    const abertoLegado = m.id ? undefined : m.collapsed !== true;
+    const card = criarCardMagia(magiaData, tipo, String(m.grau), '', { id: m.id, abertoLegado });
     if (m.fonteId) {
         card.dataset.fonteId = m.fonteId;
         card.dataset.fonteFe = m.fonteFe || 1;

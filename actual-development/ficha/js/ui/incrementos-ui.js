@@ -4,8 +4,13 @@
 
 import {
     CAMPOS_INCREMENTO,
+    rotuloCampo,
+    ehCampoComposto,
+    partesCampo,
     TIPO_FLAT,
     TIPO_PCT,
+    TIPO_DADO,
+    TIPO_NOTA,
     campoValido,
     ehManual,
     normalizarLog,
@@ -24,14 +29,17 @@ import {
     beginScopedRecalc,
     endScopedRecalc,
 } from '../core/state.js';
+import { ehLinhaDePoder, PREFIXO_ORIGEM_PODER } from '../core/efeitos-passivos.js';
 import { getNivel, setRadarMaxPoints } from '../core/radar-service.js';
 import { herancaAttrBonusAplicado } from '../core/heranca-logic.js';
-import { calcStats, calcularVitais } from '../core/calculation.js';
+import { calcStats, calcularVitais, atualizarDtSab } from '../core/calculation.js';
 import { reaplicarBonusProtecao, getBasesProtecaoLivro, storeBaseDeslocamento } from '../core/item-effects.js';
 import { CAMPOS_BESTA } from '../core/besta-regras.js';
-import { atualizarContadorProficiencia } from './skills.js';
+import { atualizarContadorProficiencia, atualizarPericias } from './skills.js';
 import { refreshAllBars } from './vitals.js';
 import { listarBestasIncrementos, atualizarIncrementosBesta } from './besta.js';
+import { atualizarAtaquesAuto } from './combat.js';
+import { getRdPorTipo } from '../core/incrementos.js';
 
 // Campos da ficha que a fórmula de cada incremento escreve.
 const ALVOS = {
@@ -43,11 +51,13 @@ const ALVOS = {
     inv:  ['inv-total'],
     def:  ['defesa'],
     desl: ['deslocamento'],
+    rd:   ['rd'],
+    dt:   ['dt-sab'],
     attr: [],
     skill: [],
 };
 const VIA_CALCSTATS = new Set(['pv', 'pm', 'fe', 'pt', 'la', 'inv']);
-const VIA_PROTECAO = new Set(['def', 'desl']);
+const VIA_PROTECAO = new Set(['def', 'desl', 'rd']);
 
 // Total digitado à mão que vira a linha de ajuste manual do campo.
 const CAMPO_DO_INPUT = {
@@ -113,6 +123,7 @@ function formatarNumero(valor) {
 function formatarValor(tipo, valor) {
     const sinal = valor > 0 ? '+' : '';
     const n = formatarNumero(valor);
+    if (tipo === TIPO_DADO) return `${sinal}${n}d`;
     return tipo === TIPO_PCT ? `${sinal}${n}%` : `${sinal}${n}`;
 }
 
@@ -143,7 +154,35 @@ export function sincronizarTetoAtributos() {
  * Aplica a fórmula só nos campos pedidos. Os outros campos ficam como estão.
  * O total recalculado deixa de ser override manual: a camada passa a valer.
  */
-export function recalcularCampos(campos) {
+export function recalcularCampos(camposPedidos) {
+    if (isHydrating()) return;
+    // Campos compostos viram os campos de base que eles movem.
+    // Atributo mexe em PV, PM, FÉ, PT, LA, inventário e Defesa; todos os compostos mexem nas perícias.
+    const campos = [];
+    let pericias = false;
+    let ataques = false;
+    const PREFIXOS_ATAQUE = ['dano', 'acerto', 'margem', 'multi', 'alcance'];
+    (camposPedidos || []).forEach(c => {
+        if (!ehCampoComposto(c)) { campos.push(c); return; }
+        const prefixo = partesCampo(c).prefixo;
+        if (prefixo === 'atributo') {
+            campos.push('pv', 'pm', 'fe', 'pt', 'la', 'inv', 'def');
+            pericias = true;
+        } else if (['pericia', 'pericias', 'grau', 'vantagem'].includes(prefixo)) {
+            pericias = true;
+        } else if (PREFIXOS_ATAQUE.includes(prefixo)) {
+            ataques = true;
+        } else if (prefixo === 'rd') {
+            campos.push('rd');
+        }
+    });
+    recalcularCamposBase(campos);
+    if (pericias) atualizarPericias(true);
+    if (ataques || pericias) atualizarAtaquesAuto();
+    atualizarSeloRd();
+}
+
+function recalcularCamposBase(campos) {
     if (isHydrating()) return;
     const lista = Array.from(new Set(campos || [])).filter(campoValido);
     if (!lista.length) return;
@@ -158,12 +197,31 @@ export function recalcularCampos(campos) {
     try {
         if (lista.some(c => VIA_CALCSTATS.has(c))) calcStats();
         if (lista.some(c => VIA_PROTECAO.has(c))) reaplicarBonusProtecao();
+        if (lista.includes('dt')) atualizarDtSab();
     } finally {
         endScopedRecalc();
     }
     if (lista.includes('attr')) sincronizarTetoAtributos();
     if (lista.includes('skill')) atualizarContadorProficiencia();
     refreshAllBars();
+}
+
+/** RD por tipo (Cascudo, Capa Anti-queda...) não tem campo próprio: aparece como selo ao lado da RD. */
+export function atualizarSeloRd() {
+    const campo = document.querySelector('[data-field="rd"]');
+    if (!campo) return;
+    const tipos = getRdPorTipo();
+    const texto = Object.entries(tipos).filter(([, v]) => v).map(([t, v]) => `${t} ${v > 0 ? '+' : ''}${v}`).join(' · ');
+    let selo = document.getElementById('rd-auto');
+    if (!texto) { selo?.remove(); return; }
+    if (!selo) {
+        selo = document.createElement('div');
+        selo.id = 'rd-auto';
+        selo.style.cssText = 'font-size:11px;opacity:.8;margin-top:2px;';
+        selo.title = 'RD por tipo, somada pelos poderes e itens. Veja o painel de incrementos.';
+        campo.parentElement.appendChild(selo);
+    }
+    selo.textContent = `RD auto: ${texto}`;
 }
 
 export function camposDoLog() {
@@ -420,7 +478,8 @@ function criarPainel() {
         if (!row || somenteLeitura()) return;
         const besta = row.dataset.besta || null;
         const patch = {};
-        if (e.target.classList.contains('incr-row__tipo')) patch.tipo = e.target.value;
+        if (e.target.classList.contains('incr-row__ativo')) patch.ativo = e.target.checked;
+        else if (e.target.classList.contains('incr-row__tipo')) patch.tipo = e.target.value;
         else if (e.target.classList.contains('incr-row__valor')) {
             const v = Number(String(e.target.value).replace(',', '.'));
             if (!Number.isFinite(v)) { renderizarPainel(); return; }
@@ -449,7 +508,7 @@ function criarLinha(l, besta, nomeBesta) {
     li.dataset.campo = l.campo;
     if (besta) li.dataset.besta = besta;
 
-    const meta = CAMPOS_INCREMENTO[l.campo];
+    const meta = rotuloCampo(l.campo);
     const rotulo = document.createElement('span');
     rotulo.className = 'incr-row__campo';
     const nome = document.createElement('span');
@@ -462,12 +521,18 @@ function criarLinha(l, besta, nomeBesta) {
         tag.className = 'incr-row__tag';
         tag.textContent = 'ajuste manual';
         rotulo.appendChild(tag);
+    } else if (ehLinhaDePoder(l)) {
+        const tag = document.createElement('span');
+        tag.className = 'incr-row__tag';
+        tag.textContent = l.origem.slice(PREFIXO_ORIGEM_PODER.length);
+        rotulo.appendChild(tag);
     }
 
     const tipo = document.createElement('select');
     tipo.className = 'incr-row__tipo';
     tipo.setAttribute('aria-label', 'Tipo do incremento');
-    [[TIPO_FLAT, 'Flat'], [TIPO_PCT, '%']].forEach(([v, t]) => {
+    const tiposOferecidos = l.tipo === TIPO_DADO ? [[TIPO_DADO, 'd']] : [[TIPO_FLAT, 'Flat'], [TIPO_PCT, '%']];
+    tiposOferecidos.forEach(([v, t]) => {
         const o = document.createElement('option');
         o.value = v;
         o.textContent = t;
@@ -483,6 +548,14 @@ function criarLinha(l, besta, nomeBesta) {
     valor.value = String(l.valor);
     valor.setAttribute('aria-label', `Valor do incremento ${nome.textContent}`);
 
+    const ativo = document.createElement('input');
+    ativo.type = 'checkbox';
+    ativo.className = 'incr-row__ativo';
+    ativo.checked = l.ativo !== false;
+    ativo.title = 'Ligado: conta na ficha. Desligado: fica guardado, mas não conta.';
+    ativo.setAttribute('aria-label', `Ligar ou desligar ${nome.textContent}`);
+    if (l.ativo === false) li.classList.add('is-desligado');
+
     const del = document.createElement('button');
     del.type = 'button';
     del.className = 'incr-row__del';
@@ -490,7 +563,16 @@ function criarLinha(l, besta, nomeBesta) {
     del.setAttribute('aria-label', `Excluir incremento ${nome.textContent} ${formatarValor(l.tipo, l.valor)}`);
     del.appendChild(criarIcone('delete'));
 
-    li.append(rotulo, tipo, valor, del);
+    if (l.tipo === TIPO_NOTA) {
+        // Aviso: só texto. Sem número para editar.
+        const texto = document.createElement('span');
+        texto.className = 'incr-row__texto';
+        texto.textContent = l.texto || '';
+        li.classList.add('incr-row--nota');
+        li.append(ativo, rotulo, texto, del);
+        return li;
+    }
+    li.append(ativo, rotulo, tipo, valor, del);
     return li;
 }
 
@@ -504,6 +586,8 @@ export function renderizarPainel() {
     list.replaceChildren(...linhas);
     _painel.querySelector('.incr-panel__count').textContent = String(linhas.length);
     _painel.querySelector('.incr-panel__empty').hidden = linhas.length > 0;
+    // O log vale nos dois modos. No Livre o painel fica sempre; no Regras só aparece se houver linhas.
+    _painel.hidden = !(isModoLivre() || linhas.length > 0);
     reposicionarPainel();
 }
 
@@ -734,7 +818,6 @@ function ligarAncoras() {
 export function syncIncrementosUi() {
     const livre = isModoLivre();
     document.body.classList.toggle('modo-livre', livre);
-    if (_painel) _painel.hidden = !livre;
     if (!livre) {
         fecharSeletor();
         marcarHover(null);

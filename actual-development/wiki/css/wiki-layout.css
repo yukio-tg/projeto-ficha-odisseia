@@ -511,6 +511,29 @@
     flex-shrink: 0;
 }
 
+/* Celular: sombra na borda direita avisa que há mais abas para rolar. */
+.wiki-filter-nav.has-more {
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
+}
+
+.wiki-sort-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 28px 0;
+    font-family: 'Cinzel', serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--leath4);
+}
+.wiki-sort-bar .wiki-select { width: auto; padding: 4px 8px; font-size: 12px; }
+@media (max-width: 720px) { .wiki-sort-bar { padding: 8px 14px 0; } }
+
+.wiki-empty-clear { margin-top: 16px; }
+
 .wiki-tab-btn {
     font-family: 'Cinzel', serif;
     font-size: 9px;

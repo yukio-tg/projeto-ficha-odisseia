@@ -1,5 +1,14 @@
-/* grimorio.css — livro por cima da ficha.
-   A ficha não muda de largura. O painel desliza de lado, na mesma curva, nos dois sentidos. */
+/* grimorio.css — Grimório: painel lateral ACOPLADO em forma de pergaminho mágico.
+   Não é modal: sem véu, sem foco preso. Em tela larga a ficha encolhe (body.grimorio-aberto);
+   no celular vira gaveta inferior. Cores só das variáveis da ficha (--p*, --ink*, --gold*, --sheet-bg).
+   Camadas: vinheta do modo Livre 15, cabeçalho 18, painel 20, painel de cores 40. */
+
+@font-face {
+    font-family: 'KHScala';
+    src: url('../fonts/KHScala.otf') format('opentype');
+    font-display: swap;
+}
+
 
 #grimorio-btn-wrapper {
     display: flex;
@@ -47,451 +56,678 @@
     color: var(--grimorio-tinta);
 }
 
+/* ── Espaço que a ficha cede ao Grimório ─────────────────────────────────── */
+:root {
+    --grimorio-largura: 0px;
+    --grimorio-altura: 0px;
+}
+
+body.grimorio-aberto {
+    --grimorio-largura: 400px;
+}
+
+/* A ficha ocupa o que sobra. Em tela cheia (body.largura-total) o topo.css já desconta
+   --grimorio-largura da largura do .app, por isso o recuo do body fica de fora dela. */
+body {
+    transition: padding-right 0.35s ease, padding-bottom 0.35s ease;
+}
+
+body.grimorio-aberto:not(.largura-total) {
+    padding-right: var(--grimorio-largura);
+}
+
+/* ── Painel ──────────────────────────────────────────────────────────────── */
 .grimorio {
-    --grimorio-tinta: #d5def8;
-    --grimorio-fio: #d5def8;
-    --grimorio-noite: #0c101c;
-    --grimorio-papel: #141a2c;
+    --papel: var(--p1);
+    --risco: color-mix(in srgb, var(--ink2) 22%, transparent);
     position: fixed;
-    z-index: 40;
+    z-index: 20;
     top: 0;
     right: 0;
     bottom: 0;
+    width: 400px;
     display: flex;
     flex-direction: column;
-    width: min(400px, 38vw);
-    background:
-        radial-gradient(90% 46% at 50% 0%, #3d4f8a 0%, transparent 64%),
-        linear-gradient(180deg, #1b2548 0%, var(--grimorio-noite) 70%);
-    color: var(--grimorio-fio);
-    border-left: 3px solid var(--grimorio-fio);
-    transform: translateX(100%);
-    transition: transform 320ms ease;
     overflow: hidden;
+    color: var(--ink1);
+    background:
+        radial-gradient(120% 70% at 50% 8%, var(--p0), transparent 70%),
+        radial-gradient(100% 60% at 50% 100%, color-mix(in srgb, var(--p3) 55%, transparent), transparent 75%),
+        var(--papel);
+    box-shadow:
+        inset 0 0 46px color-mix(in srgb, var(--p4) 70%, transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--gold0) 40%, transparent);
+    clip-path: var(--borda, none);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition: transform 0.35s ease, visibility 0s linear 0.35s;
 }
 
 .grimorio.is-aberto {
     transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.35s ease, visibility 0s;
 }
 
-.grimorio[hidden] {
-    display: none;
+.grimorio--escuro {
+    box-shadow:
+        inset 0 0 46px rgba(0, 0, 0, 0.5),
+        inset 0 0 0 1px color-mix(in srgb, var(--gold1) 45%, transparent),
+        0 0 24px color-mix(in srgb, var(--gold1) 22%, transparent);
 }
 
-.grimorio__head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
-    min-height: 48px;
-    padding: 6px 8px 6px 14px;
-    border-bottom: 1px solid color-mix(in srgb, var(--grimorio-fio) 45%, transparent);
+/* Papel: fibras */
+.grimorio::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+    opacity: 0.45;
 }
 
-.grimorio__marca {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    flex: 1;
-    min-width: 0;
+.grimorio--escuro::before {
+    mix-blend-mode: soft-light;
+    opacity: 0.22;
 }
 
-.grimorio__title {
-    font-family: 'Cinzel', serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    line-height: 1.1;
-    color: var(--grimorio-fio);
+.grimorio > * {
+    position: relative;
+    z-index: 1;
 }
 
-.grimorio__oficio {
-    font-family: 'IM Fell English', serif;
-    font-size: 13px;
+/* :where() zera a especificidade: as regras de classe de cada elemento (fonte pequena em Cinzel etc.) vencem. */
+:where(.grimorio button, .grimorio input, .grimorio select) {
+    font: inherit;
+    color: inherit;
+}
+
+.grimorio [hidden] {
+    display: none !important;
+}
+
+.grimorio button:focus-visible,
+.grimorio input:focus-visible,
+.grimorio select:focus-visible {
+    outline: 2px solid var(--gold0);
+    outline-offset: 2px;
+}
+
+.grimorio__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+/* ── Escrituras de fundo (bem apagadas) ──────────────────────────────────── */
+.grimorio > .grimorio__escrita {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    color: var(--ink1);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 100%);
+}
+
+.grimorio__esc {
+    position: absolute;
+    margin: 0;
+    white-space: nowrap;
+    opacity: 0.05;
+}
+
+.grimorio--escuro .grimorio__esc {
+    opacity: 0.03;
+}
+
+.grimorio__esc--run {
+    font: 400 22px/1 'KHScala', serif;
+    letter-spacing: 0.12em;
+}
+
+.grimorio__esc--cur {
+    font: italic 400 19px/1 'IM Fell English', serif;
     letter-spacing: 0.02em;
-    color: color-mix(in srgb, var(--grimorio-fio) 75%, white);
+}
+
+/* ── Runas flutuantes: só nas faixas laterais e no vazio, sempre ATRÁS do texto ── */
+.grimorio > .grimorio__flutua {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.grimorio > .grimorio__flutua--topo {
+    bottom: auto;
+    height: 58px;
+    --alt: 54px;
+}
+
+.grimorio > .grimorio__flutua--vazio {
+    bottom: 0;
+    --alt: var(--alt-zona, 120px);
+}
+
+.grimorio__fl {
+    position: absolute;
+    bottom: -24px;
+    font: 400 var(--t, 15px) 'KHScala', serif;
+    color: var(--gold1);
+    opacity: 0;
+    text-shadow:
+        0 0 6px color-mix(in srgb, var(--gold2) 80%, transparent),
+        0 0 14px color-mix(in srgb, var(--gold2) 45%, transparent);
+    animation: grimorio-sobe var(--d, 16s) linear var(--atraso, 0s) infinite;
+    animation-play-state: paused;
+    will-change: transform, opacity;
+}
+
+.grimorio.is-aberto .grimorio__fl {
+    animation-play-state: running;
+}
+
+.grimorio--escuro .grimorio__fl {
+    color: var(--gold2);
+}
+
+@keyframes grimorio-sobe {
+    0% { transform: translate(0, 0) rotate(0) scale(0.7); opacity: 0; }
+    12% { opacity: var(--pico, 0.85); }
+    50% { transform: translate(var(--dx, 3px), calc(var(--alt, 80vh) * -0.5)) rotate(calc(var(--giro, 30deg) * 0.5)) scale(1); }
+    88% { opacity: var(--pico, 0.85); }
+    100% { transform: translate(calc(var(--dx, 3px) * -0.5), calc(var(--alt, 80vh) * -1.02)) rotate(var(--giro, 30deg)) scale(1.15); opacity: 0; }
+}
+
+/* ── Cabeçalho (texto direto sobre o pergaminho; margem de 30px nas laterais) ── */
+.grimorio__cab {
+    position: relative;
+    text-align: center;
+    padding: 20px 52px 4px;
+}
+
+.grimorio__titulo {
+    margin: 0;
+    font: 700 25px/1.1 'Cinzel Decorative', serif;
+    letter-spacing: 0.05em;
+    color: var(--ink0);
+}
+
+.grimorio__sub {
+    margin: 5px 0 0;
+    font: 14px 'IM Fell English', serif;
+    color: var(--ink3);
 }
 
 .grimorio__fechar {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid color-mix(in srgb, var(--grimorio-fio) 55%, transparent);
-    background: transparent;
-    color: var(--grimorio-fio);
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     cursor: pointer;
+    line-height: 1;
+    font: 400 20px 'Cinzel', serif;
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--gold0) 70%, transparent);
+    color: var(--ink2);
+    transition: 0.15s;
 }
 
 .grimorio__fechar:hover {
-    background: color-mix(in srgb, var(--grimorio-fio) 14%, transparent);
+    background: var(--gold1);
+    color: var(--p0);
 }
 
-.grimorio__folha {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    margin: 10px 12px 14px;
-    background: transparent;
-    color: var(--grimorio-tinta);
-    border: 1px solid color-mix(in srgb, var(--grimorio-tinta) 32%, transparent);
-}
-
-.grimorio__folha::before {
-    content: '';
-    position: absolute;
-    z-index: 2;
-    top: 16px;
-    bottom: 16px;
-    left: 16px;
-    width: 1px;
-    background: var(--grimorio-tinta);
-    transform: scaleY(0);
-    transform-origin: top center;
-    transition: transform 320ms ease;
-    pointer-events: none;
-}
-
-.grimorio.is-lombada .grimorio__folha::before {
-    transform: scaleY(1);
-}
-
-.grimorio__canto {
-    position: absolute;
-    z-index: 2;
-    width: 18px;
-    height: 18px;
-    color: var(--grimorio-tinta);
-    pointer-events: none;
-}
-
-.grimorio__canto--tl { top: 4px; left: 4px; }
-.grimorio__canto--tr { top: 4px; right: 4px; transform: scaleX(-1); }
-.grimorio__canto--bl { bottom: 4px; left: 4px; transform: scaleY(-1); }
-.grimorio__canto--br { bottom: 4px; right: 4px; transform: scale(-1); }
-
-.grimorio__contexto {
-    margin: 14px 22px 0 28px;
-    font-family: 'IM Fell English', serif;
-    font-size: 15px;
-    line-height: 1.3;
-    color: var(--grimorio-tinta);
-}
-
+/* ── Busca: só um filete embaixo ─────────────────────────────────────────── */
 .grimorio__busca {
-    margin: 8px 22px 0 28px;
-    min-height: 34px;
-    padding: 0 10px;
-    border: none;
-    border-bottom: 1px solid var(--grimorio-tinta);
-    border-radius: 0;
-    background: transparent;
-    color: var(--grimorio-tinta);
-    font-family: 'IM Fell English', serif;
-    font-size: 16px;
+    padding: 4px 30px 0;
 }
 
-.grimorio__busca::placeholder {
-    color: color-mix(in srgb, var(--grimorio-tinta) 55%, transparent);
-}
-
-.grimorio__chips,
-.grimorio__sub,
-.grimorio__besta-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 14px;
-    padding: 10px 22px 0 28px;
-}
-
-.grimorio__subs {
-    display: flex;
-    flex-direction: column;
-}
-
-.grimorio__sub-label,
-.grimorio__besta-nome {
-    align-self: center;
-    margin: 0;
-    font-family: 'IM Fell English', serif;
-    font-size: 15px;
-    color: var(--grimorio-tinta);
-}
-
-.grimorio__chip,
-.grimorio__besta {
-    min-height: 32px;
-    padding: 0;
-    border: none;
-    border-bottom: 1px solid transparent;
-    border-radius: 0;
-    background: transparent;
-    color: var(--grimorio-tinta);
-    font-family: 'IM Fell English', serif;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.grimorio__chip.is-on {
-    border-bottom-color: var(--grimorio-tinta);
-}
-
-.grimorio__besta {
+.grimorio__busca input {
     width: 100%;
-    padding: 4px 0;
-    border-bottom-color: var(--grimorio-tinta);
+    max-width: 100%;
+    height: 34px;
+    padding: 0 4px;
     background: transparent;
-    color: var(--grimorio-tinta);
+    border: 0;
+    border-bottom: 1px solid var(--risco);
+    border-radius: 0;
+    font: 16px 'IM Fell English', serif;
+    color: var(--ink0);
 }
 
-.grimorio__lista {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: auto;
-    padding: 8px 16px 16px 28px;
-    -webkit-overflow-scrolling: touch;
+.grimorio__busca input::placeholder {
+    color: var(--ink3);
+    opacity: 0.8;
 }
 
-.grimorio__secao {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+/* ── Abas ────────────────────────────────────────────────────────────────── */
+.grimorio__abas {
     display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 12px 0 8px;
-    padding: 4px 0;
-    background: var(--grimorio-papel);
+    padding: 10px 6px 0;
+    gap: 0;
+    border-bottom: 1px solid var(--risco);
+    margin: 0 6px;
 }
 
-.grimorio__secao-nome {
-    flex: 0 1 auto;
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--grimorio-tinta);
-}
-
-.grimorio__filete {
-    flex: 1 1 auto;
-    height: 5px;
-    border-top: 1px solid var(--grimorio-tinta);
-    border-bottom: 1px solid var(--grimorio-tinta);
-}
-
-.grimorio__card {
+.grimorio__aba {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
-    padding: 8px 8px 8px 10px;
-    border: 1px solid color-mix(in srgb, var(--grimorio-tinta) 55%, transparent);
-    border-radius: 0;
-    background: color-mix(in srgb, var(--grimorio-noite) 62%, transparent);
-    color: var(--grimorio-tinta);
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 4px 0 7px;
+    margin-bottom: -1px;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font: 600 9px/1.15 'Cinzel', serif;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ink3);
+    transition: 0.15s;
 }
 
-.grimorio__card.is-mudo {
-    border-width: 1px;
-    border-style: solid;
+.grimorio__aba-runa {
+    font: 400 21px/1 'KHScala', serif;
+    color: var(--ink3);
+    opacity: 0.7;
+    transition: 0.15s;
+}
+
+.grimorio__aba:hover {
+    color: var(--ink0);
+}
+
+.grimorio__aba[aria-selected="true"] {
+    color: var(--ink0);
+    border-bottom-color: var(--gold0);
+}
+
+.grimorio__aba[aria-selected="true"] .grimorio__aba-runa {
+    color: var(--gold0);
     opacity: 1;
 }
 
-.grimorio__card--classe {
-    border: 3px double var(--grimorio-tinta);
+.grimorio--escuro .grimorio__aba[aria-selected="true"] {
+    border-bottom-color: var(--gold2);
 }
 
-.grimorio__card--ramo {
-    background:
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top left / 12px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top left / 1px 12px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top right / 12px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top right / 1px 12px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom left / 12px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom left / 1px 12px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom right / 12px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom right / 1px 12px no-repeat,
-        color-mix(in srgb, var(--grimorio-noite) 78%, transparent);
+.grimorio--escuro .grimorio__aba[aria-selected="true"] .grimorio__aba-runa {
+    color: var(--gold2);
 }
 
-.grimorio__card--geral {
-    border-style: solid;
-}
-
-.grimorio__card--magia-2,
-.grimorio__card--magia-s {
-    border: 3px double var(--grimorio-tinta);
-}
-
-.grimorio__card--magia-3 {
-    border-color: transparent;
-    background:
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top left / 14px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top left / 1px 14px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top right / 14px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) top right / 1px 14px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom left / 14px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom left / 1px 14px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom right / 14px 1px no-repeat,
-        linear-gradient(var(--grimorio-tinta), var(--grimorio-tinta)) bottom right / 1px 14px no-repeat,
-        color-mix(in srgb, var(--grimorio-noite) 78%, transparent);
-}
-
-.grimorio__card--magia-4 {
-    border-top: 6px solid var(--grimorio-tinta);
-}
-
-.grimorio__card--magia-s {
-    background: color-mix(in srgb, var(--grimorio-tinta) 16%, var(--grimorio-noite));
-}
-
-.grimorio__card-head {
+/* ── Besta escolhida ─────────────────────────────────────────────────────── */
+.grimorio__alvo {
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    min-height: 32px;
-    padding: 0;
-    border: none;
-    background: none;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
+    padding: 10px 30px 2px;
+}
+
+.grimorio__alvo-rot {
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__alvo-nome {
+    font: 15px 'IM Fell English', serif;
+    color: var(--ink0);
+}
+
+.grimorio__alvo select {
+    flex: 1;
+    min-width: 80px;
+    height: 26px;
+    padding: 0 6px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--risco);
+    border-radius: 0;
+    font: 14px 'IM Fell English', serif;
+    color: var(--ink1);
+}
+
+.grimorio__alvo select option {
+    background: var(--p1);
+    color: var(--ink0);
+}
+
+/* ── Lista (linhas sem fundo: texto direto sobre o pergaminho, separado por filetes) ── */
+.grimorio__lista {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 6px 30px 20px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--p4) transparent;
+}
+
+.grimorio__secao {
+    margin-top: 14px;
+}
+
+.grimorio__grupo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 2px;
+    font: 700 11px 'Cinzel', serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink2);
+}
+
+.grimorio__grupo::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--risco);
+}
+
+.grimorio__runa {
+    font: 400 15px 'KHScala', serif;
+    letter-spacing: 0;
+    color: var(--gold0);
+}
+
+.grimorio--escuro .grimorio__runa {
+    color: var(--gold2);
+}
+
+.grimorio__item {
+    border-bottom: 1px solid var(--risco);
+}
+
+.grimorio__item-cab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
 }
 
 .grimorio__nome {
-    flex: 1 1 auto;
+    flex: 1;
     min-width: 0;
-    font-family: 'IM Fell English', serif;
-    font-size: 17px;
-    line-height: 1.2;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    text-align: left;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    font: 16px/1.25 'IM Fell English', serif;
+    color: var(--ink0);
+    overflow-wrap: anywhere;
 }
 
-.grimorio__valor {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    flex: 0 0 auto;
+.grimorio__nome::before {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid var(--ink3);
+    border-bottom: 1.5px solid var(--ink3);
+    transform: rotate(-45deg) translateY(-1px);
+    transition: transform 0.18s;
 }
+
+.grimorio__nome[aria-expanded="true"]::before {
+    transform: rotate(45deg) translateY(-3px);
+}
+
+.grimorio__tag {
+    flex: none;
+    padding: 1px 4px;
+    border: 1px solid var(--risco);
+    border-radius: 2px;
+    font: 700 8.5px 'Cinzel', serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__tag--r0 { opacity: 0.85; }
+.grimorio__tag--r2 { color: var(--ink1); }
+.grimorio__tag--r3,
+.grimorio__tag--r4,
+.grimorio__tag--r5 { color: var(--ink0); border-color: var(--gold0); }
 
 .grimorio__custo {
-    font-family: 'IM Fell English', serif;
-    font-size: 14px;
-    line-height: 1.2;
-    color: var(--grimorio-tinta);
+    flex: none;
+    font: 600 11px 'Cinzel', serif;
+    letter-spacing: 0.04em;
+    color: var(--ink3);
 }
 
-.grimorio__ico {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 auto;
-    display: block;
-    color: var(--grimorio-tinta);
+/* Botão "Colocar": é botão, então pode ter fundo sutil e borda */
+.grimorio__colocar {
+    flex: none;
+    min-height: 24px;
+    padding: 0 10px;
+    cursor: pointer;
+    background: color-mix(in srgb, var(--gold1) 18%, transparent);
+    border: 1px solid var(--gold0);
+    border-radius: 2px;
+    font: 700 10px 'Cinzel', serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink0);
+    transition: 0.15s;
 }
 
-.grimorio__canto.grimorio__ico {
-    position: absolute;
-    z-index: 2;
-    width: 18px;
-    height: 18px;
-    pointer-events: none;
+.grimorio__colocar:hover,
+.grimorio__colocar:focus-visible {
+    background: var(--gold1);
+    color: var(--p0);
 }
 
-.grimorio__secao .grimorio__ico {
-    width: 14px;
-    height: 14px;
+.grimorio__colocar:active {
+    transform: translateY(1px);
 }
 
-.grimorio__pontas {
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
+/* Descrições: texto pequeno, sem itálico */
+.grimorio__corpo {
+    padding: 0 0 10px 12px;
+    font: 14px/1.4 'IM Fell English', serif;
+    font-style: normal;
+    color: var(--ink2);
 }
 
-.grimorio__pontas i {
-    width: 4px;
-    height: 4px;
-    border: 1px solid var(--grimorio-tinta);
-    border-radius: 50%;
-    display: block;
+.grimorio__corpo p {
+    margin: 0 0 4px;
+    font-style: normal;
 }
 
-.grimorio__pontas--raridade i {
-    width: 0;
-    height: 0;
-    border: none;
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    border-bottom: 5px solid var(--grimorio-tinta);
-    border-radius: 0;
+.grimorio__corpo .grimorio__pre {
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink3);
 }
 
-.grimorio__card-body[hidden] {
-    display: none;
+.grimorio__item.is-ja .grimorio__nome {
+    color: var(--ink3);
 }
 
-.grimorio__desc,
-.grimorio__prereq,
-.grimorio__aviso,
-.grimorio__vazio,
+.grimorio__ja {
+    flex: none;
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__item.is-falta .grimorio__nome {
+    color: var(--ink2);
+}
+
 .grimorio__motivo {
     margin: 0;
-    font-family: 'IM Fell English', serif;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 1.35;
-    white-space: pre-wrap;
-    color: var(--grimorio-tinta);
-}
-
-.grimorio__motivo,
-.grimorio__aviso {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-}
-
-.grimorio__add {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    align-self: flex-end;
-    min-height: 28px;
-    margin: 0;
-    padding: 0 0 2px;
-    border: none;
-    border-bottom: 1px solid var(--grimorio-tinta);
-    border-radius: 0;
-    background: transparent;
-    color: var(--grimorio-tinta);
-    font-family: 'IM Fell English', serif;
-    font-size: 15px;
-    cursor: pointer;
-}
-
-.grimorio__add:hover:not(:disabled) {
-    border-bottom-width: 2px;
-}
-
-.grimorio__add:disabled {
-    cursor: default;
+    padding: 0 0 8px 12px;
+    font: 13px 'IM Fell English', serif;
+    color: var(--ink3);
 }
 
 .grimorio__mals {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
     align-items: center;
+    gap: 6px;
+    padding: 0 0 10px 12px;
+}
+
+.grimorio__mals-rot {
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__mais {
+    display: block;
+    margin: 6px 0 0;
+    padding: 2px 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font: 14px 'IM Fell English', serif;
+    color: var(--ink3);
+}
+
+.grimorio__mais:hover {
+    color: var(--ink0);
+}
+
+/* Subtipos dos aspectos biológicos: sub-cabeçalho pequeno com filete lateral */
+.grimorio__sub {
+    margin: 8px 0 0 4px;
+    padding-left: 10px;
+    border-left: 2px solid color-mix(in srgb, var(--gold0) 55%, transparent);
+}
+
+.grimorio__sub-rot {
+    margin: 0;
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__nota {
+    margin: 8px 0 0;
+    font: 13px/1.35 'IM Fell English', serif;
+    font-style: normal;
+    color: var(--ink3);
+}
+
+/* O que falta: dobrável */
+.grimorio__falta {
+    margin-top: 14px;
+}
+
+.grimorio__falta-bt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    height: 30px;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    font: 600 10px 'Cinzel', serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink3);
+}
+
+.grimorio__falta-bt::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.18s;
+}
+
+.grimorio__falta-bt[aria-expanded="true"]::before {
+    transform: rotate(45deg);
+}
+
+.grimorio__falta-bt:hover {
+    color: var(--ink0);
 }
 
 .grimorio__vazio {
-    padding: 8px 22px 16px 28px;
+    margin: 30px 8px;
+    text-align: center;
+    font: 15px/1.45 'IM Fell English', serif;
+    color: var(--ink3);
+}
+
+/* ── Celular: gaveta inferior (~48vh); a ficha rola acima dela ───────────── */
+@media (max-width: 760px) {
+    body.grimorio-aberto {
+        --grimorio-largura: 0px;
+        --grimorio-altura: 48vh;
+        padding-bottom: var(--grimorio-altura);
+        height: auto; /* o body deixa de ter altura fixa: o recuo vira área rolável abaixo da ficha */
+    }
+
+    .grimorio {
+        top: auto;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 48vh;
+        clip-path: none;
+        border-top: 1px solid var(--gold0);
+        transform: translateY(105%);
+    }
+
+    .grimorio.is-aberto {
+        transform: translateY(0);
+    }
+
+    .grimorio__cab {
+        padding: 10px 48px 0;
+    }
+
+    .grimorio__sub {
+        display: none;
+    }
+
+    .grimorio__abas {
+        padding: 6px 0 0;
+        margin: 0 2px;
+    }
+
+    .grimorio__aba {
+        font-size: 7.5px;
+    }
+
+    .grimorio__aba-runa {
+        font-size: 17px;
+    }
 }
 
 body.grimorio-mock .grimorio-mock-nota {
@@ -503,23 +739,25 @@ body.grimorio-mock .grimorio-mock-nota {
     font-size: 15px;
 }
 
-@media (max-width: 959px) {
-    .grimorio,
-    .grimorio.grimorio--overlay {
-        z-index: 900;
-        width: 100%;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+@media (prefers-reduced-motion: reduce) {
+    .grimorio__flutua {
+        display: none !important;
     }
 
-    body.grimorio-overlay {
-        overflow: hidden;
+    .grimorio,
+    .grimorio.is-aberto,
+    body {
+        transition: none;
     }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .grimorio,
-    .grimorio__folha::before {
-        transition: none;
-    }
+/* quantos itens iguais já estão na ficha ("x2") */
+.grimorio__qtd {
+    flex: none;
+    font: 700 10px 'Cinzel', serif;
+    letter-spacing: 0.04em;
+    color: var(--gold0);
+}
+.grimorio--escuro .grimorio__qtd {
+    color: var(--gold2);
 }

@@ -5,6 +5,7 @@ import { normalizar, escapeHtml } from '../core/utils.js';
 import { createDataLoader } from '../core/data-loader.js';
 import { isHydrating } from '../core/state.js';
 import { offerUndo, bindEmptyHint, showCatalogWarning } from './escrita-ui.js';
+import { cartaoAberto, lembrarCartao, esquecerCartao } from '../core/card-state.js';
 
 // ========== Configuração ==========
 const poderesLoader = createDataLoader('/ficha/data/poderes.json', 'Powers', null, {
@@ -170,8 +171,10 @@ function atualizarCategoryDot() {
 }
 
 // ---------- Card ----------
-function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
-    const cardId = `power_${Date.now()}_${cardCounter++}`;
+// `idFixo`: id gravado na ficha (o poder mantém o cartão aberto/fechado ao recarregar).
+// `abertoLegado`: estado de fichas antigas, que o gravavam no próprio cartão.
+function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null, idFixo = '', abertoLegado) {
+    const cardId = idFixo || `power_${Date.now()}_${cardCounter++}`;
     const card = document.createElement('div');
     card.className = 'card-power';
     card.setAttribute('data-card-id', cardId);
@@ -238,8 +241,8 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
         });
     });
 
-    // Cards start open by default (state is saved and remembered)
-    toggleCard(card, false);
+    // Poderes novos abrem; depois vale o que esta pessoa deixou (guardado por pessoa, sem acender "não salvo")
+    toggleCard(card, !cartaoAberto('poder:' + cardId, true, abertoLegado));
 
     // Auto-resize textarea to content
     const textarea = card.querySelector('.power-desc-textarea');
@@ -262,14 +265,18 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
             cor: card.dataset.cor || 'Vermelho',
             collapsed: card.dataset.collapsed === 'true',
             herancaPower: card.dataset.herancaPower === 'true',
+            escolha: card.dataset.escolha || '',
         };
+        esquecerCartao('poder:' + cardId);
         card.remove();
         atualizarTotalPt();
         reordenarCards();
         offerUndo('Poder removido', () => {
-            const restored = criarCardPower(snap, '', snap.cor);
+            lembrarCartao('poder:' + cardId, !snap.collapsed);
+            const restored = criarCardPower(snap, '', snap.cor, cardId);
             toggleCard(restored, snap.collapsed);
             if (snap.herancaPower) _marcarComoPoderHeranca(restored);
+            if (snap.escolha) restored.dataset.escolha = snap.escolha;
             containerCards.appendChild(restored);
             atualizarTotalPt();
             reordenarCards();
@@ -280,7 +287,7 @@ function criarCardPower(powerData, nomeForcado = '', corSobrescrita = null) {
         const isCollapsed = card.dataset.collapsed === 'true';
         toggleCard(card, !isCollapsed);
         if (isCollapsed) autoResize();
-        document.dispatchEvent(new Event('ficha:changed', { bubbles: true }));
+        lembrarCartao('poder:' + cardId, isCollapsed);
     });
 
     return card;
@@ -514,8 +521,8 @@ export function getPowersState() {
         otherCosts: card.querySelector('.other-costs-input')?.value || '',
         descricao: card.querySelector('.power-desc-textarea')?.value || '',
         cor: card.dataset.cor || 'Vermelho',
-        collapsed: card.dataset.collapsed === 'true', // default false (open)
         herancaPower: card.dataset.herancaPower === 'true',
+        escolha: card.dataset.escolha || '',
     }));
 }
 
@@ -526,10 +533,9 @@ export function setPowersState(data) {
         const card = criarCardPower({
             nome: p.nome, ptCost: p.ptCost, otherCosts: p.otherCosts,
             descricao: p.descricao, cor: p.cor
-        }, '', p.cor);
-        // Default to open (collapsed=false) unless explicitly saved as true
-        toggleCard(card, p.collapsed === true);
+        }, '', p.cor, p.id || '', typeof p.collapsed === 'boolean' ? !p.collapsed : undefined);
         if (p.herancaPower) _marcarComoPoderHeranca(card);
+        if (p.escolha) card.dataset.escolha = p.escolha;
         containerCards.appendChild(card);
     });
     atualizarTotalPt();

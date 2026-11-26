@@ -70,3 +70,7 @@ node_modules/
 .dataconnect
 *.pdf
 *.exe
+
+# Testes: cache dos scripts do CDN e resultados do Playwright
+tests/e2e/.cdn-cache/
+tests/e2e/.results/

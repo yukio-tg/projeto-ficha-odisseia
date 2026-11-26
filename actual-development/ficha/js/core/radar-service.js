@@ -1,3 +1,5 @@
+import { getBonusAtributo } from './incrementos.js';
+
 export let radarInstance = null;
 
 export function initRadar(containerId) {
@@ -113,5 +115,10 @@ export function getAtributoTotal(attr) {
     let mod = 0;
     const match = modStr.trim().match(/^[-+]?\d+/);
     if (match) mod = parseInt(match[0], 10);
-    return base + mod;
+    return base + mod + getBonusAtributo(attr);
+}
+
+/** Base digitada mais o bônus automático do log (sem o modificador). Usado na Defesa. */
+export function getAtributoComBonus(attr) {
+    return getAtributoBase(attr) + getBonusAtributo(attr);
 }

@@ -79,9 +79,17 @@
       messagingSenderId: "438632062292",
       appId: "1:438632062292:web:68e9584cf8f5ffcf2e3cc1"
     };
-    firebase.initializeApp(firebaseConfig);
+    // Teste local: em localhost usa o emulador (projeto demo, sem tocar nos dados reais).
+    const USE_EMULATOR = ['localhost', '127.0.0.1'].includes(location.hostname);
+    firebase.initializeApp(USE_EMULATOR
+      ? { apiKey: 'demo-key', authDomain: 'demo-odisseia.firebaseapp.com', projectId: 'demo-odisseia', appId: 'demo-app' }
+      : firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    if (USE_EMULATOR) {
+      auth.useEmulator('http://127.0.0.1:9099', { disableWarnings: true });
+      db.useEmulator('127.0.0.1', 8080);
+    }
 
     // ── Autenticação ──────────────────────────────────────────────────────────
 

@@ -474,15 +474,6 @@
     cursor: default;
 }
 
-/* Modo Regras trava o número, sem o vermelho de campo bloqueado. */
-input.is-livro,
-textarea.is-livro {
-    cursor: text;
-    color: inherit;
-    background-color: color-mix(in srgb, var(--gold1) 8%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold1) 28%, transparent);
-}
-
 /* Flash animation for tick button */
 .combat-input--flash {
     animation: combat-flash 0.3s ease;
@@ -595,6 +586,48 @@ textarea.is-livro {
     font-size: 1em;
 }
 
+/* ── Botão "Adicionar ..." das listas (ataque, reação, bônus/ônus, condição) ── */
+.combat-adicionar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    margin-top: 10px;
+    padding: 0 18px 0 12px;
+    background: color-mix(in srgb, var(--gold1) 14%, var(--p0));
+    border: 1px solid var(--gold1);
+    border-radius: 6px;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink1);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.combat-adicionar .material-symbols-outlined {
+    font-size: 20px;
+    color: var(--gold1);
+}
+
+.combat-adicionar:hover {
+    background: color-mix(in srgb, var(--gold1) 28%, var(--p0));
+    border-color: var(--gold0);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--gold1) 25%, transparent);
+}
+
+.combat-adicionar:active {
+    background: color-mix(in srgb, var(--gold1) 36%, var(--p0));
+}
+
+.combat-adicionar:focus-visible {
+    outline: 2px solid var(--gold1);
+    outline-offset: 2px;
+}
+
 /* Section hint text */
 .combat-section-hint {
     font-family: 'IM Fell English', serif;
@@ -610,6 +643,8 @@ textarea.is-livro {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+    /* O cartão vizinho mantém a altura natural quando um abre (sem "barriga" vazia) */
+    align-items: start;
 }
 
 
@@ -873,24 +908,65 @@ textarea.is-livro {
     flex-shrink: 0;
 }
 
-/* ── Delete button ── */
-.combat-card__delete-btn {
-    background: none;
-    border: none;
-    padding: 3px;
-    cursor: pointer;
-    color: var(--blood1);
-    opacity: 0.4;
-    transition: opacity 0.15s, color 0.15s;
+/* ── Excluir (dentro do cartão aberto, longe do abrir/fechar) ── */
+.combat-card__acoes {
     display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    border-radius: 3px;
+    justify-content: flex-end;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px dashed color-mix(in srgb, var(--leath3) 25%, transparent);
 }
 
-.combat-card__delete-btn:hover {
-    opacity: 1;
+.combat-card__excluir {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 12px;
+    background: none;
+    border: 1px solid color-mix(in srgb, var(--blood1) 55%, transparent);
+    border-radius: 5px;
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blood1);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.combat-card__excluir .material-symbols-outlined {
+    font-size: 17px;
+}
+
+.combat-card__excluir:hover {
+    background: color-mix(in srgb, var(--blood1) 14%, transparent);
+    border-color: var(--blood2);
     color: var(--blood2);
+}
+
+.combat-card__excluir:focus-visible {
+    outline: 2px solid var(--blood2);
+    outline-offset: 2px;
+}
+
+/* Papel escuro: o vermelho do tema claro some; usa um vermelho claro legível */
+body.theme-dark-paper .combat-card__excluir {
+    color: #ff9d92;
+    border-color: color-mix(in srgb, #ff9d92 60%, transparent);
+}
+
+body.theme-dark-paper .combat-card__excluir:hover {
+    background: color-mix(in srgb, #ff9d92 16%, transparent);
+    border-color: #ffb8af;
+    color: #ffb8af;
+}
+
+/* Condição: sem abrir/fechar, o "Excluir" fica no fim e sem a linha divisória pesada */
+.combat-card--condicao .combat-card__acoes {
+    margin-top: 2px;
+    padding-top: 6px;
 }
 
 /* ── Chevron ── */
@@ -1141,12 +1217,12 @@ textarea.is-livro {
     border: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
     border-radius: 5px;
     color: var(--ink3);
-    padding: 3px 8px;
+    padding: 4px 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
-    opacity: 0.5;
+    gap: 5px;
+    opacity: 0.6;
     transition: opacity 0.15s, color 0.15s, border-color 0.15s;
     flex-shrink: 0;
 }
@@ -1161,6 +1237,14 @@ textarea.is-livro {
     opacity: 1;
     border-color: var(--gold1);
     color: var(--gold2);
+}
+
+.condition-effects-toggle__texto {
+    font-family: 'Cinzel', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
 /* ── CONDITION cards ── */
@@ -1242,6 +1326,21 @@ textarea.is-livro {
 
 .cstat-row-remove-btn:hover {
     opacity: 1;
+}
+
+/* Ataque aberto: os dados (acerto, dano, crítico...) ficam bem legíveis. É a única exceção à regra de texto pequeno. */
+.combat-card--ataque .ataque-fields-grid .combat-input {
+    font-size: 16px;
+    padding: 5px 8px;
+}
+
+.combat-card--ataque .ataque-fields-grid .combat-input--sm {
+    width: 60px;
+    font-size: 16px;
+}
+
+.combat-card--ataque.combat-card--open .combat-card__header-summary {
+    font-size: 15px;
 }
 
 /* Ajustes para campos de munição e reações especiais */

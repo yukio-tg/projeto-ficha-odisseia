@@ -18,112 +18,224 @@
     font-variation-settings: 'FILL' 1;
 }
 
-#theme-btn.active {
+#theme-btn.active,
+#theme-btn[aria-expanded="true"] {
     color: var(--gold2);
     opacity: 1;
     font-variation-settings: 'FILL' 1;
 }
 
-/* ── Painel ───────────────────────────────────────────────────────────────── */
+/* ── Painel (popover por cima da ficha, ancorado ao cabeçalho) ─────────────── */
 .theme-panel {
-    display: none;
-    flex-direction: column;
-    gap: 7px;
-    padding: 9px 28px 12px;
-    border-top: 1px solid color-mix(in srgb, var(--leath3) 45%, transparent);
-    background: rgba(0, 0, 0, 0.18);
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 10px;
+    z-index: 40;
+    width: min(360px, calc(100vw - 20px));
+    max-height: min(480px, calc(100vh - 120px));
+    max-height: min(480px, calc(100dvh - 120px));
+    overflow: auto;
+    padding: 10px 12px 12px;
+    background: linear-gradient(180deg, var(--leath1), var(--leath0));
+    border: 1px solid var(--leath4);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    color: var(--gold2);
+    animation: theme-pop 0.14s ease-out;
 }
 
-.theme-panel.open {
-    display: flex;
+.theme-panel[hidden] { display: none; }
+
+@keyframes theme-pop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
 }
 
-/* ── Linha de grupo ───────────────────────────────────────────────────────── */
-.theme-group {
+@media (prefers-reduced-motion: reduce) {
+    .theme-panel { animation: none; }
+}
+
+.cp-view[hidden] { display: none; }
+
+.cp-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.theme-group-label {
-    font-family: 'Cinzel', serif;
-    font-size: 7.5px;
+    gap: 6px;
+    font: 600 8.5px 'Cinzel', serif;
     letter-spacing: 0.22em;
-    color: var(--gold1);
     text-transform: uppercase;
-    width: 64px;
-    flex-shrink: 0;
-    opacity: 0.78;
-    line-height: 1;
+    color: var(--gold1);
+    margin-bottom: 8px;
 }
 
-/* ── Grade de swatches ────────────────────────────────────────────────────── */
-.theme-swatches {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    flex: 1;
+/* Lista de temas: rola dentro do painel quando houver muitos */
+.cp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    max-height: min(62vh, 520px);
+    overflow-y: auto;
+    padding-right: 2px;
+    scrollbar-width: thin;
 }
 
-.theme-swatch {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
+.cp-sub {
+    grid-column: 1 / -1;
+    font: 600 9px 'Cinzel', serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold2);
+    opacity: 0.85;
+    margin: 4px 0 0;
+    padding-bottom: 3px;
+    border-bottom: 1px solid color-mix(in srgb, var(--gold1) 30%, transparent);
+}
+
+.cp-sub:first-child { margin-top: 0; }
+
+.theme-card {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1.5px solid transparent;
+    border-radius: 7px;
+    padding: 5px 5px 6px;
     cursor: pointer;
-    border: 1.5px solid rgba(255, 255, 255, 0.08);
-    padding: 0;
-    flex-shrink: 0;
-    position: relative;
-    transition: transform 0.1s, border-color 0.14s, box-shadow 0.14s;
+    text-align: left;
+    color: var(--gold2);
+    transition: border-color 0.14s, background 0.14s;
 }
 
-.theme-swatch:hover {
-    transform: scale(1.38);
-    border-color: rgba(255, 255, 255, 0.42);
-    z-index: 2;
+.theme-card:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: color-mix(in srgb, var(--gold1) 50%, transparent);
 }
 
-.theme-swatch.active {
+.theme-card.active {
     border-color: var(--gold2);
-    transform: scale(1.22);
-    box-shadow: 0 0 5px color-mix(in srgb, var(--gold2) 62%, transparent);
-    z-index: 1;
+    box-shadow: 0 0 6px color-mix(in srgb, var(--gold2) 45%, transparent);
 }
 
-/* ── Linha de reset ───────────────────────────────────────────────────────── */
-.theme-reset-row {
+.theme-thumb {
     display: flex;
-    justify-content: flex-end;
-    padding-top: 2px;
+    height: 22px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.5);
 }
 
-.theme-reset-btn {
+.theme-thumb i { flex: 1; }
+
+.theme-name {
+    display: block;
+    margin-top: 4px;
+    font: 600 9.5px 'Cinzel', serif;
+    letter-spacing: 0.05em;
+}
+
+.theme-legend {
     display: flex;
+    justify-content: space-between;
+    font: 7px 'Cinzel', serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin-top: 2px;
+}
+
+.cp-foot {
+    display: flex;
+    gap: 6px;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.cp-btn {
+    display: inline-flex;
     align-items: center;
     gap: 4px;
     background: none;
-    border: 1px solid color-mix(in srgb, var(--gold1) 28%, transparent);
+    border: 1px solid color-mix(in srgb, var(--gold1) 40%, transparent);
     border-radius: 4px;
     color: var(--gold1);
-    font-family: 'Cinzel', serif;
-    font-size: 7.5px;
-    letter-spacing: 0.18em;
+    font: 600 8px 'Cinzel', serif;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    padding: 3px 8px;
+    padding: 5px 9px;
     cursor: pointer;
-    opacity: 0.62;
-    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.theme-reset-btn .material-symbols-outlined {
-    font-size: 13px;
+.cp-btn:hover { color: var(--gold3); border-color: var(--gold2); }
+.cp-btn .material-symbols-outlined { font-size: 14px; }
+
+.cp-back {
+    background: none;
+    border: 0;
+    color: var(--gold1);
+    cursor: pointer;
+    display: inline-flex;
+    padding: 0;
 }
 
-.theme-reset-btn:hover {
-    opacity: 1;
-    border-color: color-mix(in srgb, var(--gold2) 55%, transparent);
-    color: var(--gold2);
+.cp-back .material-symbols-outlined { font-size: 16px; }
+
+.cp-note {
+    font: italic 10px 'IM Fell English', serif;
+    color: var(--gold1);
+    opacity: 0.75;
+    margin-top: 6px;
 }
+
+/* ── Painel RGB livre ─────────────────────────────────────────────────────── */
+.rgb-row {
+    display: grid;
+    grid-template-columns: 62px 34px 1fr;
+    gap: 4px 8px;
+    align-items: center;
+    padding: 7px 0;
+    border-top: 1px solid color-mix(in srgb, var(--gold1) 18%, transparent);
+}
+
+.rgb-row:first-child { border-top: 0; }
+
+.rgb-label {
+    font: 600 7.5px 'Cinzel', serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold1);
+}
+
+.rgb-row input[type=color] {
+    width: 34px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--leath4);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+}
+
+.rgb-nums { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+
+.rgb-nums label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font: 600 8px 'Cinzel', serif;
+    color: var(--gold1);
+}
+
+.rgb-nums input {
+    width: 42px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid color-mix(in srgb, var(--gold1) 35%, transparent);
+    border-radius: 3px;
+    color: var(--gold3);
+    font: 11px monospace;
+    padding: 3px;
+    text-align: center;
+}
+
+.rgb-nums input.hex { width: 66px; }
+.rgb-nums input:focus { outline: 1px solid var(--gold2); }
 
 /* ═══════════════════════════════════════════════════════════════════
    OVERRIDES PARA PAPEL ESCURO (body.theme-dark-paper)
@@ -211,4 +323,26 @@ body.theme-dark-paper fieldset {
 }
 body.theme-dark-paper fieldset:focus-within {
     background: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Contraste no pergaminho escuro: textos que tinham cor fixa escura ─────────
+   (achados por auditoria automática de contraste nos temas escuros) */
+body.theme-dark-paper .mod-label,
+body.theme-dark-paper .portrait-placeholder-text,
+body.theme-dark-paper .pericia-total {
+    color: var(--ink3) !important;
+}
+body.theme-dark-paper .attr-label,
+body.theme-dark-paper .atributo-nome,
+body.theme-dark-paper .atributo-mod,
+body.theme-dark-paper .pericia-info-btn {
+    /* mantém a cor de identidade do atributo, só mais clara */
+    filter: brightness(1.6) saturate(0.95);
+}
+body.theme-dark-paper .reacoes-aviso-line,
+body.theme-dark-paper .combat-card__oportunidade-badge,
+body.theme-dark-paper .combat-card__name-input,
+body.theme-dark-paper #tab-habilidades h1,
+body.theme-dark-paper #tab-inventario h1 {
+    color: var(--ink1);
 }
